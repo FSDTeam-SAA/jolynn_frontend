@@ -1,7 +1,7 @@
 import Faq from "./_components/faq";
-import GrowYourBusiness from "./_components/grow-your-business";
+// import GrowYourBusiness from "./_components/grow-your-business";
+// import SponsoredAdvertisements from "./_components/sponsored-advertisements";
 import MostPopularService from "./_components/most-popular-service";
-import SponsoredAdvertisements from "./_components/sponsored-advertisements";
 
 
 const HomePage = () => {
@@ -9,8 +9,8 @@ const HomePage = () => {
   return (
     <div className="">
       <MostPopularService/>
-      <SponsoredAdvertisements/>
-      <GrowYourBusiness/>
+      {/* <SponsoredAdvertisements/>
+      <GrowYourBusiness/> */}
      
      <Faq/>
     </div>

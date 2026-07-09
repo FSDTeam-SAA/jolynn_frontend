@@ -98,8 +98,8 @@ const serviceCategories: ServiceCategory[] = [
 
 const MostPopularService = () => {
   return (
-    <section className="bg-[#E5F3F2] px-5 py-12 sm:px-8 md:py-14 lg:py-[42px] mt-10 md:mt-12 lg:mt-14 xl:mt-16" >
-      <div className="mx-auto w-full max-w-[990px]">
+    <section className="bg-[#CAE3E2A1] px-5 py-12 sm:px-8 md:py-14 lg:py-[42px] mt-14 md:mt-12 lg:mt-14 xl:mt-24" >
+      <div className="container py-4">
         <div className="text-center">
           <h2 className="text-[24px] font-extrabold leading-tight text-[#292E78] sm:text-[28px]">
             Most popular Categories
@@ -144,7 +144,7 @@ const MostPopularService = () => {
 
         <div className="mt-6 flex justify-center">
           <Link
-            href="/treatments"
+            href="#"
             className="inline-flex h-9 items-center justify-center rounded-[5px] bg-[#292E78] px-6 text-[11px] font-bold text-white transition hover:bg-[#1F2464] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292E78] focus-visible:ring-offset-2 focus-visible:ring-offset-[#E5F3F2]"
           >
             View All Services

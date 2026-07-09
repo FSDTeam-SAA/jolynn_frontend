@@ -1,4 +1,5 @@
 import { Facebook, Instagram, Linkedin, Youtube } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 export interface ContactInfoResponse {
@@ -28,28 +29,28 @@ const footerColumns = [
   {
     title: "For Customers",
     links: [
-      { label: "Find Services", href: "/treatments" },
-      { label: "Browse Categories", href: "/treatments" },
-      { label: "How It Works", href: "/" },
-      { label: "Leave a Review", href: "/contact" },
+      { label: "Find Services", href: "#3" },
+      { label: "Browse Categories", href: "#" },
+      { label: "How It Works", href: "#" },
+      { label: "Leave a Review", href: "#" },
     ],
   },
   {
     title: "For Businesses",
     links: [
-      { label: "Get Listed", href: "/contact" },
-      { label: "Pricing", href: "/pricing" },
-      { label: "Success Stories", href: "/about-us" },
+      { label: "Get Listed", href: "#" },
+      { label: "Pricing", href: "#" },
+      { label: "Success Stories", href: "#" },
     ],
   },
   {
     title: "Company",
     links: [
-      { label: "About Us", href: "/about-us" },
-      { label: "FAQ", href: "/contact" },
-      { label: "Contact Us", href: "/contact" },
-      { label: "Terms od service", href: "/terms-and-condition" },
-      { label: "Privacy Policy", href: "/privacy-policy" },
+      { label: "About Us", href: "#" },
+      { label: "FAQ", href: "#" },
+      { label: "Contact Us", href: "#" },
+      { label: "Terms of Service", href: "#" },
+      { label: "Privacy Policy", href: "#" },
     ],
   },
 ];
@@ -82,48 +83,39 @@ const socialLinks = [
   },
 ];
 
-const BrandMark = () => (
-  <span className="flex h-[58px] w-[58px] items-center justify-center rounded-full bg-[#0B8FDB] shadow-[0_0_0_4px_rgba(255,255,255,0.94)]">
-    <span className="relative mt-1 flex h-7 w-8 items-start justify-center gap-2">
-      <span className="h-4 w-4 rounded-full bg-white" />
-      <span className="h-4 w-4 rounded-full bg-white" />
-      <span className="absolute left-1 top-3 h-4 w-2.5 -skew-x-[18deg] rounded-bl-full bg-white" />
-      <span className="absolute right-1 top-3 h-4 w-2.5 -skew-x-[18deg] rounded-bl-full bg-white" />
-    </span>
-  </span>
-);
-
 const Footer = () => {
   return (
     <footer className="bg-[#292E78] text-white">
-      <div className="mx-auto w-full max-w-[1060px] px-6 py-12 sm:px-8 md:py-16 lg:px-10 lg:pb-9 lg:pt-[94px]">
-        <div className="grid gap-10 md:grid-cols-[1.45fr_2.15fr] lg:gap-20">
-          <div className="max-w-[315px]">
-            <Link
-              href="/"
-              aria-label="SideQuote home"
-              className="inline-flex rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#292E78]"
-            >
-              <BrandMark />
-            </Link>
+      <div className="container px-4 py-10 sm:px-6 sm:py-12 md:py-14 lg:px-8 lg:pb-9 lg:pt-20 xl:px-10">
+        <div className="grid gap-10 lg:grid-cols-[minmax(240px,0.9fr)_minmax(0,2fr)] lg:gap-14 xl:gap-20">
+          <div className="max-w-[420px]">
+            <Link href="/">
+            <Image
+              src="/assets/images/logo.png"
+              alt="Logo"
+              width={100}
+              height={100}
+              className="w-16 h-16"
+            />
+          </Link>
 
             <h2 className="mt-7 text-base font-bold leading-tight">
               SideQuote
             </h2>
-            <p className="mt-4 text-[13px] font-light leading-[1.55] text-white/80">
+            <p className="mt-4 max-w-sm text-sm font-light leading-6 text-white/80">
               Connect with verified electricians, plumbers, HVAC technicians,
               roofers, and more in your area.
             </p>
 
-            <ul className="mt-6 flex items-center gap-3">
-              {socialLinks.map((item) => (
+            <ul className="mt-6 flex flex-wrap items-center gap-3">
+              {socialLinks?.map((item) => (
                 <li key={item.label}>
                   <Link
                     href={item.href}
                     target="_blank"
                     rel="noreferrer"
                     aria-label={item.label}
-                    className="flex h-7 w-7 items-center justify-center rounded-full bg-white/13 text-white transition hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                    className="flex h-9 w-9 items-center justify-center bg-[#FFFFFF1A] rounded-full bg-white/13 text-white transition hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                   >
                     {item.icon}
                   </Link>
@@ -132,10 +124,10 @@ const Footer = () => {
             </ul>
           </div>
 
-          <div className="grid gap-8 sm:grid-cols-3 sm:gap-7 lg:gap-14">
+          <div className="grid grid-cols-1 gap-8 min-[520px]:grid-cols-2 md:grid-cols-3 md:gap-7 lg:gap-10 xl:gap-14">
             {footerColumns.map((column) => (
               <div key={column.title}>
-                <h3 className="text-[15px] font-bold leading-tight">
+                <h3 className="text-base font-bold leading-tight">
                   {column.title}
                 </h3>
                 <ul className="mt-4 space-y-2.5">
@@ -143,7 +135,7 @@ const Footer = () => {
                     <li key={item.label}>
                       <Link
                         href={item.href}
-                        className="text-[15px] font-light leading-tight text-white/85 transition hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                        className="inline-flex min-h-7 items-center text-sm font-light leading-snug text-white/85 transition hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:text-[15px]"
                       >
                         {item.label}
                       </Link>
@@ -155,8 +147,8 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="mt-12 border-t border-white/12 pt-7 text-center md:mt-[66px]">
-          <p className="text-[11px] font-light text-white/80">
+        <div className="mt-10 border-t border-white/12 pt-6 text-center md:mt-14 lg:mt-16">
+          <p className="text-xs font-light text-white/80">
             © {new Date().getFullYear()} All rights reserved.
           </p>
         </div>

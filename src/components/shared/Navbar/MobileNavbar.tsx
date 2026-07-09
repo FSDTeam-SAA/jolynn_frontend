@@ -3,9 +3,10 @@
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, type ComponentType } from "react";
+import { useState } from "react";
 
 type NavItem = {
   label: string;
@@ -14,10 +15,9 @@ type NavItem = {
 
 type MobileNavbarProps = {
   navItems: NavItem[];
-  BrandMark: ComponentType;
 };
 
-const MobileNavbar = ({ navItems, BrandMark }: MobileNavbarProps) => {
+const MobileNavbar = ({ navItems }: MobileNavbarProps) => {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -29,7 +29,7 @@ const MobileNavbar = ({ navItems, BrandMark }: MobileNavbarProps) => {
         <Button
           variant="ghost"
           size="icon"
-          className="h-10 w-10 rounded-[5px] border border-[#22245F] bg-transparent text-[#22245F] hover:bg-white/50"
+          className="h-11 w-11 rounded-[5px] border border-[#22245F] bg-transparent text-[#22245F] hover:bg-white/60 focus-visible:ring-[#22245F]"
         >
           <Menu className="h-5 w-5" />
           <span className="sr-only">Open navigation menu</span>
@@ -37,22 +37,25 @@ const MobileNavbar = ({ navItems, BrandMark }: MobileNavbarProps) => {
       </SheetTrigger>
       <SheetContent
         side="right"
-        className="w-[86vw] max-w-sm border-l border-[#9FB8B7] bg-[#E6F2F2] p-5"
+        className="w-[min(88vw,380px)] border-l border-[#9FB8B7] bg-[#E6F2F2] p-3 sm:p-4"
       >
-        <div className="flex h-full flex-col pt-4">
-          <Link
-            href="/"
-            aria-label="Home"
-            onClick={closeSheet}
-            className="mb-10 inline-flex w-fit rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22245F] focus-visible:ring-offset-2 focus-visible:ring-offset-[#E6F2F2]"
-          >
-            <BrandMark />
+        <div className="flex h-full flex-col pt-5">
+           <Link href="/">
+            <Image
+              src="/assets/images/logo.png"
+              alt="Logo"
+              width={100}
+              height={100}
+              className="w-12 h-12"
+            />
           </Link>
 
           <nav className="flex-1" aria-label="Mobile navigation">
             <ul className="space-y-2">
               {navItems.map((item) => {
-                const isActive = pathname === item.href;
+                const isActive =
+                  pathname === item.href ||
+                  (item.href !== "/" && pathname.startsWith(item.href));
 
                 return (
                   <li key={item.href}>
@@ -60,7 +63,7 @@ const MobileNavbar = ({ navItems, BrandMark }: MobileNavbarProps) => {
                       href={item.href}
                       onClick={closeSheet}
                       aria-current={isActive ? "page" : undefined}
-                      className={`flex min-h-12 items-center rounded-[5px] px-4 text-sm font-medium transition hover:bg-white/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22245F] ${
+                      className={`flex min-h-12 items-center rounded-[5px] px-4 text-base font-medium transition hover:bg-white/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22245F] ${
                         isActive
                           ? "bg-white/70 text-[#22245F]"
                           : "text-slate-950"
@@ -78,14 +81,14 @@ const MobileNavbar = ({ navItems, BrandMark }: MobileNavbarProps) => {
             <Link
               href="/login"
               onClick={closeSheet}
-              className="flex h-11 items-center justify-center rounded-[5px] border border-[#22245F] px-4 text-sm font-semibold text-[#22245F] transition hover:bg-white/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22245F]"
+              className="flex h-12 items-center justify-center rounded-[5px] border border-[#22245F] px-4 text-base font-semibold text-[#22245F] transition hover:bg-white/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22245F]"
             >
               Login
             </Link>
             <Link
               href="/contact"
               onClick={closeSheet}
-              className="flex h-11 items-center justify-center rounded-[5px] bg-[#22245F] px-4 text-sm font-semibold text-white transition hover:bg-[#17194D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22245F]"
+              className="flex h-12 items-center justify-center rounded-[5px] bg-[#22245F] px-4 text-base font-semibold text-white transition hover:bg-[#17194D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22245F]"
             >
               Add your business
             </Link>
