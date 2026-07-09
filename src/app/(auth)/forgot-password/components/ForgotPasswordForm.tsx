@@ -17,6 +17,8 @@ import { Input } from "@/components/ui/input";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
 
 const formSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -35,7 +37,7 @@ const ForgotPasswordForm = () => {
   const { mutate, isPending } = useMutation({
     mutationKey: ["forgot-password"],
     mutationFn: (email: string) =>
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/forgot-password`, {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/forgot-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -44,7 +46,7 @@ const ForgotPasswordForm = () => {
       }).then((res) => res.json()),
 
     onSuccess: (data, email) => {
-      if (!data?.status) {
+      if (!data?.success) {
         toast.error(data?.message || "Something went wrong");
         return;
       }
@@ -68,11 +70,23 @@ const ForgotPasswordForm = () => {
 
   return (
     <div>
-      <h3 className="text-2xl mb-16 md:text-[28px] lg:text-[32px] font-extrabold text-[#82B7B4] text-center leading-[120%]">
-        Forgot Password
-      </h3>
 
       <div className="w-full md:w-[547px] p-3 md:p-7 lg:p-8 rounded-[16px] bg-white shadow-[0px_5px_10px_0px_#00000029]">
+            <div className="flex items-center justify-center mb-4">
+          <Link href="/">
+            <Image
+              src="/assets/images/logo.png"
+              alt="Logo"
+              width={100}
+              height={100}
+              className="w-[90px] h-[90px]"
+            />
+          </Link>
+        </div>
+
+        <h3 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-primary text-center leading-[120%]">
+          Forgot Password
+        </h3>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pt-5 md:pt-6">
             {/* Email Field */}
@@ -81,14 +95,14 @@ const ForgotPasswordForm = () => {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="flex items-center gap-1 text-base font-medium leading-[120%] text-[#499FC0] pb-2">
-                    Email
+                  <FormLabel className="flex items-center gap-1 text-base font-semibold leading-[120%] text-[#4365D0] pb-2">
+                    Email Address
                   </FormLabel>
                   <FormControl>
                     <Input
                       type="email"
-                      className="w-full h-[48px] text-base font-medium leading-[120%] text-[#293440] rounded-[8px] p-4 border border-[#0000004D] placeholder:text-[#787878]"
-                      placeholder="Enter your Email"
+                      className="w-full h-[51px] text-base font-medium leading-[120%] text-primary rounded-[8px] p-4 border border-[#F5F3FA] placeholder:text-[#667481] shadow-[0px_0px_10px_0px_#00000026]"
+                      placeholder="Type your Email"
                       {...field}
                     />
                   </FormControl>
@@ -99,10 +113,10 @@ const ForgotPasswordForm = () => {
 
             <Button
               disabled={isPending}
-              className="text-base font-medium text-[#F8FAF9] leading-[120%] rounded-[8px] w-full h-[48px] bg-primary"
+              className="text-base font-semibold text-white leading-[120%] rounded-[8px] w-full h-[51px] bg-primary"
               type="submit"
             >
-              {isPending ? "Sending..." : "Send "}
+              {isPending ? "Sending..." : "Send OTP"}
             </Button>
           </form>
         </Form>

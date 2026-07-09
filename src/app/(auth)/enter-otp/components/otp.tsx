@@ -12,6 +12,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
 
 export default function OtpForm() {
   const [otp, setOtp] = useState<string[]>(Array(6).fill(""));
@@ -50,7 +52,7 @@ export default function OtpForm() {
   const { mutate, isPending } = useMutation({
     mutationKey: ["verify-otp"],
     mutationFn: (values: { otp: string; email: string }) =>
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/verify-otp`, {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/verify`, {
         method: "POST",
         headers: {
           "content-type": "application/json",
@@ -58,7 +60,7 @@ export default function OtpForm() {
         body: JSON.stringify(values),
       }).then((res) => res.json()),
     onSuccess: (data) => {
-      if (!data?.status) {
+      if (!data?.success) {
         toast.error(data?.message || "Something went wrong");
         return;
       }
@@ -89,7 +91,7 @@ export default function OtpForm() {
   const resendOtp = useMutation({
     mutationKey: ["forgot-password"],
     mutationFn: (email: string) =>
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/forgot-password`, {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/forgot-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -98,7 +100,7 @@ export default function OtpForm() {
       }).then((res) => res.json()),
 
     onSuccess: (data, email) => {
-      if (!data?.status) {
+      if (!data?.success) {
         toast.error(data?.message || "Something went wrong");
         return;
       }
@@ -117,13 +119,27 @@ export default function OtpForm() {
 
   return (
     <div>
-      <h3 className="text-2xl md:text-[28px] lg:text-[32px] font-extrabold text-[#82B7B4] text-center leading-[120%] mb-10">
-        Verify OTP
-      </h3>
+     
 
       <div className="w-full md:w-[547px] p-5 md:p-8 lg:p-10 rounded-[16px] bg-white shadow-[0px_5px_10px_0px_#00000029] flex flex-col items-center space-y-8">
+
+          <div className="flex items-center justify-center mb-0">
+          <Link href="/">
+            <Image
+              src="/assets/images/logo.png"
+              alt="Logo"
+              width={100}
+              height={100}
+              className="w-[90px] h-[90px]"
+            />
+          </Link>
+        </div>
+
+        <h3 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-primary text-center leading-[120%]">
+          Verify Email
+        </h3>
         {/* OTP Input Fields */}
-        <div className="flex justify-center gap-3 md:gap-4">
+        <div className="flex justify-center gap-3 md:gap-4 lg:gap-6">
           {otp.map((digit, index) => (
             <Input
               key={index}
@@ -138,33 +154,35 @@ export default function OtpForm() {
                 inputRefs.current[index] = el;
               }}
               className={`w-12 h-14 md:w-14 md:h-16 text-center text-xl font-semibold rounded-lg border ${digit
-                  ? "border-[#499FC0] text-[#499FC0]"
-                  : "border-[#D1D5DB] text-gray-700"
-                } focus:ring-2 focus:ring-[#499FC0] focus:border-[#499FC0] transition-all`}
+                  ? "border-primary text-primary"
+                  : "border-[#F5F3FA] placeholder:text-[#667481] shadow-[0px_0px_10px_0px_#00000026]"
+                } focus:ring-2 focus:ring-primary] focus:border-primary transition-all`}
               aria-label={`OTP digit ${index + 1}`}
             />
           ))}
         </div>
 
-        {/* Verify Button */}
-        <Button
-          disabled={isPending}
-          onClick={handleVerify}
-          className="text-base font-medium text-[#F8FAF9] leading-[120%] rounded-[8px] w-full h-[48px] bg-primary transition-all"
-        >
-          {isPending ? "Verifying..." : "Verify"}
-        </Button>
-
         {/* Resend Option */}
-        <p className="text-sm text-[#82B7B4] text-center">
-          Didn’t receive the code?{" "}
+        <p className="text-sm md:text-base text-[#4365D0] text-center">
+          Didn’t get a code?{" "}
           <button
             onClick={() => resendOtp.mutate(decodedEmail)}
-            className="text-[#82B7B4]  font-medium hover:underline"
+            className="text-primary  font-medium hover:underline"
           >
             {resendOtp.isPending ? "Resending..." : "Resend"}
           </button>
         </p>
+
+        {/* Verify Button */}
+        <Button
+          disabled={isPending}
+          onClick={handleVerify}
+           className="text-base font-semibold text-white leading-[120%] rounded-[8px] w-full h-[51px] bg-primary"
+        >
+          {isPending ? "Verifying..." : "Verify Now"}
+        </Button>
+
+        
       </div>
     </div>
   );

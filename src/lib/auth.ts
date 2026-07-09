@@ -25,7 +25,7 @@ export const authOptions: NextAuthOptions = {
         }
         try {
           const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/users/login`,
+            `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
             {
               method: "POST",
               headers: {
@@ -39,18 +39,34 @@ export const authOptions: NextAuthOptions = {
           );
           const response = await res.json();
 
-          if (!res.ok || !response?.status) {
+          console.log("Login response:", response);
+
+          if (!res.ok || !response?.success) {
             throw new Error(response?.message || "Login failed");
           }
-          const { user, token } = response;
+
+          const payload = response?.data ?? response;
+          const user = payload?.user;
+          const accessToken = payload?.accessToken ?? payload?.token;
+
+          if (!user || !accessToken) {
+            throw new Error(response?.message || "Invalid login response");
+          }
+
           return {
-            id: user.id,
-            name: user.firstName,
-            email: user.email,
-            phoneNumber: user.phoneNumber,
-            role: user.role,
-            profileImage: user.profileImage,
-            token,
+            id: user?._id ?? user?.id,
+            firstName: user?.firstName,
+            lastName: user?.lastName,
+            username: user?.username,
+            email: user?.email,
+            phoneNumber: user?.phoneNumber,
+            status: user?.status,
+            tag: user?.tag,
+            gender: user?.gender,
+            role: user?.role,
+            profileImage: user?.profileImage,
+            token: accessToken,
+            accessToken,
           };
         } catch (error) {
           console.error("Authentication error:", error);
@@ -68,13 +84,18 @@ export const authOptions: NextAuthOptions = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async jwt({ token, user }: { token: JWT; user?: any }) {
       if (user) {
-        token.id = user.id;
-        token.name = user.name;
+        token.id = user.id ?? user._id;
+        token.firstName = user.firstName;
+        token.lastName = user.lastName;
+        token.username = user.username;
         token.email = user.email;
+        token.status = user.status;
+        token.tag = user.tag;
         token.phoneNumber = user.phoneNumber;
         token.role = user.role;
         token.profileImage = user.profileImage;
-        token.token = user.token;
+        token.token = user.token ?? user.accessToken;
+        token.accessToken = user.token ?? user.accessToken;
       }
       return token;
     },
@@ -83,12 +104,17 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }: { session: any; token: JWT }) {
       session.user = {
         id: token.id,
-        name: token.name,
+        firstName: token.firstName,
+        lastName: token.lastName,
+        username: token.username,
+        tag: token.tag,
+        status: token.status,
         email: token.email,
         phoneNumber: token.phoneNumber,
         role: token.role,
         profileImage: token.profileImage,
-        token: token.token,
+        token: token.token ?? token.accessToken,
+        accessToken: token.accessToken ?? token.token,
       };
       return session;
     },
