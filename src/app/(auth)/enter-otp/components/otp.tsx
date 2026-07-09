@@ -118,7 +118,7 @@ export default function OtpForm() {
 
 
   return (
-    <div>
+    <div className="w-full flex items-center justify-center px-4">
      
 
       <div className="w-full md:w-[547px] p-5 md:p-8 lg:p-10 rounded-[16px] bg-white shadow-[0px_5px_10px_0px_#00000029] flex flex-col items-center space-y-8">
@@ -139,7 +139,7 @@ export default function OtpForm() {
           Verify Email
         </h3>
         {/* OTP Input Fields */}
-        <div className="flex justify-center gap-3 md:gap-4 lg:gap-6">
+        <div className="flex justify-center gap-2 md:gap-4 lg:gap-6">
           {otp.map((digit, index) => (
             <Input
               key={index}
@@ -153,7 +153,7 @@ export default function OtpForm() {
               ref={(el) => {
                 inputRefs.current[index] = el;
               }}
-              className={`w-12 h-14 md:w-14 md:h-16 text-center text-xl font-semibold rounded-lg border ${digit
+              className={`w-11 h-12 md:w-14 md:h-16 text-center text-xl font-semibold rounded-lg border ${digit
                   ? "border-primary text-primary"
                   : "border-[#F5F3FA] placeholder:text-[#667481] shadow-[0px_0px_10px_0px_#00000026]"
                 } focus:ring-2 focus:ring-primary] focus:border-primary transition-all`}
@@ -177,7 +177,7 @@ export default function OtpForm() {
         <Button
           disabled={isPending}
           onClick={handleVerify}
-           className="text-base font-semibold text-white leading-[120%] rounded-[8px] w-full h-[51px] bg-primary"
+           className="text-base font-semibold text-white leading-[120%] rounded-[8px] w-full h-[48px] bg-primary"
         >
           {isPending ? "Verifying..." : "Verify Now"}
         </Button>

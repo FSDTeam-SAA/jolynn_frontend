@@ -69,7 +69,7 @@ const ForgotPasswordForm = () => {
   };
 
   return (
-    <div>
+    <div className="w-full flex items-center justify-center px-4">
 
       <div className="w-full md:w-[547px] p-3 md:p-7 lg:p-8 rounded-[16px] bg-white shadow-[0px_5px_10px_0px_#00000029]">
             <div className="flex items-center justify-center mb-4">
@@ -101,7 +101,7 @@ const ForgotPasswordForm = () => {
                   <FormControl>
                     <Input
                       type="email"
-                      className="w-full h-[51px] text-base font-medium leading-[120%] text-primary rounded-[8px] p-4 border border-[#F5F3FA] placeholder:text-[#667481] shadow-[0px_0px_10px_0px_#00000026]"
+                      className="w-full h-[48px] text-base font-medium leading-[120%] text-primary rounded-[8px] p-4 border border-[#F5F3FA] placeholder:text-[#667481] shadow-[0px_0px_10px_0px_#00000026]"
                       placeholder="Type your Email"
                       {...field}
                     />
@@ -113,7 +113,7 @@ const ForgotPasswordForm = () => {
 
             <Button
               disabled={isPending}
-              className="text-base font-semibold text-white leading-[120%] rounded-[8px] w-full h-[51px] bg-primary"
+              className="text-base font-semibold text-white leading-[120%] rounded-[8px] w-full h-[48px] bg-primary"
               type="submit"
             >
               {isPending ? "Sending..." : "Send OTP"}
