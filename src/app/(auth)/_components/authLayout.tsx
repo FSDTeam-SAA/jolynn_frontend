@@ -5,7 +5,7 @@ import React from "react";
 
 const AuthLayoutDesign = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="h-screen grid grid-cols-1 md:grid-cols-1 gap-2 bg-[#FAFAFA]  ">
+    <div className="h-screen grid grid-cols-1 md:grid-cols-1 gap-2 bg-[linear-gradient(180deg,_#292D73_0%,_#91C7D9_50%,_#CBE4E3_100%),_linear-gradient(0deg,_rgba(0,0,0,0.2),_rgba(0,0,0,0.2))]  ">
       {/* <div className="  relative md:grid-cols-1 flex ">
         <Image
           src={loginimage}

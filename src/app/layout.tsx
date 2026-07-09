@@ -13,8 +13,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Perrystown Orthodontics",
-  description: "Transforming Smiles With Specialist Orthodontic Care",
+  title: "SideQuote",
+  description: "Connect with verified electricians, plumbers, HVAC technicians, roofers, and more in your area.",
 };
 
 export default function RootLayout({

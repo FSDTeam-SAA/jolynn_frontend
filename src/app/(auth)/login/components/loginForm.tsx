@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }),
@@ -65,11 +66,19 @@ const LoginForm = () => {
 
   return (
     <div>
-      <h3 className="text-2xl mb-16 md:text-[28px] lg:text-[32px] font-extrabold text-[#82B7B4] text-center leading-[120%]">
-        Hello, Welcome!
-      </h3>
+    
 
       <div className="w-full md:w-[547px] p-3 md:p-7 lg:p-8 rounded-[16px] bg-white shadow-[0px_5px_10px_0px_#00000029]">
+
+        <div className="flex items-center justify-center mb-4">
+          <Link href="/">
+          <Image src="/assets/images/logo.png" alt="Logo" width={100} height={100} />
+          </Link>
+        </div>
+
+          <h3 className="text-2xl md:text-[28px] lg:text-[32px] font-extrabold text-primary text-center leading-[120%]">
+        Log in to your account
+      </h3>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pt-5 md:pt-6">
             {/* Email Field */}
