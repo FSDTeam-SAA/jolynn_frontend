@@ -1,6 +1,7 @@
 "use client";
 
 import { MapPin, Search } from "lucide-react";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 
 type HeroSlide = {
@@ -139,13 +140,19 @@ const Hero = () => {
 
           <div className="md:col-span-1">
             <div className="relative overflow-hidden rounded-[10px] bg-[#EFF4FF] shadow-[0_18px_45px_rgba(32,42,70,0.22)] ring-1 ring-white/70">
-              <div
-                key={activeSlide.id}
-                role="img"
-                aria-label={activeSlide.imageAlt}
-                className="h-[230px] w-full bg-cover bg-center transition duration-500 sm:h-[330px] lg:h-[430px] "
-                style={{ backgroundImage: `url(${activeSlide.image})` }}
-              />
+              <div className="relative h-[230px] w-full overflow-hidden transition duration-500 sm:h-[330px] lg:h-[430px]">
+                <Image
+                  key={activeSlide.id}
+                  src={activeSlide.image}
+                  alt={activeSlide.imageAlt}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  priority={activeIndex === 0}
+                  unoptimized
+                  className="object-cover object-center"
+                  style={{ objectFit: "cover" }}
+                />
+              </div>
               <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-transparent to-transparent" />
             </div>
           </div>

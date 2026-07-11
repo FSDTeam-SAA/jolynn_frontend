@@ -120,7 +120,7 @@ const MostPopularService = () => {
           </p>
         </div>
 
-        <div className="mt-7 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-x-5 lg:gap-y-[22px]">
+        <div className="mt-7 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 md:gap-5 lg:gap-6">
           {serviceCategories.map((category) => {
             const Icon = serviceIcons[category.iconKey];
 

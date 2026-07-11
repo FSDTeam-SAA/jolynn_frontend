@@ -26,22 +26,22 @@ type RatingAvatar = {
 const ratingAvatars: RatingAvatar[] = [
   {
     id: "business-owner-1",
-    image: "/assets/images/meet-1.jpg",
+    image: "/assets/images/review1.png",
     alt: "Business owner",
   },
   {
     id: "business-owner-2",
-    image: "/assets/images/meet-2.jpg",
+    image: "/assets/images/review2.png",
     alt: "Business owner",
   },
   {
     id: "business-owner-3",
-    image: "/assets/images/meet-3.jpg",
+    image: "/assets/images/review3.png",
     alt: "Business owner",
   },
   {
     id: "business-owner-4",
-    image: "/assets/images/meet-4.jpg",
+    image: "/assets/images/review4.png",
     alt: "Business owner",
   },
 ];
@@ -75,10 +75,10 @@ const businessSteps: BusinessStep[] = [
 
 const GrowYourBusiness = () => {
   return (
-    <section className="bg-white px-5 py-8 sm:px-8 md:py-10">
-      <div className="mx-auto w-full max-w-[990px] overflow-hidden rounded-[5px] bg-gradient-to-r from-[#292E78] to-[#078FDB] text-white">
-        <div className="grid min-h-[181px] grid-cols-1 lg:grid-cols-[1fr_2.1fr]">
-          <div className="flex items-center justify-center px-7 py-8 lg:border-r lg:border-white/20 lg:px-8 lg:py-6">
+    <section className="pb-8 md:pb-10 bg-white">
+      <div className="container max-w-[1300px] overflow-x-hidden rounded-[12px] bg-[linear-gradient(90deg,_#292D73_0%,_#0082D7_100%)]">
+        <div className="grid min-h-[181px] grid-cols-1 lg:grid-cols-[1fr_3fr]">
+          <div className="flex items-center justify-end px-7 py-8 lg:border-r lg:border-white/20 lg:px-8 lg:py-6">
             <div className="text-center">
               <div className="flex justify-center -space-x-2">
                 {ratingAvatars.map((avatar) => (
@@ -97,33 +97,33 @@ const GrowYourBusiness = () => {
                 ))}
               </div>
 
-              <div className="mt-2 text-[17px] leading-none text-[#FFC83D]">
-                ★★★★★ <span className="text-[11px] font-bold text-white">Join 1000+</span>
+              <div className="mt-2 text-[17px] leading-none text-[#FFD119]">
+                ★★★★★ <span className="text-sm md:text-base leading-[120%] font-bold text-[#EAF1F6]">Join 1000+</span>
               </div>
-              <p className="mt-1 text-[10px] font-bold leading-tight text-white">
+              <p className="mt-1 text-sm md:text-base font-bold leading-normal text-[#EAF1F6]">
                 Businesses Growing with SideQuote
               </p>
             </div>
           </div>
 
-          <div className="px-5 pb-7 pt-0 sm:px-7 lg:px-8 lg:py-6">
-            <h2 className="text-center text-[25px] font-extrabold leading-tight sm:text-[30px] lg:text-left lg:text-[31px]">
+          <div className="px-5 pb-7 pt-0 sm:px-7 lg:px-8 lg:py-8">
+            <h2 className="text-center text-white text-2xl md:text-3xl lg:text-4xl xl:text-[40px] font-extrabold leading-tight lg:text-left ">
               Grow Your Business with SideQuote
             </h2>
 
-            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
+            <div className="mt-6 grid gap-4 grid-cols-2 md:grid-cols-4 lg:gap-5">
               {businessSteps.map((step) => {
                 const Icon = step.icon;
 
                 return (
-                  <div key={step.id}>
-                    <div className="flex h-[18px] w-[18px] items-center justify-center rounded-[3px] bg-white text-[#292E78]">
-                      <Icon className="h-3.5 w-3.5" />
+                  <div key={step.id} className="">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-[3px] bg-white text-[#292E78]">
+                      <Icon className="h-6 w-6" />
                     </div>
-                    <h3 className="mt-3 text-[9px] font-extrabold leading-tight text-white">
+                    <h3 className="mt-3 text-xs md:text-base font-semibold leading-[120%] text-white">
                       {step.title}
                     </h3>
-                    <p className="mt-1 max-w-[108px] text-[8px] font-medium leading-[1.25] text-white/90 sm:max-w-none lg:max-w-[108px]">
+                    <p className="mt-1 text-[10px] md:text-xs font-normal leading-[130%] text-white ">
                       {step.description}
                     </p>
                   </div>
@@ -131,21 +131,21 @@ const GrowYourBusiness = () => {
               })}
             </div>
 
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <div className="mt-5 grid gap-3 md:text-gap-5 lg:gap-8 md:grid-cols-2">
               <Link
                 href="/contact"
-                className="inline-flex h-9 items-center justify-center gap-3 rounded-[4px] bg-white px-4 text-[10px] font-extrabold text-[#292E78] transition hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                className="inline-flex h-12 items-center justify-center gap-3 rounded-[8px] bg-white px-4 text-sm md:text-base font-semibold leading-[150%] text-primary transition hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
               >
                 Add your business to Sidequote Directory
-                <ArrowRight className="h-3.5 w-3.5" />
+                <ArrowRight className="h-5 w-5" />
               </Link>
               <Link
                 href="/contact"
-                className="inline-flex h-9 items-center justify-center gap-3 rounded-[4px] border border-white/80 px-4 text-[10px] font-bold text-white transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                className="inline-flex h-12 items-center justify-center gap-3 rounded-[8px] border border-white px-4 text-sm md:text-base font-semibold leading-[150%] text-white transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
               >
-                <BriefcaseBusiness className="h-3.5 w-3.5 sm:hidden" />
+                <BriefcaseBusiness className="h-5 w-5 sm:hidden" />
                 Grow your business with Sidequote
-                <ArrowRight className="h-3.5 w-3.5" />
+                <ArrowRight className="h-5 w-5" />
               </Link>
             </div>
           </div>

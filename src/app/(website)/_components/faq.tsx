@@ -48,7 +48,7 @@ const Faq = () => {
   return (
     <section className="bg-white px-5 py-12 sm:px-8 md:py-16 lg:py-[50px]">
       <div className="container">
-        <h2 className="text-center text-[24px] font-extrabold leading-tight text-[#292E78] sm:text-[28px]">
+        <h2 className="text-2xl md:text-[28px] lg:text-[32px] font-bold leading-normal text-primary text-center">
           Most Frequently Asked Questions
         </h2>
 

@@ -18,7 +18,7 @@ const Navbar = () => {
   const pathname = usePathname();
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-white bg-[#DDEDEC]">
+    <header className=" fixed inset-x-0 top-0 z-50 border-b border-white bg-[#DDEDEC]">
       <div className="container flex  items-center justify-between gap-4 px-4 sm:px-6 py-4 md:py-4 lg:px-8 xl:px-10">
         <div className="flex min-w-0 items-center lg:flex-1">
           <Link href="/">
