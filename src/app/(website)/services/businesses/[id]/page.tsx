@@ -2,7 +2,7 @@ import BusinessViewProfileContainer from './_components/business-view-profile-co
 
 const BusinessViewProfile = () => {
   return (
-    <div>
+    <div >
       <BusinessViewProfileContainer />
     </div>
   )

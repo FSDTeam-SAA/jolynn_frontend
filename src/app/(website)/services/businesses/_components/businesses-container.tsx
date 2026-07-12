@@ -28,7 +28,7 @@ const businesses: Business[] = [
       "Licensed master electricians serving the Austin metro area for over 15 years. We handle residential and commercial projects...",
     accentColor: "#4D2077",
     profileUrl: "/services/businesses/1",
-    reportUrl: "#",
+    reportUrl: "/report",
     whatsappUrl: "#",
     reviewUrl: "#",
   },
@@ -43,7 +43,7 @@ const businesses: Business[] = [
       "Family-owned plumbing company serving Denver since 2009. We specialize in drain cleaning, water heater installation...",
     accentColor: "#176F39",
     profileUrl: "/services/businesses/2",
-    reportUrl: "#",
+    reportUrl: "/report",
     whatsappUrl: "#",
     reviewUrl: "#",
   },
@@ -58,7 +58,7 @@ const businesses: Business[] = [
       "Full-service roofing contractor specializing in residential replacements, storm damage repair, and commercial flat ...",
     accentColor: "#741D1D",
     profileUrl: "/services/businesses/3",
-    reportUrl: "#",
+    reportUrl: "/report",
     whatsappUrl: "#",
     reviewUrl: "#",
   },
@@ -73,7 +73,7 @@ const businesses: Business[] = [
       "Licensed master electricians serving the Austin metro area for over 15 years. We handle residential and commercial projects...",
     accentColor: "#4D2077",
     profileUrl: "/services/businesses/4",
-    reportUrl: "#",
+    reportUrl: "/report",
     whatsappUrl: "#",
     reviewUrl: "#",
   },
@@ -88,7 +88,7 @@ const businesses: Business[] = [
       "Family-owned plumbing company serving Denver since 2009. We specialize in drain cleaning, water heater installation...",
     accentColor: "#176F39",
     profileUrl: "/services/businesses/5",
-    reportUrl: "#",
+    reportUrl: "/report",
     whatsappUrl: "#",
     reviewUrl: "#",
   },
@@ -103,7 +103,7 @@ const businesses: Business[] = [
       "Full-service roofing contractor specializing in residential replacements, storm damage repair, and commercial flat ...",
     accentColor: "#741D1D",
     profileUrl: "/services/businesses/6",
-    reportUrl: "#",
+    reportUrl: "/report",
     whatsappUrl: "#",
     reviewUrl: "#",
   },
@@ -118,7 +118,7 @@ const businesses: Business[] = [
       "Licensed master electricians serving the Austin metro area for over 15 years. We handle residential and commercial projects...",
     accentColor: "#4D2077",
     profileUrl: "/services/businesses/7",
-    reportUrl: "#",
+    reportUrl: "/report",
     whatsappUrl: "#",
     reviewUrl: "#",
   },
@@ -133,7 +133,7 @@ const businesses: Business[] = [
       "Family-owned plumbing company serving Denver since 2009. We specialize in drain cleaning, water heater installation...",
     accentColor: "#176F39",
     profileUrl: "/services/businesses/8",
-    reportUrl: "#",
+    reportUrl: "/report",
     whatsappUrl: "#",
     reviewUrl: "#",
   },
@@ -148,7 +148,7 @@ const businesses: Business[] = [
       "Full-service roofing contractor specializing in residential replacements, storm damage repair, and commercial flat ...",
     accentColor: "#741D1D",
     profileUrl: "/services/businesses/9",
-    reportUrl: "#",
+    reportUrl: "/report",
     whatsappUrl: "#",
     reviewUrl: "#",
   },
@@ -200,7 +200,10 @@ const BusinessesContainer = () => {
               </div>
 
               <div className="mt-[14px] flex items-center gap-1.5">
-                <div className="flex items-center gap-[1px]" aria-label={`${business.rating} out of 5 stars`}>
+                <div
+                  className="flex items-center gap-[1px]"
+                  aria-label={`${business.rating} out of 5 stars`}
+                >
                   {Array.from({ length: 5 }).map((_, index) => (
                     <Star
                       key={index}

@@ -46,7 +46,7 @@ const Faq = () => {
   const [openItem, setOpenItem] = useState<string | null>(null);
 
   return (
-    <section className="bg-white px-5 py-12 sm:px-8 md:py-16 lg:py-[50px]">
+    <section id="faq" className="bg-white px-5 py-12 sm:px-8 md:py-16 lg:py-[50px]">
       <div className="container">
         <h2 className="text-2xl md:text-[28px] lg:text-[32px] font-bold leading-normal text-primary text-center">
           Most Frequently Asked Questions

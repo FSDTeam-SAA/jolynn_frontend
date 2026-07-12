@@ -18,7 +18,8 @@ const Navbar = () => {
   const pathname = usePathname();
 
   return (
-    <header className=" fixed inset-x-0 top-0 z-50 border-b border-white bg-[#DDEDEC]">
+    <div className="mb-20 md:mb-24">
+      <header className=" fixed inset-x-0 top-0 z-50 border-b border-white bg-[#DDEDEC] ">
       <div className="container flex  items-center justify-between gap-4 px-4 sm:px-6 py-4 md:py-4 lg:px-8 xl:px-10">
         <div className="flex min-w-0 items-center lg:flex-1">
           <Link href="/">
@@ -70,7 +71,7 @@ const Navbar = () => {
             Login
           </Link>
           <Link
-            href="#"
+            href="/add-your-business"
             className="inline-flex h-9 items-center justify-center rounded-[5px] bg-[#22245F] px-5 text-[13px] font-semibold text-white transition hover:bg-[#17194D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22245F] focus-visible:ring-offset-2 focus-visible:ring-offset-[#E6F2F2]"
           >
             Add your business
@@ -82,6 +83,7 @@ const Navbar = () => {
         </div>
       </div>
     </header>
+    </div>
   );
 };
 

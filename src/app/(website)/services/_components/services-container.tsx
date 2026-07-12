@@ -181,7 +181,7 @@ const serviceCategories: ServiceCategory[] = [
 
 const ServicesContainer = () => {
   return (
-    <section className="min-h-screen bg-[#DFF0EE] px-4 py-12 sm:px-6 md:py-16 lg:px-8 lg:py-[86px] mt-10 md:mt-14 lg:mt-16">
+    <section className="min-h-screen bg-[#DFF0EE] px-4 py-12 sm:px-6 md:py-16 lg:px-8 lg:py-[86px]">
       <div className="container ">
         <div className="text-center">
           <h1 className="text-[28px] font-extrabold leading-tight text-[#292E78] sm:text-[32px] md:text-[36px]">

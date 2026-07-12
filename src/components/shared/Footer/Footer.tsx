@@ -29,8 +29,8 @@ const footerColumns = [
   {
     title: "For Customers",
     links: [
-      { label: "Find Services", href: "#3" },
-      { label: "Browse Categories", href: "#" },
+      { label: "Find Services", href: "/services" },
+      { label: "Advertise with Us", href: "/advertise-with-us" },
       { label: "How It Works", href: "#" },
       { label: "Leave a Review", href: "/reviews" },
     ],
@@ -46,9 +46,9 @@ const footerColumns = [
   {
     title: "Company",
     links: [
-      { label: "About Us", href: "#" },
-      { label: "FAQ", href: "#" },
-      { label: "Contact Us", href: "#" },
+      { label: "About Us", href: "/about-us" },
+      { label: "FAQ", href: "/#faq" },
+      { label: "Contact Us", href: "/contact" },
       { label: "Terms of Service", href: "#" },
       { label: "Privacy Policy", href: "#" },
     ],

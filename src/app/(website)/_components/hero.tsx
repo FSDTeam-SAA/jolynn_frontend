@@ -2,6 +2,8 @@
 
 import { MapPin, Search } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
 
 type HeroSlide = {
@@ -54,7 +56,10 @@ const heroSlides: HeroSlide[] = [
 ];
 
 const Hero = () => {
+  const router = useRouter();
   const [activeIndex, setActiveIndex] = useState(0);
+  const [service, setService] = useState("");
+  const [location, setLocation] = useState("");
   const activeSlide = heroSlides[activeIndex];
 
   const goToSlide = (index: number) => {
@@ -83,6 +88,16 @@ const Hero = () => {
     return () => window.clearInterval(slideTimer);
   }, []);
 
+  const handleSearch = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const params = new URLSearchParams();
+    if (service.trim()) params.set("service", service.trim());
+    if (location.trim()) params.set("location", location.trim());
+
+    router.push(`/services${params.toString() ? `?${params}` : ""}`);
+  };
+
   return (
     <section className="relative overflow-hidden bg-white px-4 py-8 sm:px-6 md:py-10 lg:py-14 lg:px-8 mt-20">
       <div className="container relative">
@@ -110,11 +125,16 @@ const Hero = () => {
             </h1>
             <p className="text-sm md:text-base xl:text-lg font-normal text-[#444444] leading-[120%] pt-3 md:pt-4">At Contact Connect, we specialize in comprehensive home renovations, ensuring every project meets your unique vision and standards.</p>
 
-            <form className="mx-auto mt-6 flex max-w-[520px] flex-col overflow-hidden rounded-[12px] bg-white shadow-[4px_5px_16px_0px_#00000026] ring-1 ring-[#E6E8F0] sm:flex-row lg:mx-0 px-2 py-1.5">
+            <form
+              onSubmit={handleSearch}
+              className="mx-auto mt-6 flex max-w-[520px] flex-col overflow-hidden rounded-[12px] bg-white shadow-[4px_5px_16px_0px_#00000026] ring-1 ring-[#E6E8F0] sm:flex-row lg:mx-0 px-2 py-1.5"
+            >
               <label className="flex min-w-0 flex-1 items-center gap-2 border-b border-[#ECEEF5] px-4 py-3 sm:border-b-0 sm:border-r">
                 <Search className="h-5 w-5 shrink-0 text-[#7E7E7ED6]" />
                 <input
                   type="text"
+                  value={service}
+                  onChange={(event) => setService(event.target.value)}
                   placeholder="What service do you need?"
                   className="w-full bg-transparent text-[12px] font-medium text-[#292E78] outline-none placeholder:text-[#7E7E7ED6]"
                 />
@@ -124,6 +144,8 @@ const Hero = () => {
                 <MapPin className="h-5 w-5 shrink-0 text-[#7E7E7ED6]" />
                 <input
                   type="text"
+                  value={location}
+                  onChange={(event) => setLocation(event.target.value)}
                   placeholder="City or Zip code"
                   className="w-full bg-transparent text-[12px] font-medium text-[#292E78] outline-none placeholder:text-[#7E7E7ED6]"
                 />

@@ -14,6 +14,7 @@ import BusinessOverview from "./business-overview";
 import { businessProfile } from "./business-profile-data";
 import BusinessReviews from "./business-reviews";
 import BusinessServices from "./business-services";
+import RequestAQuoteModal from "./request-a-quote-modal";
 
 type ProfileTab = "overview" | "services" | "gallery" | "reviews";
 
@@ -84,6 +85,7 @@ const ContactCard = () => (
 
 const BusinessViewProfileContainer = () => {
   const [activeTab, setActiveTab] = useState<ProfileTab>("overview");
+  const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
 
   const activeContent = {
     overview: <BusinessOverview overview={businessProfile.overview} />,
@@ -98,7 +100,8 @@ const BusinessViewProfileContainer = () => {
   }[activeTab];
 
   return (
-    <main className="bg-[#F5F8F7]">
+    <div className="">
+      <main className="bg-[#F5F8F7]">
       <header className="border-b border-[#E2E8F0] bg-white">
         <div className="container max-w-[1240px] pb-0 pt-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -131,12 +134,13 @@ const BusinessViewProfileContainer = () => {
                 <Bookmark className="h-4 w-4" />
                 Save
               </Link>
-              <Link
-                href={businessProfile.quoteUrl}
+              <button
+                type="button"
+                onClick={() => setIsQuoteModalOpen(true)}
                 className="inline-flex h-10 items-center justify-center rounded-[6px] bg-[#292D73] px-6 text-[13px] font-extrabold text-white transition hover:bg-[#20255F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2"
               >
                 Get Quote
-              </Link>
+              </button>
             </div>
           </div>
 
@@ -170,7 +174,14 @@ const BusinessViewProfileContainer = () => {
           <ContactCard />
         </div>
       </section>
-    </main>
+      </main>
+      <RequestAQuoteModal
+        open={isQuoteModalOpen}
+        businessName={businessProfile.name}
+        services={businessProfile.services}
+        onClose={() => setIsQuoteModalOpen(false)}
+      />
+    </div>
   );
 };
 
