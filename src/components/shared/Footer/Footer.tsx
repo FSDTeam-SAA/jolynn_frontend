@@ -32,7 +32,7 @@ const footerColumns = [
       { label: "Find Services", href: "#3" },
       { label: "Browse Categories", href: "#" },
       { label: "How It Works", href: "#" },
-      { label: "Leave a Review", href: "#" },
+      { label: "Leave a Review", href: "/reviews" },
     ],
   },
   {

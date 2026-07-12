@@ -9,6 +9,7 @@ const ContactPage = () => {
     <div>
       <HeroSection
         title="Contact Us"
+        image="/assets/images/contact-info.jpg"
       />
       <ContactInformation />
       <ContactGetInTouch />

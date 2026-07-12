@@ -4,7 +4,7 @@ import ServicesContainer from './_components/services-container'
 const ServicesPage = () => {
   return (
     <div>
-        <ServicesContainer/>
+      <ServicesContainer />
     </div>
   )
 }

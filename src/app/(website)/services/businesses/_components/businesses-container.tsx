@@ -27,7 +27,7 @@ const businesses: Business[] = [
     description:
       "Licensed master electricians serving the Austin metro area for over 15 years. We handle residential and commercial projects...",
     accentColor: "#4D2077",
-    profileUrl: "#",
+    profileUrl: "/services/businesses/1",
     reportUrl: "#",
     whatsappUrl: "#",
     reviewUrl: "#",
@@ -42,7 +42,7 @@ const businesses: Business[] = [
     description:
       "Family-owned plumbing company serving Denver since 2009. We specialize in drain cleaning, water heater installation...",
     accentColor: "#176F39",
-    profileUrl: "#",
+    profileUrl: "/services/businesses/2",
     reportUrl: "#",
     whatsappUrl: "#",
     reviewUrl: "#",
@@ -57,7 +57,7 @@ const businesses: Business[] = [
     description:
       "Full-service roofing contractor specializing in residential replacements, storm damage repair, and commercial flat ...",
     accentColor: "#741D1D",
-    profileUrl: "#",
+    profileUrl: "/services/businesses/3",
     reportUrl: "#",
     whatsappUrl: "#",
     reviewUrl: "#",
@@ -72,7 +72,7 @@ const businesses: Business[] = [
     description:
       "Licensed master electricians serving the Austin metro area for over 15 years. We handle residential and commercial projects...",
     accentColor: "#4D2077",
-    profileUrl: "#",
+    profileUrl: "/services/businesses/4",
     reportUrl: "#",
     whatsappUrl: "#",
     reviewUrl: "#",
@@ -87,7 +87,7 @@ const businesses: Business[] = [
     description:
       "Family-owned plumbing company serving Denver since 2009. We specialize in drain cleaning, water heater installation...",
     accentColor: "#176F39",
-    profileUrl: "#",
+    profileUrl: "/services/businesses/5",
     reportUrl: "#",
     whatsappUrl: "#",
     reviewUrl: "#",
@@ -102,7 +102,7 @@ const businesses: Business[] = [
     description:
       "Full-service roofing contractor specializing in residential replacements, storm damage repair, and commercial flat ...",
     accentColor: "#741D1D",
-    profileUrl: "#",
+    profileUrl: "/services/businesses/6",
     reportUrl: "#",
     whatsappUrl: "#",
     reviewUrl: "#",
@@ -117,7 +117,7 @@ const businesses: Business[] = [
     description:
       "Licensed master electricians serving the Austin metro area for over 15 years. We handle residential and commercial projects...",
     accentColor: "#4D2077",
-    profileUrl: "#",
+    profileUrl: "/services/businesses/7",
     reportUrl: "#",
     whatsappUrl: "#",
     reviewUrl: "#",
@@ -132,7 +132,7 @@ const businesses: Business[] = [
     description:
       "Family-owned plumbing company serving Denver since 2009. We specialize in drain cleaning, water heater installation...",
     accentColor: "#176F39",
-    profileUrl: "#",
+    profileUrl: "/services/businesses/8",
     reportUrl: "#",
     whatsappUrl: "#",
     reviewUrl: "#",
@@ -147,7 +147,7 @@ const businesses: Business[] = [
     description:
       "Full-service roofing contractor specializing in residential replacements, storm damage repair, and commercial flat ...",
     accentColor: "#741D1D",
-    profileUrl: "#",
+    profileUrl: "/services/businesses/9",
     reportUrl: "#",
     whatsappUrl: "#",
     reviewUrl: "#",
@@ -228,6 +228,7 @@ const BusinessesContainer = () => {
               <div className="mt-4 grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_34px] gap-1.5 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_40px]">
                 <Link
                   href={business.profileUrl}
+                  aria-label={`View ${business.name} profile`}
                   className="inline-flex h-[36px] items-center justify-center rounded-[5px] bg-[#292E78] px-3 text-[11px] font-bold text-white transition hover:bg-[#1F2464] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292E78] focus-visible:ring-offset-2"
                 >
                   View Profile
