@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import { Eye, EyeOff, Quote } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import AccountCreatedSuccessfulModal from "./account-created-successful-modal";
+import Image from "next/image";
 
 const businessCategories = [
   "Plumbing",
@@ -48,8 +49,8 @@ type TextFieldConfig = {
     | "ownerName"
     | "username"
     | "personalEmail"
-    | "sidequoteEmail"
-    | "websiteUrl";
+    | "businessEmail"
+    | "businessWebsiteUrl";
   label: string;
   placeholder: string;
   type?: "text" | "email" | "url";
@@ -78,13 +79,13 @@ const textFields: TextFieldConfig[] = [
     type: "email",
   },
   {
-    name: "sidequoteEmail",
-    label: "Sidequote Email Address",
-    placeholder: "Your Sidequote email",
+    name: "businessEmail",
+    label: "Business Email Address*",
+    placeholder: "contact@mybusiness.com",
     type: "email",
   },
   {
-    name: "websiteUrl",
+    name: "businessWebsiteUrl",
     label: "Business Website URL*",
     placeholder: "https://mybusiness.com",
     type: "url",
@@ -110,14 +111,12 @@ const formSchema = z
     ownerName: z.string().min(1, "Owner name is required."),
     username: z.string().min(1, "User name is required."),
     personalEmail: z.string().email("Please enter a valid email address."),
-    sidequoteEmail: z
+    businessEmail: z
       .string()
-      .email("Please enter a valid Sidequote email address.")
-      .optional()
-      .or(z.literal("")),
-    websiteUrl: z.string().url("Please enter a valid website URL."),
-    aboutBusiness: z.string().min(10, "Please describe your business."),
-    majorScope: z.string().min(5, "Please add your major scope of services."),
+      .email("Please enter a valid business email address."),
+    businessWebsiteUrl: z.string().url("Please enter a valid website URL."),
+    address: z.string().min(1, "Address is required."),
+    serviceArea: z.string().min(1, "Service area is required."),
     category: z.string().min(1, "Category is required."),
     state: z.string().min(1, "State is required."),
     city: z.string().min(1, "City is required."),
@@ -137,6 +136,32 @@ const formSchema = z
 type FormValues = z.infer<typeof formSchema>;
 type LocationFieldName = (typeof locationFields)[number]["name"];
 
+type RegisterBusinessOwnerResponse = {
+  statusCode: number;
+  success: boolean;
+  message: string;
+  data: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    username: string;
+    role: string;
+    businessName: string;
+    businessEmail: string;
+    businessWebsiteUrl: string;
+    serviceArea: string;
+    category: string;
+    city: string;
+    state: string;
+    address: string;
+    status: string;
+    agreementAccepted: boolean;
+    createdAt: string;
+    updatedAt: string;
+  };
+};
+
 const AddYourBusinessContainer = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -150,10 +175,10 @@ const AddYourBusinessContainer = () => {
       ownerName: "",
       username: "",
       personalEmail: "",
-      sidequoteEmail: "",
-      websiteUrl: "",
-      aboutBusiness: "",
-      majorScope: "",
+      businessEmail: "",
+      businessWebsiteUrl: "",
+      address: "",
+      serviceArea: "",
       category: "",
       state: "",
       city: "",
@@ -163,12 +188,16 @@ const AddYourBusinessContainer = () => {
     },
   });
 
-  const { mutate, isPending } = useMutation({
+  const { mutate, isPending } = useMutation<
+    RegisterBusinessOwnerResponse,
+    Error,
+    FormValues
+  >({
     mutationKey: ["register-business"],
     mutationFn: async (values: FormValues) => {
       const apiUrl =
         process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api/v1";
-      const res = await fetch(`${apiUrl}/auth/register/business`, {
+      const res = await fetch(`${apiUrl}/auth/register/business-owner`, {
         method: "POST",
         headers: {
           accept: "*/*",
@@ -176,7 +205,7 @@ const AddYourBusinessContainer = () => {
         },
         body: JSON.stringify(values),
       });
-      const data = await res.json();
+      const data = (await res.json()) as RegisterBusinessOwnerResponse;
 
       if (!res.ok || !data?.success) {
         throw new Error(data?.message || "Business registration failed");
@@ -204,21 +233,29 @@ const AddYourBusinessContainer = () => {
   };
 
   const inputClassName =
-    "h-10 rounded-[6px] border border-[#EDF0F5] bg-white px-4 text-[13px] font-medium text-[#292D73] shadow-[0_3px_10px_rgba(0,0,0,0.08)] placeholder:text-[#B7B7B7] focus-visible:ring-1 focus-visible:ring-[#292D73]";
-  const labelClassName = "text-[13px] font-medium text-[#667481]";
-  const messageClassName = "text-[11px] text-red-500";
+    "h-10 rounded-[8px] border border-[#F5F3FA] bg-white px-4 text-sm font-medium text-primary shadow-[2px_4px_5px_0px_#0000000A] placeholder:text-[#BCBCBC] focus-visible:ring-1 focus-visible:ring-[#292D73]";
+  const labelClassName = "text-sm md:text-base font-normal leading-normal text-[#667481]";
+  const messageClassName = "text-xs font-normal leading-normal text-red-500";
 
   return (
-    <section className="min-h-screen bg-gradient-to-br from-[#292D73] via-[#7DBBD3] to-[#DFF0EE] px-4 py-10 sm:px-6 lg:px-8">
+    <section className="min-h-screen bg-[linear-gradient(180deg,_#292D73_0%,_#91C7D9_50%,_#CBE4E3_100%),_linear-gradient(0deg,_rgba(0,0,0,0.2),_rgba(0,0,0,0.2))] px-2 py-10 md:px-4 lg:px-6">
       <div className="container">
         <div className="mx-auto w-full max-w-[1320px] rounded-[12px] bg-white px-5 py-8 shadow-[0_16px_30px_rgba(17,24,39,0.20)] sm:px-8 lg:px-10">
           <div className="text-center">
-            <div className="mx-auto flex h-[76px] w-[76px] items-center justify-center rounded-full bg-[#0987D9] text-white">
-              <Quote className="h-10 w-10 fill-white" />
-            </div>
-            <h1 className="mt-4 text-[32px] font-extrabold leading-tight text-[#292D73] sm:text-[40px]">
+            <div className="flex items-center justify-center mb-4">
+          <Link href="/">
+            <Image
+              src="/assets/images/logo.png"
+              alt="Logo"
+              width={100}
+              height={100}
+              className="w-[90px] h-[90px]"
+            />
+          </Link>
+        </div>
+            <h2 className="mt-4 text-2xl md:text-3xl lg:text-4xl xl:text-[40px] font-bold leading-normal text-primary">
               List Your Business
-            </h1>
+            </h2>
           </div>
 
           <Form {...form}>
@@ -255,15 +292,15 @@ const AddYourBusinessContainer = () => {
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 <FormField
                   control={form.control}
-                  name="aboutBusiness"
+                  name="address"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className={labelClassName}>
-                        About Your business*
+                        Address*
                       </FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="Type here..."
+                          placeholder="221B Baker Street"
                           className="min-h-[120px] rounded-[6px] border border-[#EDF0F5] bg-white px-4 py-4 text-[13px] font-medium text-[#292D73] shadow-[0_3px_10px_rgba(0,0,0,0.08)] placeholder:text-[#B7B7B7] focus-visible:ring-1 focus-visible:ring-[#292D73]"
                           {...field}
                         />
@@ -275,15 +312,15 @@ const AddYourBusinessContainer = () => {
 
                 <FormField
                   control={form.control}
-                  name="majorScope"
+                  name="serviceArea"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className={labelClassName}>
-                        Major scope of services*
+                        Service Area*
                       </FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="Type here..."
+                          placeholder="15 miles around New York"
                           className="min-h-[120px] rounded-[6px] border border-[#EDF0F5] bg-white px-4 py-4 text-[13px] font-medium text-[#292D73] shadow-[0_3px_10px_rgba(0,0,0,0.08)] placeholder:text-[#B7B7B7] focus-visible:ring-1 focus-visible:ring-[#292D73]"
                           {...field}
                         />
@@ -305,7 +342,7 @@ const AddYourBusinessContainer = () => {
                       </FormLabel>
                       <Select
                         onValueChange={field.onChange}
-                        defaultValue={field.value}
+                        value={field.value}
                       >
                         <FormControl>
                           <SelectTrigger className={inputClassName}>
@@ -437,12 +474,12 @@ const AddYourBusinessContainer = () => {
                       </FormControl>
                       <Label
                         htmlFor="agreementAccepted"
-                        className="text-[13px] font-medium leading-[1.3] text-[#667481]"
+                        className="text-sm xl:text-base font-medium leading-[1.3] text-[#667481`]"
                       >
                         I agree to the{" "}
                         <Link
                           href="/terms-and-conditions"
-                          className="font-extrabold text-[#292D73]"
+                          className="font-semibold text-primary"
                         >
                           Terms and Conditions
                         </Link>
@@ -455,15 +492,15 @@ const AddYourBusinessContainer = () => {
 
               <Button
                 disabled={isPending}
-                className="h-12 w-full rounded-[6px] bg-[#292D73] text-[14px] font-extrabold text-white transition hover:bg-[#20255F]"
+                className="h-12 w-full rounded-[8px] bg-primary text-[14px] font-semibold text-white transition hover:bg-[#20255F]"
                 type="submit"
               >
                 {isPending ? "Creating account..." : "Create Account"}
               </Button>
 
-              <p className="text-center text-[14px] font-medium text-[#1A1A2E]">
+              <p className="text-center text-sm xl:text-base leading-normal font-medium text-[#1A1A2E]">
                 Already have an account?{" "}
-                <Link href="/login" className="font-extrabold text-[#292D73]">
+                <Link href="/login" className="font-extrabold text-primary">
                   Log In
                 </Link>
               </p>

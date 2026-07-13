@@ -109,8 +109,8 @@ const SignupForm = () => {
     "flex items-center gap-1 text-base font-semibold leading-[120%] text-[#4365D0]";
 
   return (
-    <div className="w-full flex items-center justify-center px-4">
-      <div className="w-full md:w-[647px] p-3 md:p-7 lg:p-8 rounded-[16px] bg-white shadow-[0px_5px_10px_0px_#00000029]">
+    <div className="w-full flex items-center justify-center p-4">
+      <div className="w-full md:w-[680px] p-3 md:p-7 lg:p-8 rounded-[16px] bg-white shadow-[0px_5px_10px_0px_#00000029]">
         <div className="flex items-center justify-center mb-2 md:mb-4">
           <Link href="/">
             <Image
@@ -173,7 +173,7 @@ const SignupForm = () => {
                 name="username"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className={labelClassName}>User Name</FormLabel>
+                    <FormLabel className={labelClassName}>User Name*</FormLabel>
                     <FormControl>
                       <Input
                         className={inputClassName}
@@ -192,12 +192,12 @@ const SignupForm = () => {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className={labelClassName}>Email Address</FormLabel>
+                  <FormLabel className={labelClassName}>Personal Email Address*</FormLabel>
                   <FormControl>
                     <Input
                       type="email"
                       className={inputClassName}
-                      placeholder="Sidequote your email"
+                      placeholder="Enter your email address"
                       {...field}
                     />
                   </FormControl>
@@ -212,7 +212,7 @@ const SignupForm = () => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className={labelClassName}>
-                    Contact number ( opt)
+                    Phone number*
                   </FormLabel>
                   <FormControl>
                     <Input
@@ -320,7 +320,7 @@ const SignupForm = () => {
             />
             <Button
               disabled={isPending}
-              className="text-base font-semibold text-white leading-[120%] rounded-[8px] w-full h-[48px] bg-primary"
+              className="text-base font-semibold text-white leading-[120%] rounded-[8px] w-full h-11 lg:h-[48px] bg-primary"
               type="submit"
             >
               {isPending ? "Signing up..." : "Sign up"}
