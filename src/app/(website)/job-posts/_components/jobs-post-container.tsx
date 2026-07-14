@@ -67,7 +67,7 @@ const jobPosts: JobPost[] = [
 
 const JobPostsContainer = () => {
   return (
-    <section className="bg-[#F9FAFB] px-4 py-10 sm:px-6 md:py-14 lg:px-8 lg:py-16">
+    <section className="bg-[#F9FAFB] px-2 md:px-0 py-10 md:py-14 lg:px-8 lg:py-16">
       <div className="container max-w-[1110px]">
         <div className="space-y-5 sm:space-y-6">
           {jobPosts.map((post) => (
@@ -77,7 +77,7 @@ const JobPostsContainer = () => {
             >
               <div className="px-4 pb-4 pt-4 sm:px-5 sm:pb-5 lg:px-6">
                 <div className="flex items-center gap-2.5">
-                  <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full border-2 border-white shadow-[0_3px_10px_rgba(41,45,115,0.22)] sm:h-12 sm:w-12">
+                  <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full  shadow-[0_3px_10px_rgba(41,45,115,0.22)] sm:h-12 sm:w-12">
                     <Image
                       src={post.author.avatar}
                       alt={`${post.author.name} avatar`}
@@ -88,10 +88,10 @@ const JobPostsContainer = () => {
                   </div>
 
                   <div className="min-w-0">
-                    <h2 className="truncate text-[14px] font-extrabold leading-tight text-[#292D73] sm:text-[15px]">
+                    <h2 className="truncate text-sm md:text-base font-bold leading-normal text-primary ">
                       {post.author.name}
                     </h2>
-                    <p className="truncate text-[10px] font-medium leading-tight text-[#667085] sm:text-[11px]">
+                    <p className="truncate text-xs font-normal leading-normal text-[#667481] sm:text-[11px]">
                       {post.author.email}
                     </p>
                   </div>
@@ -99,16 +99,16 @@ const JobPostsContainer = () => {
 
                 <div className="my-4 h-px bg-[#86D6E4]" />
 
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] font-medium text-[#5C6575] sm:text-[12px]">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs md:text-sm font-normal text-[#667481]">
                   <p>
                     Category :{" "}
-                    <span className="font-extrabold text-[#292D73]">
+                    <span className="font-normal leading-normal text-xs md:text-sm text-primary">
                       {post.category}
                     </span>
                   </p>
                   <p>
                     Zip code :{" "}
-                    <span className="font-extrabold text-[#292D73]">
+                    <span className="font-normal leading-normal text-xs md:text-sm text-primary">
                       {post.zipCode}
                     </span>
                   </p>
@@ -118,20 +118,20 @@ const JobPostsContainer = () => {
                   {post.title}
                 </h3>
 
-                <p className="mt-3 max-w-[980px] text-[11px] font-medium leading-relaxed text-[#2F3746] sm:text-[12px]">
+                <p className="mt-3 max-w-[980px] text-xs md:text-sm font-medium leading-normal text-[#434343] sm:text-[12px]">
                   {post.description}
                 </p>
 
-                <p className="mt-4 text-[11px] font-medium text-[#2F3746] sm:text-[12px]">
+                <p className="mt-3 max-w-[980px] text-xs md:text-sm font-medium leading-normal text-[#434343] sm:text-[12px]">
                   {post.closingNote}
                 </p>
 
                 <div className="mt-5 flex justify-start sm:justify-end">
                   <Link
                     href={post.contactHref}
-                    className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-[5px] bg-[#292D73] px-4 text-[11px] font-extrabold text-white shadow-[0_5px_12px_rgba(41,45,115,0.22)] transition hover:bg-[#1F2464] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2 sm:w-auto sm:min-w-[198px]"
+                    className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-[5px] bg-primary px-4 text-xs md:text-sm font-extrabold text-white shadow-[0_5px_12px_rgba(41,45,115,0.22)] transition hover:bg-[#1F2464] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2 sm:w-auto sm:min-w-[198px]"
                   >
-                    <Mail className="h-3.5 w-3.5" />
+                    <Mail className="h-5 w-5" />
                     Contact through email
                   </Link>
                 </div>

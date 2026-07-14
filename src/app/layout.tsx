@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import AppProvider from "@/providers/app-provider";
 import { Toaster } from "sonner";
-// import { ChatBot } from "@/components/chatbot/chat-bot";
 
-const inter = Inter({
-  variable: "--font-inter",
+import { Poppins } from "next/font/google";
+
+const propinse = Poppins({
+  variable: "--font-poppins",
   weight: ["200", "300", "400", "500", "600", "700", "800"],
   display: "swap",
   subsets: ["latin"],
@@ -24,10 +24,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} antialiased`}>
+      <body className={`${propinse.className} antialiased`}>
         <AppProvider>{children}</AppProvider>
         <Toaster />
-        {/* <ChatBot/> */}
       </body>
     </html>
   );
