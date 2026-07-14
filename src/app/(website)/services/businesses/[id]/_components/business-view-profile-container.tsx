@@ -37,7 +37,11 @@ const renderStars = (rating: number) =>
     />
   ));
 
-const ContactCard = () => (
+const ContactCard = ({
+  onOpenQuoteModal,
+}: {
+  onOpenQuoteModal: () => void;
+}) => (
   <aside className="rounded-[8px] border border-[#D9DEE7] bg-white px-4 py-5 shadow-[0_1px_2px_rgba(17,24,39,0.04)] lg:sticky lg:top-6">
     <h2 className="text-center text-[12px] font-extrabold text-[#111827]">
       Contact {businessProfile.name}
@@ -74,6 +78,22 @@ const ContactCard = () => (
       >
         Report
       </Link>
+        <div className="flex flex-wrap justify-between items-center gap-2">
+              <Link
+                href={businessProfile.saveUrl}
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-[6px] border border-[#315CFF] bg-white px-5 text-[13px] font-semibold text-[#315CFF] transition hover:bg-[#F2F5FF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#315CFF]"
+              >
+                <Bookmark className="h-4 w-4" />
+                Save
+              </Link>
+              <button
+                type="button"
+                onClick={onOpenQuoteModal}
+                className="inline-flex h-10 items-center justify-center rounded-[6px] bg-[#292D73] px-6 text-[13px] font-extrabold text-white transition hover:bg-[#20255F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2"
+              >
+                Get Quote
+              </button>
+            </div>
     </div>
 
     <div className="mt-6 h-px bg-[#E5E7EB]" />
@@ -126,7 +146,7 @@ const BusinessViewProfileContainer = () => {
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
+            {/* <div className="flex flex-wrap items-center gap-2">
               <Link
                 href={businessProfile.saveUrl}
                 className="inline-flex h-10 items-center justify-center gap-2 rounded-[6px] border border-[#315CFF] bg-white px-5 text-[13px] font-semibold text-[#315CFF] transition hover:bg-[#F2F5FF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#315CFF]"
@@ -141,7 +161,7 @@ const BusinessViewProfileContainer = () => {
               >
                 Get Quote
               </button>
-            </div>
+            </div> */}
           </div>
 
           <nav className="mt-6 flex gap-7 overflow-x-auto border-t border-[#E5E7EB] text-[13px] font-medium text-[#475467]">
@@ -171,7 +191,7 @@ const BusinessViewProfileContainer = () => {
       <section className="container max-w-[1240px] py-10 sm:py-12 lg:py-14">
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-5">
           <div>{activeContent}</div>
-          <ContactCard />
+          <ContactCard onOpenQuoteModal={() => setIsQuoteModalOpen(true)} />
         </div>
       </section>
       </main>

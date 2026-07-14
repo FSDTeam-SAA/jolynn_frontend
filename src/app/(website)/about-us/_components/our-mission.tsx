@@ -6,11 +6,11 @@ const OurMission = () => {
       <div className="container">
         <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)] lg:gap-20 xl:gap-28">
           <div className="mx-auto max-w-[520px] text-center lg:mx-0 lg:max-w-[570px] lg:text-left">
-            <h2 className="text-[32px] font-extrabold leading-tight text-[#292D73] sm:text-[38px] lg:text-[44px]">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-normal text-primary ">
               Our Mission
             </h2>
 
-            <div className="mt-5 space-y-4 text-[13px] font-medium leading-[1.45] text-[#6B7280] sm:text-[14px] lg:max-w-[520px]">
+            <div className="mt-5 space-y-4 text-sm md:text-base font-medium leading-[1.45] text-[#667481] lg:max-w-[520px]">
               <p>
                 Our mission is to connect homeowners with trusted, skilled
                 professionals, making home services simple, reliable, and

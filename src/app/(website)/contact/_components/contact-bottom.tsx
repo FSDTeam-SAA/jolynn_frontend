@@ -2,7 +2,7 @@ import { Mail } from "lucide-react";
 import Link from "next/link";
 
 const contactBottomContent = {
-  message: "Thankyou for contacting us, we will reach out within 24 hours",
+  message: "Thank you for contacting us, we will reach out within 24 hours",
   email: "hello@sidequote.com",
   note: "We typically respond within 24 hours",
 };
@@ -16,18 +16,18 @@ const ContactBottom = () => {
             <Mail className="h-7 w-7" />
           </div>
 
-          <h2 className="mt-6 max-w-[430px] text-[18px] font-extrabold leading-[1.25] text-[#343434] sm:text-[20px]">
+          <h2 className="mt-4 text-base md:text-lg font-bold leading-normal text-[#282828]">
             {contactBottomContent.message}
           </h2>
 
           <Link
             href={`mailto:${contactBottomContent.email}`}
-            className="mt-4 text-[13px] font-medium text-[#292D73] transition hover:text-[#1F2464] hover:underline"
+            className="mt-3 text-xs md:text-sm leading-normal font-medium text-[#292D73] transition hover:text-[#1F2464] hover:underline"
           >
             {contactBottomContent.email}
           </Link>
 
-          <p className="mt-5 text-[11px] font-medium text-[#8A8F99]">
+          <p className="mt-3 text-xs leading-normal font-medium text-[#616161]">
             {contactBottomContent.note}
           </p>
         </div>

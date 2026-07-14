@@ -31,7 +31,7 @@ const contactFields = [
     type: "email",
   },
   {
-    name: "phoneNumber",
+    name: "phone",
     placeholder: "Phone Number",
     type: "tel",
   },
@@ -47,7 +47,7 @@ const defaultFormValues: ContactFormValues = {
   firstName: "",
   lastName: "",
   email: "",
-  phoneNumber: "",
+  phone: "",
   message: "",
 };
 
@@ -121,10 +121,10 @@ const ContactInformation = () => {
 
       <div className="container relative z-10">
         <div className="mx-auto max-w-[760px] text-center text-white">
-          <h1 className="text-[34px] font-extrabold leading-tight sm:text-[42px] lg:text-[50px]">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-normal text-white">
             {contactContent.title}
           </h1>
-          <p className="mt-4 text-[13px] font-medium sm:text-[15px]">
+          <p className="mt-3 text-xs md:text-sm xl:text-base font-normal leading-normal">
             {contactContent.description}
           </p>
         </div>
@@ -133,7 +133,7 @@ const ContactInformation = () => {
           onSubmit={handleSubmit}
           className="mx-auto mt-8 w-full max-w-[735px] rounded-[8px] bg-white px-4 py-5 shadow-[0_14px_34px_rgba(0,0,0,0.24)] sm:px-5 md:mt-9"
         >
-          <h2 className="text-center text-[15px] font-semibold text-[#111827]">
+          <h2 className="text-center text-sm md:text-base leading-normal font-medium text-[#181919]">
             {contactContent.formTitle}
           </h2>
 
@@ -162,7 +162,7 @@ const ContactInformation = () => {
           <button
             type="submit"
             disabled={isPending}
-            className="mx-auto mt-7 flex h-11 w-full max-w-[260px] items-center justify-center rounded-[5px] bg-[#292D73] text-[12px] font-extrabold text-white transition hover:bg-[#20255F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
+            className="mx-auto mt-5 flex h-11 w-full max-w-[260px] items-center justify-center rounded-[5px] bg-primary text-sm lg:text-base leading-normal font-semibold text-white transition hover:bg-[#20255F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {isPending ? "Submitting..." : contactContent.submitLabel}
           </button>

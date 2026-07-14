@@ -15,7 +15,7 @@ const HeroSection = ({
   imageAlt,
 }: HeroSectionProps) => {
   return (
-    <div className="relative flex min-h-[420px] items-center justify-center overflow-hidden sm:min-h-[500px] lg:min-h-[575px]">
+    <div className="relative flex min-h-[480px] items-center justify-center overflow-hidden sm:min-h-[600px] lg:min-h-[831px]">
       <Image
         src={image}
         alt={imageAlt || title}
@@ -27,7 +27,7 @@ const HeroSection = ({
       <div className="absolute inset-0 bg-black/40" />
 
       <div className="container relative z-10 text-center text-white">
-        <h1 className="text-center text-3xl font-bold leading-[150%] text-white md:text-4xl lg:text-5xl">
+        <h1 className="text-center text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-[150%] text-white">
           {title}
         </h1>
         {desc ? (
