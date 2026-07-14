@@ -192,7 +192,7 @@ const SignupForm = () => {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className={labelClassName}>Personal Email Address*</FormLabel>
+                  <FormLabel className={labelClassName}>Email Address*</FormLabel>
                   <FormControl>
                     <Input
                       type="email"
@@ -212,7 +212,7 @@ const SignupForm = () => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className={labelClassName}>
-                    Phone number*
+                    Phone number ( Opt )
                   </FormLabel>
                   <FormControl>
                     <Input

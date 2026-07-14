@@ -31,7 +31,7 @@ const HeroSection = ({
           {title}
         </h1>
         {desc ? (
-          <p className="mx-auto max-w-2xl pt-2 text-sm font-normal leading-[140%] text-white md:text-base lg:text-lg">
+          <p className="mx-auto max-w-5xl pt-2 text-sm font-normal leading-[140%] text-white md:text-base lg:text-lg">
             {desc}
           </p>
         ) : null}

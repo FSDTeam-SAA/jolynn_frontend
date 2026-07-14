@@ -1,6 +1,5 @@
 import {
   ArrowRight,
-  BriefcaseBusiness,
   ChartNoAxesCombined,
   CloudUpload,
   MailCheck,
@@ -131,23 +130,33 @@ const GrowYourBusiness = () => {
               })}
             </div>
 
-            <div className="mt-5 grid gap-3 md:text-gap-5 lg:gap-8 md:grid-cols-2">
+            <div className="mt-5 flex items-center justify-center">
               <Link
-                href="/contact"
+                href="/add-your-business"
+                className="inline-flex h-12 items-center justify-center gap-3 rounded-[8px] bg-white px-4 text-sm md:text-base font-semibold leading-[150%] text-primary transition hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              >
+                Add your business to Sidequote Directory
+                <ArrowRight className="h-5 w-5" />
+              </Link>
+            </div>
+
+            {/* <div className="mt-5 grid gap-3 md:text-gap-5 lg:gap-8 md:grid-cols-2">
+              <Link
+                href="/add-your-business"
                 className="inline-flex h-12 items-center justify-center gap-3 rounded-[8px] bg-white px-4 text-sm md:text-base font-semibold leading-[150%] text-primary transition hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
               >
                 Add your business to Sidequote Directory
                 <ArrowRight className="h-5 w-5" />
               </Link>
               <Link
-                href="/contact"
+                href="/add-your-business"
                 className="inline-flex h-12 items-center justify-center gap-3 rounded-[8px] border border-white px-4 text-sm md:text-base font-semibold leading-[150%] text-white transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
               >
                 <BriefcaseBusiness className="h-5 w-5 sm:hidden" />
                 Grow your business with Sidequote
                 <ArrowRight className="h-5 w-5" />
               </Link>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

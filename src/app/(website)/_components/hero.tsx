@@ -1,17 +1,18 @@
 "use client";
 
-import { MapPin, Search } from "lucide-react";
+import { ArrowRight, BriefcaseBusiness, ChevronLeft, ChevronRight, MapPin, Search } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
 
 type HeroSlide = {
   id: number;
-  eyebrow: string;
   titleStart: string;
-  titleAccent: string;
-  titleEnd: string;
+  titleAccentOne: string;
+  titleMiddle: string;
+  titleAccentTwo: string;
   description: string;
   image: string;
   imageAlt: string;
@@ -20,10 +21,10 @@ type HeroSlide = {
 const heroSlides: HeroSlide[] = [
   {
     id: 1,
-    eyebrow: "Connect with verified home experts",
     titleStart: "Find",
-    titleAccent: "Trusted Local",
-    titleEnd: "Businesses Near You",
+    titleAccentOne: "Trusted",
+    titleMiddle: "Local Businesses",
+    titleAccentTwo: "Near You",
     description:
       "At Contact Connect, we specialize in comprehensive home renovations, ensuring every project meets your unique vision and standards.",
     image: "/assets/images/hero.png",
@@ -31,24 +32,24 @@ const heroSlides: HeroSlide[] = [
   },
   {
     id: 2,
-    eyebrow: "Compare quotes before you book",
     titleStart: "Hire",
-    titleAccent: "Skilled Pros",
-    titleEnd: "For Every Home Job",
+    titleAccentOne: "Skilled",
+    titleMiddle: "Home Experts",
+    titleAccentTwo: "With Ease",
     description:
-      "Explore electricians, plumbers, roofers, remodelers, and more from one clean place built for fast decisions.",
+      "Compare trusted local professionals, check the right services, and connect with the team that fits your project needs.",
     image:
       "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=1200&q=85",
     imageAlt: "Local business professionals reviewing a project",
   },
   {
     id: 3,
-    eyebrow: "Renovation help, made simple",
     titleStart: "Book",
-    titleAccent: "Reliable Service",
-    titleEnd: "Without The Guesswork",
+    titleAccentOne: "Reliable",
+    titleMiddle: "Local Services",
+    titleAccentTwo: "Faster",
     description:
-      "Search by service and location, check trusted profiles, then connect with the right team for your next project.",
+      "Search by service and location, discover nearby businesses, and start your next home project without the guesswork.",
     image:
       "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=1200&q=85",
     imageAlt: "Home renovation tools and construction planning",
@@ -66,17 +67,17 @@ const Hero = () => {
     setActiveIndex(index);
   };
 
-  //   const goToPreviousSlide = () => {
-  //     setActiveIndex((currentIndex) =>
-  //       currentIndex === 0 ? heroSlides.length - 1 : currentIndex - 1
-  //     );
-  //   };
+  const goToPreviousSlide = () => {
+    setActiveIndex((currentIndex) =>
+      currentIndex === 0 ? heroSlides.length - 1 : currentIndex - 1,
+    );
+  };
 
-  //   const goToNextSlide = () => {
-  //     setActiveIndex((currentIndex) =>
-  //       currentIndex === heroSlides.length - 1 ? 0 : currentIndex + 1
-  //     );
-  //   };
+  const goToNextSlide = () => {
+    setActiveIndex((currentIndex) =>
+      currentIndex === heroSlides.length - 1 ? 0 : currentIndex + 1,
+    );
+  };
 
   useEffect(() => {
     const slideTimer = window.setInterval(() => {
@@ -100,30 +101,35 @@ const Hero = () => {
 
   return (
     <section className="relative overflow-hidden bg-white px-4 py-8 sm:px-6 md:py-10 lg:py-14 lg:px-8 mt-20">
-      <div className="container relative">
+      <div className="container">
         <div className="grid grid-cols-1 md:grid-cols-2 min-h-[330px] items-center gap-8  xl:min-h-[462px]">
           <div className="md:col-span-1">
-            {/* <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.16em] text-[#5B66B7] sm:text-xs">
-              {activeSlide.eyebrow}
-            </p>
+            <div key={activeSlide.id} className="transition duration-500">
+              <h1 className="text-primary font-bold leading-[120%] text-3xl md:text-4xl lg:text-5xl xl:text-6xl">
+                {activeSlide.titleStart}{" "}
+                <span className="text-[#4365D0] font-medium">
+                  {activeSlide.titleAccentOne}
+                </span>{" "}
+                {activeSlide.titleMiddle}{" "}
+                <span className="text-[#4365D0] font-medium">
+                  {activeSlide.titleAccentTwo}
+                </span>
+              </h1>
+              <p className="text-sm md:text-base xl:text-lg font-normal text-[#444444] leading-[120%] pt-3 md:pt-4">
+                {activeSlide.description}
+              </p>
+            </div>
 
-            <h1 className="text-[34px] font-extrabold leading-[1.05] text-[#292E78] sm:text-[44px] lg:text-[47px] xl:text-[52px]">
-              {activeSlide.titleStart}{" "}
-              <span className="italic text-[#4668E8]">
-                {activeSlide.titleAccent}
-              </span>{" "}
-              {activeSlide.titleEnd}
-            </h1>
-
-            <p className="mx-auto mt-4 max-w-[560px] text-[13px] font-medium leading-[1.45] text-[#515E6E] sm:text-sm lg:mx-0">
-              {activeSlide.description}
-            </p> */}
-
-            <h1 className="text-primary font-bold leading-[120%] text-3xl md:text-4xl lg:text-5xl xl:text-6xl">
-              Find <span className="text-[#4365D0] font-medium">Trusted</span> Local
-              Businesses <span className="text-[#4365D0] font-medium">Near You</span>
-            </h1>
-            <p className="text-sm md:text-base xl:text-lg font-normal text-[#444444] leading-[120%] pt-3 md:pt-4">At Contact Connect, we specialize in comprehensive home renovations, ensuring every project meets your unique vision and standards.</p>
+            <div className="mt-4 md:mt-5">
+               <Link
+                href="/add-your-business"
+                className="bg-primary inline-flex h-12 items-center justify-center gap-3 rounded-[8px] border border-white px-4 text-sm md:text-base font-semibold leading-[150%] text-white transition hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              >
+                <BriefcaseBusiness className="h-5 w-5 sm:hidden" />
+                Grow your business with Sidequote
+                <ArrowRight className="h-5 w-5" />
+              </Link>
+            </div>
 
             <form
               onSubmit={handleSearch}
@@ -180,24 +186,6 @@ const Hero = () => {
           </div>
         </div>
 
-        {/* <button
-          type="button"
-          onClick={goToPreviousSlide}
-          className="absolute left-2 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white text-[#292E78] shadow-[0_8px_22px_rgba(32,42,70,0.16)] transition hover:bg-[#292E78] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292E78] lg:flex"
-          aria-label="Previous banner"
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </button>
-
-        <button
-          type="button"
-          onClick={goToNextSlide}
-          className="absolute right-2 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white text-[#292E78] shadow-[0_8px_22px_rgba(32,42,70,0.16)] transition hover:bg-[#292E78] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292E78] lg:flex"
-          aria-label="Next banner"
-        >
-          <ChevronRight className="h-5 w-5" />
-        </button> */}
-
         <div className="mt-7 flex justify-center gap-2">
           {heroSlides?.map((slide, index) => (
             <button
@@ -215,6 +203,24 @@ const Hero = () => {
           ))}
         </div>
       </div>
+
+      <button
+        type="button"
+        onClick={goToPreviousSlide}
+        className="absolute left-2 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white text-[#292E78] shadow-[0_8px_22px_rgba(32,42,70,0.16)] transition hover:bg-[#292E78] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292E78] sm:left-4 lg:flex xl:left-8"
+        aria-label="Previous banner"
+      >
+        <ChevronLeft className="h-5 w-5" />
+      </button>
+
+      <button
+        type="button"
+        onClick={goToNextSlide}
+        className="absolute right-2 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white text-[#292E78] shadow-[0_8px_22px_rgba(32,42,70,0.16)] transition hover:bg-[#292E78] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292E78] sm:right-4 lg:flex xl:right-8"
+        aria-label="Next banner"
+      >
+        <ChevronRight className="h-5 w-5" />
+      </button>
     </section>
   );
 };

@@ -1,4 +1,4 @@
-import { Clock3, MapPin } from "lucide-react";
+import { MapPin } from "lucide-react";
 import type { BusinessProfile } from "./business-profile-data";
 
 type BusinessOverviewProps = {
@@ -16,7 +16,7 @@ const BusinessOverview = ({ overview }: BusinessOverviewProps) => {
           {overview.about}
         </p>
       </article>
-
+{/* 
       <article className="rounded-[8px] border border-[#E1E7EC] bg-white px-5 py-5 shadow-[0_1px_2px_rgba(17,24,39,0.03)]">
         <h2 className="text-[20px] font-extrabold leading-tight text-[#111827]">
           Business Hours
@@ -25,7 +25,7 @@ const BusinessOverview = ({ overview }: BusinessOverviewProps) => {
           <Clock3 className="mt-0.5 h-4 w-4 shrink-0 text-[#244D7B]" />
           <span>{overview.hours}</span>
         </div>
-      </article>
+      </article> */}
 
       <article className="rounded-[8px] border border-[#E1E7EC] bg-white px-5 py-5 shadow-[0_1px_2px_rgba(17,24,39,0.03)]">
         <h2 className="text-[20px] font-extrabold leading-tight text-[#111827]">
