@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
+import { useServices } from "@/hooks/use-services";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
@@ -31,17 +32,6 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import AccountCreatedSuccessfulModal from "./account-created-successful-modal";
 import Image from "next/image";
-
-const businessCategories = [
-  "Plumbing",
-  "Electricians",
-  "HVAC",
-  "Roofers",
-  "Kitchen",
-  "Fencing",
-  "Flooring",
-  "Painting",
-];
 
 type TextFieldConfig = {
   name:
@@ -163,6 +153,13 @@ type RegisterBusinessOwnerResponse = {
 };
 
 const AddYourBusinessContainer = () => {
+  const {
+    data: servicesData,
+    isPending: servicesPending,
+    isError: servicesError,
+    refetch: refetchServices,
+  } = useServices();
+  const services = servicesData?.data ?? [];
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [successEmail, setSuccessEmail] = useState("");
@@ -343,20 +340,40 @@ const AddYourBusinessContainer = () => {
                       <Select
                         onValueChange={field.onChange}
                         value={field.value}
+                        disabled={servicesPending || servicesError || services.length === 0}
                       >
                         <FormControl>
                           <SelectTrigger className={inputClassName}>
-                            <SelectValue placeholder="Plumbing" />
+                            <SelectValue
+                              placeholder={
+                                servicesPending
+                                  ? "Loading categories..."
+                                  : servicesError
+                                    ? "Categories unavailable"
+                                    : services.length === 0
+                                      ? "No categories available"
+                                      : "Select category"
+                              }
+                            />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {businessCategories.map((category) => (
-                            <SelectItem key={category} value={category}>
-                              {category}
+                          {services.map((service) => (
+                            <SelectItem key={service._id} value={service.title}>
+                              {service.title}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
+                      {servicesError && (
+                        <button
+                          type="button"
+                          onClick={() => refetchServices()}
+                          className="text-xs font-medium text-red-600 hover:underline"
+                        >
+                          Unable to load categories. Try again
+                        </button>
+                      )}
                       <FormMessage className={messageClassName} />
                     </FormItem>
                   )}

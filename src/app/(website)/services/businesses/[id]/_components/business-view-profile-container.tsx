@@ -109,7 +109,7 @@ const BusinessViewProfileContainer = () => {
 
   const activeContent = {
     overview: <BusinessOverview overview={businessProfile.overview} />,
-    services: <BusinessServices services={businessProfile.services} />,
+    services: <BusinessServices />,
     gallery: <BusinessGallery gallery={businessProfile.gallery} />,
     reviews: (
       <BusinessReviews
@@ -198,7 +198,6 @@ const BusinessViewProfileContainer = () => {
       <RequestAQuoteModal
         open={isQuoteModalOpen}
         businessName={businessProfile.name}
-        services={businessProfile.services}
         onClose={() => setIsQuoteModalOpen(false)}
       />
     </div>

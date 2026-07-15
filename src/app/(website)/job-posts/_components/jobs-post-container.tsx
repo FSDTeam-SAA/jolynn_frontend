@@ -68,7 +68,7 @@ const jobPosts: JobPost[] = [
 const JobPostsContainer = () => {
   return (
     <section className="bg-[#F9FAFB] px-2 md:px-0 py-10 md:py-14 lg:px-8 lg:py-16">
-      <div className="container max-w-[1110px]">
+      <div className="container">
         <div className="space-y-5 sm:space-y-6">
           {jobPosts.map((post) => (
             <article

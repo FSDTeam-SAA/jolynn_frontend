@@ -1,12 +1,19 @@
-import React from 'react'
-import BusinessesContainer from './_components/businesses-container'
+import ServicesSearchContainer from "./_components/services-search-container";
 
-const BusinessesPage = () => {
+type BusinessesPageProps = {
+  searchParams?: {
+    service?: string;
+    location?: string;
+  };
+};
+
+const BusinessesPage = ({ searchParams }: BusinessesPageProps) => {
   return (
-    <div>
-      <BusinessesContainer />
-    </div>
-  )
-}
+    <ServicesSearchContainer
+      initialService={searchParams?.service}
+      initialLocation={searchParams?.location}
+    />
+  );
+};
 
-export default BusinessesPage
+export default BusinessesPage;

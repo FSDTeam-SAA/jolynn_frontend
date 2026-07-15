@@ -61,6 +61,7 @@ const Hero = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [service, setService] = useState("");
   const [location, setLocation] = useState("");
+  const [searchError, setSearchError] = useState("");
   const activeSlide = heroSlides[activeIndex];
 
   const goToSlide = (index: number) => {
@@ -92,11 +93,20 @@ const Hero = () => {
   const handleSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    if (!service.trim()) {
+      setSearchError("Please enter the service you need.");
+      return;
+    }
+
     const params = new URLSearchParams();
-    if (service.trim()) params.set("service", service.trim());
+    params.set("service", service.trim());
     if (location.trim()) params.set("location", location.trim());
 
-    router.push(`/services${params.toString() ? `?${params}` : ""}`);
+    setSearchError("");
+
+    router.push(
+      `/services/businesses${params.toString() ? `?${params}` : ""}`,
+    );
   };
 
   return (
@@ -138,10 +148,17 @@ const Hero = () => {
               <label className="flex min-w-0 flex-1 items-center gap-2 border-b border-[#ECEEF5] px-4 py-3 sm:border-b-0 sm:border-r">
                 <Search className="h-5 w-5 shrink-0 text-[#7E7E7ED6]" />
                 <input
-                  type="text"
+                  type="search"
                   value={service}
-                  onChange={(event) => setService(event.target.value)}
-                  placeholder="What service do you need?"
+                  onChange={(event) => {
+                    setService(event.target.value);
+                    if (searchError) setSearchError("");
+                  }}
+                  placeholder={
+                    "What service do you need?"
+                  }
+                  aria-invalid={Boolean(searchError)}
+                  aria-describedby={searchError ? "hero-search-error" : undefined}
                   className="w-full bg-transparent text-[12px] font-medium text-[#292E78] outline-none placeholder:text-[#7E7E7ED6]"
                 />
               </label>
@@ -149,10 +166,11 @@ const Hero = () => {
               <label className="flex min-w-0 flex-1 items-center gap-2 border-b border-[#ECEEF5] px-4 py-3 sm:border-b-0 sm:border-r">
                 <MapPin className="h-5 w-5 shrink-0 text-[#7E7E7ED6]" />
                 <input
-                  type="text"
+                  type="search"
                   value={location}
                   onChange={(event) => setLocation(event.target.value)}
-                  placeholder="City or Zip code"
+                  placeholder="Location"
+                  aria-label="Location"
                   className="w-full bg-transparent text-[12px] font-medium text-[#292E78] outline-none placeholder:text-[#7E7E7ED6]"
                 />
               </label>
@@ -164,6 +182,17 @@ const Hero = () => {
                 Search
               </button>
             </form>
+            {searchError && (
+              <div
+                id="hero-search-error"
+                role="alert"
+                className="mt-2 flex max-w-[520px] items-center gap-2 text-[11px] font-medium text-red-600"
+              >
+                <span>
+                  {searchError}
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="md:col-span-1">

@@ -14,7 +14,6 @@ export type BusinessProfile = {
     hours: string;
     serviceArea: string;
   };
-  services: string[];
   gallery: {
     id: number;
     image: string;
@@ -55,14 +54,6 @@ export const businessProfile: BusinessProfile = {
     hours: "Mon-Fri 7am-6pm · Sat 8am-2pm · Emergency 24/7",
     serviceArea: "Austin, Round Rock, Cedar Park, Georgetown, Pflugerville",
   },
-  services: [
-    "Panel Upgrades",
-    "EV Charging Stations",
-    "Full Rewiring",
-    "Lighting Design",
-    "Code Compliance",
-    "Generator Install",
-  ],
   gallery: [
     {
       id: 1,

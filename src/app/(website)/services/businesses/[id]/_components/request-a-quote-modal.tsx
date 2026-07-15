@@ -1,5 +1,6 @@
 "use client";
 
+import { useServices } from "@/hooks/use-services";
 import { useMutation } from "@tanstack/react-query";
 import { Send, X } from "lucide-react";
 import { FormEvent, useState } from "react";
@@ -66,7 +67,6 @@ const quoteFormContent: {
 type RequestAQuoteModalProps = {
   open: boolean;
   businessName: string;
-  services: string[];
   onClose: () => void;
 };
 
@@ -81,10 +81,16 @@ const defaultFormValues: QuoteFormState = {
 const RequestAQuoteModal = ({
   open,
   businessName,
-  services,
   onClose,
 }: RequestAQuoteModalProps) => {
   const [formValues, setFormValues] = useState(defaultFormValues);
+  const {
+    data: servicesData,
+    isPending: servicesPending,
+    isError: servicesError,
+    refetch: refetchServices,
+  } = useServices();
+  const services = servicesData?.data ?? [];
 
   const { mutate, isPending } = useMutation({
     mutationKey: ["request-business-quote"],
@@ -198,15 +204,33 @@ const RequestAQuoteModal = ({
             <select
               value={formValues.service}
               onChange={(event) => updateField("service", event.target.value)}
+              disabled={servicesPending || servicesError}
               className="mt-2 h-[58px] w-full rounded-[8px] border border-[#D0D5DD] bg-white px-5 text-[16px] font-medium text-[#7A7F8C] outline-none transition focus:border-[#4365D0] focus:ring-2 focus:ring-[#4365D0]/15"
             >
-              <option value="">Select</option>
+              <option value="">
+                {servicesPending
+                  ? "Loading services..."
+                  : servicesError
+                    ? "Services unavailable"
+                    : services.length === 0
+                      ? "No services available"
+                      : "Select"}
+              </option>
               {services.map((service) => (
-                <option key={service} value={service}>
-                  {service}
+                <option key={service._id} value={service.title}>
+                  {service.title}
                 </option>
               ))}
             </select>
+            {servicesError && (
+              <button
+                type="button"
+                onClick={() => refetchServices()}
+                className="mt-2 text-sm font-semibold text-red-600 hover:underline"
+              >
+                Unable to load services. Try again
+              </button>
+            )}
           </label>
 
           <label className="block">

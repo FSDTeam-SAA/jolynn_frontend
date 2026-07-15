@@ -1,6 +1,6 @@
 import React from 'react'
 import ServicesContainer from './_components/services-container'
-import ServicesSearchContainer from './_components/services-search-container'
+import ServicesSearchContainer from './businesses/_components/services-search-container'
 
 type ServicesPageProps = {
   searchParams?: {
