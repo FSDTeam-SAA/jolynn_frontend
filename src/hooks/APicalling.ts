@@ -1,4 +1,4 @@
-import { changePassword, getProfile, updateAvatarInfo, updateProfile } from "@/lib/profileInfo";
+import { changePassword, ChangePasswordPayload, getProfile, updateAvatarInfo, updateProfile, UpdateProfilePayload, UpdateProfileResponse } from "@/lib/profileInfo";
 import { UserResponse } from "@/types/userProfiledata";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -20,11 +20,14 @@ export function useProfileAvatarUpdate(token: string, onSuccessCallback?: () => 
     });
 }
 
-export function useChnagePassword(
-    token: string, onSuccessCallback?: () => void) {
+export function useChangePassword(
+    token: string | undefined, onSuccessCallback?: () => void) {
     return useMutation({
-        mutationFn: (payload: { oldPassword: string; newPassword: string, confirmPassword: string }) =>
-            changePassword(token, payload),
+        mutationKey: ["change-password"],
+        mutationFn: (payload: ChangePasswordPayload) => {
+            if (!token) throw new Error("You must be signed in to change your password");
+            return changePassword(token, payload);
+        },
         onSuccess: (data) => {
             toast.success(data?.message || "Password updated successfully");
             if (onSuccessCallback) onSuccessCallback();
@@ -36,26 +39,29 @@ export function useChnagePassword(
     });
 }
 
-export function useProfileQuery(token: string | undefined, id: string | undefined) {
+export function useProfileQuery(token: string | undefined) {
     return useQuery<UserResponse>({
         queryKey: ["me"],
         queryFn: () => {
             if (!token) throw new Error("Token is missing")
-            return getProfile(token, id)
+            return getProfile(token)
         },
         enabled: !!token,
     })
 }
 
 export function useProfileUpdate(
-    token: string, id: string, onSuccessCallback?: () => void) {
+    token: string | undefined, onSuccessCallback?: (data: UpdateProfileResponse) => void) {
      const queryClient = useQueryClient();
         return useMutation({
-        mutationFn: (payload:{ firstName: string; lastName: string; email: string; phoneNumber: string; address: string;}) =>
-            updateProfile(token, payload, id),
+        mutationKey: ["update-profile"],
+        mutationFn: (payload: UpdateProfilePayload) => {
+            if (!token) throw new Error("You must be signed in to update your profile");
+            return updateProfile(token, payload);
+        },
         onSuccess: (data) => {
-            toast.success(data?.message || "Password updated successfully");
-            if (onSuccessCallback) onSuccessCallback();
+            toast.success(data?.message || "Profile updated successfully");
+            if (onSuccessCallback) onSuccessCallback(data);
             queryClient.invalidateQueries({ queryKey: ["me"] });
         },
         onError: (error: unknown) => {

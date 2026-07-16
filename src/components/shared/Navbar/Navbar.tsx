@@ -1,9 +1,20 @@
 "use client";
 
+import LogoutModal from "@/components/modals/LogoutModal";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useProfileQuery } from "@/hooks/APicalling";
+import { LayoutDashboard, LogOut, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import MobileNavbar from "./MobileNavbar";
 import Image from "next/image";
+import { signOut, useSession } from "next-auth/react";
+import { useState } from "react";
 
 const navItems = [
   { label: "Home", href: "/" },
@@ -16,6 +27,37 @@ const navItems = [
 
 const Navbar = () => {
   const pathname = usePathname();
+  const { data: session, status } = useSession();
+  const [isLogoutOpen, setIsLogoutOpen] = useState(false);
+  const sessionUser = session?.user as
+    | {
+        firstName?: string;
+        lastName?: string;
+        email?: string | null;
+        profileImage?: string;
+        profilePicture?: string;
+        token?: string;
+        accessToken?: string;
+      }
+    | undefined;
+  const { data: profileResponse } = useProfileQuery(
+    sessionUser?.accessToken ?? sessionUser?.token,
+  );
+  const profile = profileResponse?.data;
+  const profileImage =
+    profile?.profilePicture ??
+    sessionUser?.profilePicture ??
+    sessionUser?.profileImage;
+  const displayName =
+    [profile?.firstName ?? sessionUser?.firstName, profile?.lastName ?? sessionUser?.lastName]
+      .filter(Boolean)
+      .join(" ") || sessionUser?.email || "Account";
+  const isAuthenticated = status === "authenticated";
+
+  const confirmLogout = async () => {
+    setIsLogoutOpen(false);
+    await signOut({ callbackUrl: "/" });
+  };
 
   return (
     <div className="mb-20 md:mb-24">
@@ -64,12 +106,32 @@ const Navbar = () => {
         </nav>
 
         <div className="hidden flex-1 items-center justify-end gap-3 lg:flex">
-          <Link
-            href="/login"
-            className="inline-flex h-9 min-w-[76px] items-center justify-center rounded-[5px] border border-[#22245F] px-4 text-[13px] font-semibold text-[#22245F] transition hover:bg-white/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22245F] focus-visible:ring-offset-2 focus-visible:ring-offset-[#E6F2F2]"
-          >
-            Login
-          </Link>
+          {status === "loading" ? (
+            <div className="h-10 w-10 animate-pulse rounded-full bg-white/70" />
+          ) : isAuthenticated ? (
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild>
+                <button type="button" className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border-2 border-[#22245F] bg-white text-[#22245F] outline-none focus-visible:ring-2 focus-visible:ring-[#22245F] focus-visible:ring-offset-2" aria-label={`Open ${displayName} menu`}>
+                  {profileImage ? <Image src={profileImage} alt={displayName} fill sizes="40px" className="object-cover" /> : <User className="h-5 w-5" />}
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="center"
+                side="bottom"
+                sideOffset={8}
+                className="w-44 bg-white p-1.5"
+              >
+                <DropdownMenuItem asChild className="cursor-pointer py-2.5">
+                  <Link href="/account/profile"><LayoutDashboard className="h-4 w-4" />Dashboard</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setIsLogoutOpen(true)} className="cursor-pointer py-2.5 text-red-600 focus:text-red-600">
+                  <LogOut className="h-4 w-4" />Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Link href="/login" className="inline-flex h-9 min-w-[76px] items-center justify-center rounded-[5px] border border-[#22245F] px-4 text-[13px] font-semibold text-[#22245F] transition hover:bg-white/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22245F] focus-visible:ring-offset-2 focus-visible:ring-offset-[#E6F2F2]">Login</Link>
+          )}
           <Link
             href="/add-your-business"
             className="inline-flex h-9 items-center justify-center rounded-[5px] bg-[#22245F] px-5 text-[13px] font-semibold text-white transition hover:bg-[#17194D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22245F] focus-visible:ring-offset-2 focus-visible:ring-offset-[#E6F2F2]"
@@ -79,10 +141,11 @@ const Navbar = () => {
         </div>
 
         <div className="flex justify-end lg:hidden">
-          <MobileNavbar navItems={navItems}/>
+          <MobileNavbar navItems={navItems} isAuthenticated={isAuthenticated} isAuthLoading={status === "loading"} profileImage={profileImage} displayName={displayName} onLogout={() => setIsLogoutOpen(true)} />
         </div>
       </div>
     </header>
+    <LogoutModal isOpen={isLogoutOpen} onClose={() => setIsLogoutOpen(false)} onConfirm={confirmLogout} />
     </div>
   );
 };
