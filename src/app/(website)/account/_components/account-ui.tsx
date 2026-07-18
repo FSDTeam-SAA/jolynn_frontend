@@ -1,5 +1,6 @@
 "use client";
 
+import LogoutModal from "@/components/modals/LogoutModal";
 import { useProfileQuery, useProfileUpdate } from "@/hooks/APicalling";
 import type { SavedBusiness } from "@/hooks/use-saved-businesses";
 import { cn } from "@/lib/utils";
@@ -16,8 +17,8 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
-import type { ChangeEvent, ReactNode } from "react";
+import { signOut, useSession } from "next-auth/react";
+import { useState, type ChangeEvent, type ReactNode } from "react";
 import { toast } from "sonner";
 import {
   accountNavItems,
@@ -63,37 +64,53 @@ export const AccountPageShell = ({
 };
 
 const AccountSidebar = ({ active }: { active: AccountSection }) => {
+  const [isLogoutOpen, setIsLogoutOpen] = useState(false);
+
+  const confirmLogout = async () => {
+    setIsLogoutOpen(false);
+    await signOut({ callbackUrl: "/" });
+  };
+
   return (
-    <aside className="flex gap-2 overflow-x-auto lg:block lg:space-y-5 lg:overflow-visible">
-      {accountNavItems.map((item) => {
-        const Icon = navIcons[item.id];
-        const isActive = active === item.id;
+    <>
+      <aside className="flex gap-2 overflow-x-auto lg:block lg:space-y-5 lg:overflow-visible">
+        {accountNavItems.map((item) => {
+          const Icon = navIcons[item.id];
+          const isActive = active === item.id;
 
-        return (
-          <Link
-            key={item.id}
-            href={item.href}
-            className={cn(
-              "flex h-10 shrink-0 items-center gap-2 rounded-[5px] px-3 text-[12px] font-semibold transition lg:w-full",
-              isActive
-                ? "bg-[#292D73] text-white"
-                : "text-[#667085] hover:bg-[#F2F4F7] hover:text-[#292D73]",
-            )}
-          >
-            <Icon className="h-4 w-4" />
-            {item.label}
-          </Link>
-        );
-      })}
+          return (
+            <Link
+              key={item.id}
+              href={item.href}
+              className={cn(
+                "flex h-10 shrink-0 items-center gap-2 rounded-[5px] px-3 text-[12px] font-semibold transition lg:w-full",
+                isActive
+                  ? "bg-[#292D73] text-white"
+                  : "text-[#667085] hover:bg-[#F2F4F7] hover:text-[#292D73]",
+              )}
+            >
+              <Icon className="h-4 w-4" />
+              {item.label}
+            </Link>
+          );
+        })}
 
-      <Link
-        href="/login"
-        className="flex h-10 shrink-0 items-center gap-2 rounded-[5px] px-3 text-[12px] font-semibold text-[#EF4444] transition hover:bg-red-50 lg:w-full"
-      >
-        <LogOut className="h-4 w-4" />
-        Log Out
-      </Link>
-    </aside>
+        <button
+          type="button"
+          onClick={() => setIsLogoutOpen(true)}
+          className="flex h-10 shrink-0 items-center gap-2 rounded-[5px] px-3 text-[12px] font-semibold text-[#EF4444] transition hover:bg-red-50 lg:w-full"
+        >
+          <LogOut className="h-4 w-4" />
+          Log Out
+        </button>
+      </aside>
+
+      <LogoutModal
+        isOpen={isLogoutOpen}
+        onClose={() => setIsLogoutOpen(false)}
+        onConfirm={confirmLogout}
+      />
+    </>
   );
 };
 
@@ -285,7 +302,7 @@ export const SavedBusinessGrid = ({ businesses }: { businesses: SavedBusiness[] 
               View Profile
             </Link>
             <Link
-              href={`/report?businessOwnerId=${business.businessOwnerId}`}
+              href={`/report?serviceId=${encodeURIComponent(business.service.id)}`}
               className="inline-flex h-[36px] items-center justify-center rounded-[5px] bg-[#A7A7A7] px-3 text-[11px] font-bold text-white transition hover:bg-[#8E8E8E]"
             >
               Report
