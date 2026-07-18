@@ -2,12 +2,12 @@
 
 import { useMutation } from "@tanstack/react-query";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 import { FormEvent, useState } from "react";
 import { toast } from "sonner";
 
 const reportFormContent = {
   title: "Report to Admin",
-  businessName: "(Business Name)",
   description: "Fill out the form below and we will get back to you soon",
   image: "/assets/images/report.jpg",
   imageAlt: "Business newspaper pages",
@@ -20,27 +20,58 @@ const reportFormContent = {
 };
 
 type ReportPayload = {
-  businessName: string;
+  serviceId: string;
   message: string;
 };
 
-const ReportContainer = () => {
+type ReportResponse = {
+  statusCode: number;
+  success: boolean;
+  message: string;
+  data: ReportPayload & {
+    _id: string;
+    userId: string;
+    ownerId: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+};
+
+type ReportContainerProps = {
+  serviceId: string;
+};
+
+const ReportContainer = ({ serviceId }: ReportContainerProps) => {
+  const { data: session, status } = useSession();
+  const sessionUser = session?.user as
+    | { token?: string; accessToken?: string }
+    | undefined;
+  const token = sessionUser?.accessToken ?? sessionUser?.token;
   const [message, setMessage] = useState("");
 
-  const { mutate, isPending } = useMutation({
+  const { mutate, isPending } = useMutation<
+    ReportResponse,
+    Error,
+    ReportPayload
+  >({
     mutationKey: ["submit-business-report"],
     mutationFn: async (payload: ReportPayload) => {
-      const apiUrl =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api/v1";
-      const res = await fetch(`${apiUrl}/reports`, {
+      if (!token) throw new Error("Please sign in to submit a report.");
+      if (!payload.serviceId) throw new Error("A service must be selected.");
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      if (!apiUrl) throw new Error("The report service is not configured.");
+
+      const res = await fetch(`${apiUrl}/report`, {
         method: "POST",
         headers: {
-          accept: "*/*",
+          Accept: "*/*",
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
       });
-      const data = await res.json();
+      const data = (await res.json()) as ReportResponse;
 
       if (!res.ok || !data?.success) {
         throw new Error(data?.message || "Report submission failed");
@@ -69,8 +100,18 @@ const ReportContainer = () => {
       return;
     }
 
+    if (!serviceId) {
+      toast.error("No service was selected for this report.");
+      return;
+    }
+
+    if (!token) {
+      toast.error("Please sign in to submit a report.");
+      return;
+    }
+
     mutate({
-      businessName: reportFormContent.businessName,
+      serviceId,
       message: message.trim(),
     });
   };
@@ -93,12 +134,14 @@ const ReportContainer = () => {
             <h1 className="text-[34px] font-extrabold leading-tight text-primary sm:text-[40px] lg:text-[44px]">
               {reportFormContent.title}
             </h1>
-            <h2 className="mt-2 text-[16px] font-extrabold leading-tight text-primary sm:text-[18px]">
-              {reportFormContent.businessName}
-            </h2>
             <p className="mt-3 text-[11px] font-medium text-[#7D7D7D] sm:text-[12px]">
               {reportFormContent.description}
             </p>
+            {!serviceId && (
+              <p role="alert" className="mt-3 text-[12px] font-semibold text-red-600">
+                No service selected. Please open this page from a service card.
+              </p>
+            )}
 
             <form onSubmit={handleSubmit} className="mt-8">
               <label
@@ -117,7 +160,7 @@ const ReportContainer = () => {
 
               <button
                 type="submit"
-                disabled={isPending}
+                disabled={isPending || status === "loading" || !serviceId}
                 className="mt-6 h-10 w-full rounded-[3px] bg-[#292D73] text-[12px] font-extrabold text-white transition hover:bg-[#20255F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {isPending ? "Reporting..." : reportFormContent.submitLabel}

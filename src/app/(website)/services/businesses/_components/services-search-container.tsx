@@ -419,7 +419,7 @@ const ServicesSearchContainer = ({
                             View Profile
                           </Link>
                           <Link
-                            href={`/report?businessOwnerId=${business.businessOwnerId}`}
+                            href={`/report?serviceId=${encodeURIComponent(business.service.id)}`}
                             className="inline-flex h-8 items-center justify-center rounded-[4px] bg-[#A7A7A7] px-3 text-[9px] font-bold text-white transition hover:bg-[#8E8E8E]"
                           >
                             Report

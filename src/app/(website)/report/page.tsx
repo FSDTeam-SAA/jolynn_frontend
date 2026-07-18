@@ -1,8 +1,12 @@
-import React from 'react'
-import ReportContainer from './_components/report-container'
-import HeroSection from '@/components/common/hero-section'
+import React from "react";
+import ReportContainer from "./_components/report-container";
+import HeroSection from "@/components/common/hero-section";
 
-const ReportPage = () => {
+type ReportPageProps = {
+  searchParams?: { serviceId?: string };
+};
+
+const ReportPage = ({ searchParams }: ReportPageProps) => {
   return (
     <div>
       <HeroSection
@@ -10,9 +14,9 @@ const ReportPage = () => {
         desc="Raise your concerns and report to us"
         image="/assets/images/report-hero.jpg"
       />
-      <ReportContainer />
+      <ReportContainer serviceId={searchParams?.serviceId ?? ""} />
     </div>
   )
-}
+};
 
-export default ReportPage
+export default ReportPage;
