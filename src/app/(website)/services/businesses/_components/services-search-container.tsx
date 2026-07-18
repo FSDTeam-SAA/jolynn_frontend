@@ -11,7 +11,6 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Globe2,
   MapPin,
   MessageCircle,
   Star,
@@ -41,13 +40,13 @@ const uniqueValues = (values: string[]) =>
 
 const BusinessCardsSkeleton = () => (
   <div
-    className="grid grid-cols-1 gap-5 xl:grid-cols-2"
+    className="grid grid-cols-1 gap-4 xl:grid-cols-2"
     aria-label="Loading businesses"
   >
     {Array.from({ length: 6 }).map((_, index) => (
       <div
         key={index}
-        className="rounded-[8px] bg-white p-4 shadow-[0_8px_24px_rgba(30,45,75,0.1)] ring-1 ring-[#E8ECF2]"
+        className="rounded-[8px] bg-white p-4 shadow-[0_6px_18px_rgba(30,45,75,0.12)] ring-1 ring-[#E8ECF2]"
       >
         <div className="flex gap-3">
           <Skeleton className="h-12 w-12 shrink-0 rounded-full" />
@@ -169,9 +168,9 @@ const ServicesSearchContainer = ({
   }
 
   return (
-    <div className="mt-10 md:mt-14 lg:mt-16 xl:mt-24">
+    <div className="mt-10 md:mt-14 lg:mt-16">
       <main className="min-h-screen bg-white">
-        <section className="bg-[#DFF0EE] px-4 py-8 sm:px-6 lg:px-8">
+        <section className="bg-[#DFF0EE] px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
           <div className="container">
             <BusinessSearchForm
               initialService={initialService}
@@ -181,14 +180,14 @@ const ServicesSearchContainer = ({
         </section>
 
         <section className="px-4 py-10 sm:px-6 md:py-12 lg:px-8 lg:py-14">
-          <div className="container max-w-[1160px]">
-            <div className="grid gap-6 lg:grid-cols-[300px_minmax(0,1fr)]">
-              <aside className="h-fit rounded-[12px] bg-white p-6 shadow-[0_8px_28px_rgba(30,45,75,0.14)] ring-1 ring-[#E8ECF2]">
-                <h2 className="text-[20px] font-semibold text-[#111827]">
+          <div className="container">
+            <div className="grid items-start gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
+              <aside className="h-fit rounded-[8px] bg-white p-5 shadow-[0_8px_24px_rgba(30,45,75,0.13)] ring-1 ring-[#E8ECF2]">
+                <h2 className="text-[16px] font-semibold text-[#111827]">
                   Filter Results
                 </h2>
 
-                <form onSubmit={applyFilters} className="mt-7 space-y-4">
+                <form onSubmit={applyFilters} className="mt-5 space-y-3">
                   {servicesQuery.isPending ? (
                     <Skeleton className="h-10 w-full" />
                   ) : servicesQuery.isError ? (
@@ -207,7 +206,7 @@ const ServicesSearchContainer = ({
                         onChange={(event) =>
                           updateFilter("serviceId", event.target.value)
                         }
-                        className="h-14 w-full appearance-none rounded-[8px] border border-[#A7A7A7] bg-white px-4 pr-11 text-[15px] font-medium text-[#8A8F99] focus:outline-none focus:ring-2 focus:ring-[#292D73]/20"
+                        className="h-11 w-full appearance-none rounded-[6px] border border-[#A7A7A7] bg-white px-3 pr-9 text-[12px] font-medium text-[#8A8F99] focus:outline-none focus:ring-2 focus:ring-[#292D73]/20"
                       >
                         {services.map((service) => (
                           <option key={service._id} value={service._id}>
@@ -215,7 +214,7 @@ const ServicesSearchContainer = ({
                           </option>
                         ))}
                       </select>
-                      <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8A8F99]" />
+                      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8A8F99]" />
                     </label>
                   )}
 
@@ -226,7 +225,7 @@ const ServicesSearchContainer = ({
                       onChange={(event) =>
                         updateFilter("minimumRating", event.target.value)
                       }
-                    className="h-14 w-full appearance-none rounded-[8px] border border-[#A7A7A7] bg-white px-4 pr-11 text-[15px] font-medium text-[#8A8F99] focus:outline-none focus:ring-2 focus:ring-[#292D73]/20"
+                    className="h-11 w-full appearance-none rounded-[6px] border border-[#A7A7A7] bg-white px-3 pr-9 text-[12px] font-medium text-[#8A8F99] focus:outline-none focus:ring-2 focus:ring-[#292D73]/20"
                     >
                       <option value="">Minimum Rating</option>
                       {[5, 4, 3, 2, 1].map((rating) => (
@@ -245,7 +244,7 @@ const ServicesSearchContainer = ({
                       onChange={(event) =>
                         updateFilter("location", event.target.value)
                       }
-                    className="h-14 w-full appearance-none rounded-[8px] border border-[#A7A7A7] bg-white px-4 pr-11 text-[15px] font-medium text-[#8A8F99] focus:outline-none focus:ring-2 focus:ring-[#292D73]/20"
+                    className="h-11 w-full appearance-none rounded-[6px] border border-[#A7A7A7] bg-white px-3 pr-9 text-[12px] font-medium text-[#8A8F99] focus:outline-none focus:ring-2 focus:ring-[#292D73]/20"
                     >
                       <option value="">Location</option>
                       {locations.map((location) => (
@@ -264,7 +263,7 @@ const ServicesSearchContainer = ({
                       onChange={(event) =>
                         updateFilter("searchTerm", event.target.value)
                       }
-                      className="h-14 w-full appearance-none rounded-[8px] border border-[#A7A7A7] bg-white px-4 pr-11 text-[15px] font-medium text-[#8A8F99] focus:outline-none focus:ring-2 focus:ring-[#292D73]/20"
+                      className="h-11 w-full appearance-none rounded-[6px] border border-[#A7A7A7] bg-white px-3 pr-9 text-[12px] font-medium text-[#8A8F99] focus:outline-none focus:ring-2 focus:ring-[#292D73]/20"
                     >
                       <option value="">Keywords</option>
                       {keywords.map((keyword) => (
@@ -279,14 +278,14 @@ const ServicesSearchContainer = ({
                   <button
                     type="submit"
                     disabled={!initialServiceId || servicesQuery.isPending}
-                    className="h-14 w-full rounded-[8px] bg-[#292D73] text-[14px] font-extrabold text-white transition hover:bg-[#20255F] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="h-11 w-full rounded-[6px] bg-[#292D73] text-[12px] font-extrabold text-white transition hover:bg-[#20255F] disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     Apply Filters
                   </button>
                   <button
                     type="button"
                     onClick={resetFilters}
-                    className="h-14 w-full rounded-[8px] bg-[#EEEEEE] text-[14px] font-extrabold text-[#292D73] transition hover:bg-[#E5E7EB]"
+                    className="h-11 w-full rounded-[6px] bg-[#EEEEEE] text-[11px] font-extrabold text-[#292D73] transition hover:bg-[#E5E7EB]"
                   >
                     Reset
                   </button>
@@ -342,35 +341,41 @@ const ServicesSearchContainer = ({
                     </button>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
                     {businesses.map((business) => (
                       <article
                         key={business.businessOwnerId}
-                        className="rounded-[8px] bg-white p-4 shadow-[0_8px_24px_rgba(30,45,75,0.14)] ring-1 ring-[#E8ECF2] transition duration-200 hover:-translate-y-1"
+                        className="rounded-[8px] bg-white p-4 shadow-[0_6px_18px_rgba(30,45,75,0.14)] ring-1 ring-[#E8ECF2] transition duration-200 hover:-translate-y-1"
                       >
-                        <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-start justify-between gap-4">
                           <div className="flex min-w-0 items-start gap-3">
-                            <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#E8EEFF] p-2">
+                            <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-[#4D1979]">
                               <Image
                                 src={business.service.logo.url}
-                                alt=""
-                                width={48}
-                                height={48}
-                                className="h-full w-full object-contain"
+                                alt={`${business.service.title} logo`}
+                                fill
+                                sizes="48px"
+                                className="object-cover"
                               />
                             </div>
                             <div className="min-w-0">
-                              <h3 className="truncate text-[17px] font-extrabold text-[#292D73]">
+                              <h3 className="line-clamp-1 text-[15px] font-extrabold leading-tight text-[#292D73]">
                                 {business.businessName}
                               </h3>
-                              <span className="mt-1 inline-flex rounded-[3px] bg-[#DFEEEE] px-2 py-0.5 text-[10px] font-semibold text-[#426078]">
+                              <span className="mt-1 inline-flex rounded-[3px] bg-[#DFEEEE] px-2 py-0.5 text-[9px] font-semibold leading-none text-[#426078]">
                                 {business.category || business.service.title}
                               </span>
                             </div>
                           </div>
+                          <Link
+                            href={`/services/businesses/${business.businessOwnerId}`}
+                            className="inline-flex h-9 shrink-0 items-center justify-center rounded-[5px] border border-[#F8AA18] bg-[#FFF6D8] px-4 text-[10px] font-medium text-[#E56D00] transition hover:bg-[#F8AA18] hover:text-white"
+                          >
+                            Review
+                          </Link>
                         </div>
 
-                        <div className="mt-3 flex items-center gap-1.5">
+                        <div className="mt-3 flex flex-wrap items-center gap-1.5">
                           <div
                             className="flex gap-px"
                             aria-label={`${business.rating} out of 5 stars`}
@@ -378,7 +383,7 @@ const ServicesSearchContainer = ({
                             {Array.from({ length: 5 }).map((_, index) => (
                               <Star
                                 key={index}
-                                className={`h-[13px] w-[13px] ${
+                                className={`h-[12px] w-[12px] ${
                                   index < Math.round(business.rating)
                                     ? "fill-[#FFB800] text-[#FFB800]"
                                     : "text-[#D9DEE7]"
@@ -386,36 +391,36 @@ const ServicesSearchContainer = ({
                               />
                             ))}
                           </div>
-                          <span className="text-[11px] font-bold text-[#292E78]">
+                          <span className="text-[10px] font-bold text-[#292E78]">
                             {business.rating.toFixed(1)}
                           </span>
-                          <span className="text-[11px] text-[#667085]">
+                          <span className="text-[10px] text-[#667085]">
                             ({business.totalReviews} reviews)
                           </span>
                         </div>
 
-                        <div className="mt-3 flex items-start gap-1 text-[10.5px] text-[#667085]">
-                          <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                        <div className="mt-3 flex items-start gap-1 text-[10px] text-[#667085]">
+                          <MapPin className="h-3.5 w-3.5 shrink-0" />
                           <span>
-                            {[business.address, business.city, business.state]
+                            {[business.city, business.state]
                               .filter(Boolean)
-                              .join(", ")}
+                              .join(", ") || business.address || business.serviceArea}
                           </span>
                         </div>
-                        <p className="mt-2 min-h-[38px] text-[11px] leading-[1.4] text-[#667085]">
+                        <p className="mt-1.5 line-clamp-2 min-h-[32px] text-[9.5px] leading-[1.4] text-[#667085]">
                           {business.service.description}
                         </p>
 
-                        <div className="mt-4 grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_36px] gap-1.5">
+                        <div className="mt-3 grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_34px] gap-1.5">
                           <Link
                             href={`/services/businesses/${business.businessOwnerId}`}
-                            className="inline-flex h-9 items-center justify-center rounded-[5px] bg-[#292E78] px-3 text-[11px] font-bold text-white hover:bg-[#1F2464]"
+                            className="inline-flex h-8 items-center justify-center rounded-[4px] bg-[#292E78] px-3 text-[9px] font-bold text-white transition hover:bg-[#1F2464]"
                           >
                             View Profile
                           </Link>
                           <Link
                             href={`/report?businessOwnerId=${business.businessOwnerId}`}
-                            className="inline-flex h-9 items-center justify-center rounded-[5px] bg-[#A7A7A7] px-3 text-[11px] font-bold text-white hover:bg-[#8E8E8E]"
+                            className="inline-flex h-8 items-center justify-center rounded-[4px] bg-[#A7A7A7] px-3 text-[9px] font-bold text-white transition hover:bg-[#8E8E8E]"
                           >
                             Report
                           </Link>
@@ -423,14 +428,10 @@ const ServicesSearchContainer = ({
                             href={business.businessWebsiteUrl || "#"}
                             target={business.businessWebsiteUrl ? "_blank" : undefined}
                             rel={business.businessWebsiteUrl ? "noreferrer" : undefined}
-                            className="inline-flex h-9 items-center justify-center rounded-[5px] border border-[#292E78] text-[#292E78] hover:bg-[#292E78] hover:text-white"
+                            className="inline-flex h-8 items-center justify-center rounded-[4px] border border-[#292E78] bg-white text-[#292E78] transition hover:bg-[#292E78] hover:text-white"
                             aria-label={`Visit ${business.businessName} website`}
                           >
-                            {business.businessWebsiteUrl ? (
-                              <Globe2 className="h-[17px] w-[17px]" />
-                            ) : (
-                              <MessageCircle className="h-[17px] w-[17px]" />
-                            )}
+                            <MessageCircle className="h-4 w-4" />
                           </Link>
                         </div>
                       </article>

@@ -8,7 +8,7 @@ import { toast } from "sonner";
 const advertiseContent = {
   title: "Advertise With Us",
   description: "For better experience connect and contact with us",
-  image: "/assets/images/contact-information.jpg",
+  image: "/assets/images/contact-hero.jpg",
   imageAlt: "Hands joined together in a circle",
   formTitle: "Your Information",
   submitLabel: "Submit",
@@ -31,7 +31,7 @@ const advertiseFields = [
     type: "email",
   },
   {
-    name: "phoneNumber",
+    name: "phone",
     placeholder: "Phone Number",
     type: "tel",
   },
@@ -47,7 +47,7 @@ const defaultFormValues: AdvertiseFormValues = {
   firstName: "",
   lastName: "",
   email: "",
-  phoneNumber: "",
+  phone: "",
   message: "",
 };
 
@@ -59,14 +59,20 @@ const AdvertiseWithUsContainer = () => {
     mutationKey: ["submit-advertise-message"],
     mutationFn: async (values: AdvertiseFormValues) => {
       const apiUrl =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api/v1";
-      const res = await fetch(`${apiUrl}/advertise-with-us`, {
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:5006/api/v1";
+      const res = await fetch(`${apiUrl}/advertise`, {
         method: "POST",
         headers: {
           accept: "*/*",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(values),
+        body: JSON.stringify({
+          firstName: values.firstName.trim(),
+          lastName: values.lastName.trim(),
+          email: values.email.trim(),
+          phone: values.phone.trim(),
+          message: values.message.trim(),
+        }),
       });
       const data = await res.json();
 
@@ -99,8 +105,8 @@ const AdvertiseWithUsContainer = () => {
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!formValues.firstName.trim() || !formValues.email.trim()) {
-      toast.error("Please add your first name and email.");
+    if (Object.values(formValues).some((value) => !value.trim())) {
+      toast.error("Please fill in all fields.");
       return;
     }
 
@@ -108,7 +114,7 @@ const AdvertiseWithUsContainer = () => {
   };
 
   return (
-    <section className="relative min-h-[680px] overflow-hidden px-4 py-14 sm:px-6 md:py-20 lg:px-8">
+    <section className="relative min-h-[680px] overflow-hidden px-2 py-14 md:py-20 lg:px-8">
       <Image
         src={advertiseContent.image}
         alt={advertiseContent.imageAlt}
@@ -124,7 +130,7 @@ const AdvertiseWithUsContainer = () => {
           <h1 className="text-[34px] font-extrabold leading-tight sm:text-[42px] lg:text-[50px]">
             {advertiseContent.title}
           </h1>
-          <p className="mt-4 text-[13px] font-medium sm:text-[15px]">
+          <p className="mt-2 text-[13px] font-medium sm:text-[15px]">
             {advertiseContent.description}
           </p>
         </div>
@@ -147,7 +153,8 @@ const AdvertiseWithUsContainer = () => {
                   updateField(field.name, event.target.value)
                 }
                 placeholder={field.placeholder}
-                className="h-10 rounded-[4px] border border-[#9CA3AF] px-4 text-[13px] font-medium text-[#292D73] outline-none transition placeholder:text-[#6B7280] focus:border-[#292D73] focus:ring-2 focus:ring-[#292D73]/15"
+                required
+                className="h-10 rounded-[4px] border border-[#9CA3AF] px-3 text-[13px] font-medium text-[#292D73] outline-none transition placeholder:text-[#6B7280] focus:border-[#292D73] focus:ring-2 focus:ring-[#292D73]/15"
               />
             ))}
           </div>
@@ -156,7 +163,8 @@ const AdvertiseWithUsContainer = () => {
             value={formValues.message}
             onChange={(event) => updateField("message", event.target.value)}
             placeholder="Any Message"
-            className="mt-6 min-h-[122px] w-full resize-none rounded-[4px] border border-[#9CA3AF] px-4 py-4 text-[13px] font-medium text-[#292D73] outline-none transition placeholder:text-[#6B7280] focus:border-[#292D73] focus:ring-2 focus:ring-[#292D73]/15"
+            required
+            className="mt-6 min-h-[122px] w-full resize-none rounded-[4px] border border-[#9CA3AF] p-3 text-[13px] font-medium text-[#292D73] outline-none transition placeholder:text-[#6B7280] focus:border-[#292D73] focus:ring-2 focus:ring-[#292D73]/15"
           />
 
           <button
