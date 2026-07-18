@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import BusinessSearchForm from "./business-search-form";
 import NoBusinessResults from "./no-business-results";
 
@@ -95,6 +95,20 @@ const ServicesSearchContainer = ({
     searchTerm: "",
   });
   const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    if (servicesQuery.isPending) return;
+
+    const syncedFilters: DraftFilters = {
+      serviceId: initialServiceId,
+      minimumRating: "",
+      location: initialLocation,
+      searchTerm: "",
+    };
+    setDraftFilters(syncedFilters);
+    setAppliedFilters(syncedFilters);
+    setPage(1);
+  }, [initialLocation, initialService, initialServiceId, servicesQuery.isPending]);
 
   const selectedServiceId = appliedFilters.serviceId || initialServiceId;
   const queryFilters: BusinessOwnerFilters = {
