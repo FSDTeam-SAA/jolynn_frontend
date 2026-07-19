@@ -1,8 +1,9 @@
 "use client";
 
-import { useServices } from "@/hooks/use-services";
-import { useMutation } from "@tanstack/react-query";
+import { useBusinessServices } from "@/hooks/use-business-profile-sections";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Send, X } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { FormEvent, useState } from "react";
 import { toast } from "sonner";
 
@@ -11,10 +12,6 @@ type QuoteFieldName = "name" | "email" | "phone";
 type QuoteFormState = Record<QuoteFieldName, string> & {
   service: string;
   details: string;
-};
-
-type QuoteFormValues = QuoteFormState & {
-  businessName: string;
 };
 
 type QuoteFieldConfig = {
@@ -66,6 +63,7 @@ const quoteFormContent: {
 
 type RequestAQuoteModalProps = {
   open: boolean;
+  businessOwnerId: string;
   businessName: string;
   onClose: () => void;
 };
@@ -80,30 +78,47 @@ const defaultFormValues: QuoteFormState = {
 
 const RequestAQuoteModal = ({
   open,
+  businessOwnerId,
   businessName,
   onClose,
 }: RequestAQuoteModalProps) => {
+  const { data: session } = useSession();
+  const queryClient = useQueryClient();
   const [formValues, setFormValues] = useState(defaultFormValues);
   const {
     data: servicesData,
     isPending: servicesPending,
     isError: servicesError,
     refetch: refetchServices,
-  } = useServices();
+  } = useBusinessServices(businessOwnerId);
   const services = servicesData?.data ?? [];
+  const sessionUser = session?.user as
+    | { token?: string; accessToken?: string }
+    | undefined;
+  const token = sessionUser?.accessToken ?? sessionUser?.token;
 
   const { mutate, isPending } = useMutation({
     mutationKey: ["request-business-quote"],
-    mutationFn: async (values: QuoteFormValues) => {
-      const apiUrl =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api/v1";
-      const res = await fetch(`${apiUrl}/quotes/request`, {
+    mutationFn: async (values: QuoteFormState) => {
+      if (!token) throw new Error("Please sign in to request a quote.");
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      if (!apiUrl) throw new Error("The quote API is not configured.");
+
+      const res = await fetch(`${apiUrl}/qoute/my`, {
         method: "POST",
         headers: {
           accept: "*/*",
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(values),
+        body: JSON.stringify({
+          businessOwnerId,
+          name: values.name.trim(),
+          email: values.email.trim(),
+          phoneNumber: values.phone.trim(),
+          serviceNeeded: values.service,
+          projectDetails: values.details.trim(),
+        }),
       });
       const data = await res.json();
 
@@ -116,6 +131,7 @@ const RequestAQuoteModal = ({
     onSuccess: (data) => {
       toast.success(data?.message || "Quote request sent successfully");
       setFormValues(defaultFormValues);
+      queryClient.invalidateQueries({ queryKey: ["my-quote-requests"] });
       onClose();
     },
     onError: (error) => {
@@ -142,6 +158,7 @@ const RequestAQuoteModal = ({
     if (
       !formValues.name.trim() ||
       !formValues.email.trim() ||
+      !formValues.phone.trim() ||
       !formValues.service.trim() ||
       !formValues.details.trim()
     ) {
@@ -149,10 +166,7 @@ const RequestAQuoteModal = ({
       return;
     }
 
-    mutate({
-      ...formValues,
-      businessName,
-    });
+    mutate(formValues);
   };
 
   return (
@@ -179,7 +193,7 @@ const RequestAQuoteModal = ({
           </p>
         </div>
 
-        <div className="mt-7 space-y-5">
+        <div className="mt-3 space-y-2">
           {quoteFormContent.fields.map((field) => (
             <label key={field.name} className="block">
               <span className="text-[18px] font-extrabold text-[#4365D0]">
@@ -192,7 +206,7 @@ const RequestAQuoteModal = ({
                   updateField(field.name, event.target.value)
                 }
                 placeholder={field.placeholder}
-                className="mt-2 h-[58px] w-full rounded-[8px] border border-[#D0D5DD] px-5 text-[16px] font-medium text-[#292D73] outline-none transition placeholder:text-[#7A7F8C] focus:border-[#4365D0] focus:ring-2 focus:ring-[#4365D0]/15"
+                className="mt-2 h-12 w-full rounded-[8px] border border-[#D0D5DD] p-3 text-[16px] font-medium text-[#292D73] outline-none transition placeholder:text-[#7A7F8C] focus:border-[#4365D0] focus:ring-2 focus:ring-[#4365D0]/15"
               />
             </label>
           ))}
@@ -205,7 +219,7 @@ const RequestAQuoteModal = ({
               value={formValues.service}
               onChange={(event) => updateField("service", event.target.value)}
               disabled={servicesPending || servicesError}
-              className="mt-2 h-[58px] w-full rounded-[8px] border border-[#D0D5DD] bg-white px-5 text-[16px] font-medium text-[#7A7F8C] outline-none transition focus:border-[#4365D0] focus:ring-2 focus:ring-[#4365D0]/15"
+              className="mt-2 h-12 w-full rounded-[8px] border border-[#D0D5DD] bg-white p-3 text-[16px] font-medium text-[#7A7F8C] outline-none transition focus:border-[#4365D0] focus:ring-2 focus:ring-[#4365D0]/15"
             >
               <option value="">
                 {servicesPending
@@ -241,23 +255,23 @@ const RequestAQuoteModal = ({
               value={formValues.details}
               onChange={(event) => updateField("details", event.target.value)}
               placeholder={quoteFormContent.detailsPlaceholder}
-              className="mt-2 min-h-[170px] w-full resize-none rounded-[8px] border border-[#D0D5DD] px-5 py-5 text-[16px] font-medium text-[#292D73] outline-none transition placeholder:text-[#7A7F8C] focus:border-[#4365D0] focus:ring-2 focus:ring-[#4365D0]/15"
+              className="mt-2 min-h-[150px] w-full resize-none rounded-[8px] border border-[#D0D5DD] p-3 text-[16px] font-medium text-[#292D73] outline-none transition placeholder:text-[#7A7F8C] focus:border-[#4365D0] focus:ring-2 focus:ring-[#4365D0]/15"
             />
           </label>
         </div>
 
-        <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2">
           <button
             type="button"
             onClick={onClose}
-            className="h-[58px] rounded-[8px] border border-[#8A94A6] bg-white text-[18px] font-extrabold text-[#98A2B3] transition hover:bg-[#F8FAFC] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73]"
+            className="h-12 rounded-[8px] border border-[#8A94A6] bg-white text-[18px] font-extrabold text-[#98A2B3] transition hover:bg-[#F8FAFC] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73]"
           >
             {quoteFormContent.cancelLabel}
           </button>
           <button
             type="submit"
             disabled={isPending}
-            className="inline-flex h-[58px] items-center justify-center gap-3 rounded-[8px] bg-[#292D73] text-[18px] font-extrabold text-white transition hover:bg-[#20255F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
+            className="inline-flex h-12 items-center justify-center gap-3 rounded-[8px] bg-[#292D73] text-[18px] font-extrabold text-white transition hover:bg-[#20255F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
           >
             <Send className="h-6 w-6" />
             {isPending ? "Sending..." : quoteFormContent.submitLabel}

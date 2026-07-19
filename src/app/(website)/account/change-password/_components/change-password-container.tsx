@@ -1,7 +1,7 @@
 "use client";
 
 import { useChangePassword } from "@/hooks/APicalling";
-import { Eye, EyeOff } from "lucide-react";
+import { Check, Eye, EyeOff, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { FormEvent, useState } from "react";
 import { toast } from "sonner";
@@ -32,12 +32,12 @@ const ChangePasswordContainer = () => {
   );
 
   const rules = [
-    { text: "At least 8 characters (required)", valid: values.newPassword.length >= 8 },
-    { text: "Contains an uppercase letter (recommended)", valid: /[A-Z]/.test(values.newPassword) },
-    { text: "Contains a lowercase letter (recommended)", valid: /[a-z]/.test(values.newPassword) },
-    { text: "Contains a number (recommended)", valid: /\d/.test(values.newPassword) },
-    { text: "Contains a special character (recommended)", valid: /[^A-Za-z0-9]/.test(values.newPassword) },
-    { text: "Contains no spaces (recommended)", valid: values.newPassword.length > 0 && !/\s/.test(values.newPassword) },
+    { text: "Minimum 8–12 characters (recommend 12+ for stronger security).", valid: values.newPassword.length >= 8 },
+    { text: "At least one uppercase letter must.", valid: /[A-Z]/.test(values.newPassword) },
+    { text: "At least one lowercase letter must.", valid: /[a-z]/.test(values.newPassword) },
+    { text: "At least one number must (0–9).", valid: /\d/.test(values.newPassword) },
+    { text: "At least special character (! @ # $ % ^ & * etc.).", valid: /[^A-Za-z0-9\s]/.test(values.newPassword) },
+    { text: "No spaces allowed.", valid: values.newPassword.length > 0 && !/\s/.test(values.newPassword) },
   ];
 
   const resetForm = () => {
@@ -70,6 +70,10 @@ const ChangePasswordContainer = () => {
       toast.error("Your new password must be at least 8 characters.");
       return;
     }
+    if (!rules.every((rule) => rule.valid)) {
+      toast.error("Please meet all password requirements.");
+      return;
+    }
     if (values.newPassword !== values.confirmPassword) {
       toast.error("New password and confirmation do not match.");
       return;
@@ -92,8 +96,8 @@ const ChangePasswordContainer = () => {
   return (
     <AccountPageShell active="change-password">
       <AccountPanel
-        title="Change Password"
-        description="Choose a strong, unique password to keep your account secure."
+        title="Changes Password"
+        description="Manage your account preferences, security settings, and privacy options."
       >
         <form className="space-y-5" onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 gap-x-5 gap-y-4 md:grid-cols-2">
@@ -107,6 +111,7 @@ const ChangePasswordContainer = () => {
                   <span className="relative mt-2 block">
                     <input
                       type={visible ? "text" : "password"}
+                      placeholder="********"
                       value={values[field.id]}
                       onChange={(event) => setValues((current) => ({ ...current, [field.id]: event.target.value }))}
                       autoComplete={field.id === "oldPassword" ? "current-password" : "new-password"}
@@ -128,10 +133,15 @@ const ChangePasswordContainer = () => {
             })}
           </div>
 
-          <ul className="space-y-2" aria-label="Password requirements">
+          <ul className="space-y-2.5" aria-label="Password requirements">
             {rules.map((rule) => (
-              <li key={rule.text} className={`text-[12px] font-medium ${rule.valid ? "text-[#098A45]" : "text-[#667085]"}`}>
-                {rule.valid ? "✓" : "○"} {rule.text}
+              <li key={rule.text} className={`flex items-center gap-2 text-[12px] font-medium ${rule.valid ? "text-[#079447]" : "text-[#FF3045]"}`}>
+                {rule.valid ? (
+                  <Check className="h-4 w-4 shrink-0" strokeWidth={1.6} />
+                ) : (
+                  <X className="h-4 w-4 shrink-0" strokeWidth={1.6} />
+                )}
+                <span>{rule.text}</span>
               </li>
             ))}
           </ul>
@@ -141,7 +151,7 @@ const ChangePasswordContainer = () => {
               Discard Changes
             </button>
             <button type="submit" disabled={isPending} className="h-10 rounded-[4px] bg-[#292D73] px-5 text-[12px] font-extrabold text-white transition hover:bg-[#20255F] disabled:cursor-not-allowed disabled:opacity-60">
-              {isPending ? "Changing Password..." : "Change Password"}
+              {isPending ? "Saving..." : "Save Changes"}
             </button>
           </div>
         </form>

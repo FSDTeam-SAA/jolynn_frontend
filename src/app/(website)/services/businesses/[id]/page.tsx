@@ -1,9 +1,9 @@
 import BusinessViewProfileContainer from './_components/business-view-profile-container'
 
-const BusinessViewProfile = () => {
+const BusinessViewProfile = ({ params }: { params: { id: string } }) => {
   return (
     <div >
-      <BusinessViewProfileContainer />
+      <BusinessViewProfileContainer businessId={params.id} />
     </div>
   )
 }

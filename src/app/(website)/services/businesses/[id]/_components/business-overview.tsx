@@ -1,8 +1,8 @@
 import { MapPin } from "lucide-react";
-import type { BusinessProfile } from "./business-profile-data";
+import type { BusinessOverviewData } from "@/hooks/use-public-business-profile";
 
 type BusinessOverviewProps = {
-  overview: BusinessProfile["overview"];
+  overview: BusinessOverviewData;
 };
 
 const BusinessOverview = ({ overview }: BusinessOverviewProps) => {
@@ -13,7 +13,9 @@ const BusinessOverview = ({ overview }: BusinessOverviewProps) => {
           About This Business
         </h2>
         <p className="mt-3 text-[14px] font-medium leading-[1.45] text-[#111827]">
-          {overview.about}
+          {[overview.businessName, overview.category, overview.address, overview.city, overview.state]
+            .filter(Boolean)
+            .join(" · ")}
         </p>
       </article>
 {/* 
@@ -33,7 +35,7 @@ const BusinessOverview = ({ overview }: BusinessOverviewProps) => {
         </h2>
         <div className="mt-3 flex items-start gap-2 text-[13px] font-medium leading-relaxed text-[#667085]">
           <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#244D7B]" />
-          <span>{overview.serviceArea}</span>
+          <span>{overview.serviceArea || [overview.city, overview.state].filter(Boolean).join(", ")}</span>
         </div>
       </article>
     </div>

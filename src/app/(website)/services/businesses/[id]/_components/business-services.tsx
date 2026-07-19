@@ -1,13 +1,13 @@
 "use client";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import { useServices } from "@/hooks/use-services";
+import { useBusinessServices } from "@/hooks/use-business-profile-sections";
 import { AlertCircle, Layers3 } from "lucide-react";
 import Image from "next/image";
 
-const BusinessServices = () => {
+const BusinessServices = ({ businessId }: { businessId: string }) => {
   const { data, isPending, isError, error, refetch, isFetching } =
-    useServices();
+    useBusinessServices(businessId);
   const services = data?.data ?? [];
 
   return (
@@ -60,13 +60,9 @@ const BusinessServices = () => {
               key={service._id}
               className="flex min-h-[43px] items-center gap-3 rounded-[6px] bg-[#EAF2F7] px-4 text-[13px] font-semibold text-[#111827]"
             >
-              <Image
-                src={service.logo.url}
-                alt=""
-                width={24}
-                height={24}
-                className="h-6 w-6 object-contain"
-              />
+              {service.logo?.url && (
+                <Image src={service.logo.url} alt="" width={24} height={24} className="h-6 w-6 object-contain" />
+              )}
               {service.title}
             </div>
           ))}

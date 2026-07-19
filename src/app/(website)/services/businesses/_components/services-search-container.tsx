@@ -382,7 +382,7 @@ const ServicesSearchContainer = ({
                             </div>
                           </div>
                           <Link
-                            href={`/services/businesses/${business.businessOwnerId}`}
+                            href={`/services/businesses/${business.businessOwnerId}?tab=reviews`}
                             className="inline-flex h-9 shrink-0 items-center justify-center rounded-[5px] border border-[#F8AA18] bg-[#FFF6D8] px-4 text-[10px] font-medium text-[#E56D00] transition hover:bg-[#F8AA18] hover:text-white"
                           >
                             Review
