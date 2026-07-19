@@ -4,14 +4,13 @@ import {
   Bookmark,
   Globe2,
   Mail,
-  Phone,
   Star,
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import BusinessGallery from "./business-gallery";
 import BusinessOverview from "./business-overview";
-import { businessProfile } from "./business-profile-data";
+import { usePublicBusinessProfile } from "@/hooks/use-public-business-profile";
 import BusinessReviews from "./business-reviews";
 import BusinessServices from "./business-services";
 import RequestAQuoteModal from "./request-a-quote-modal";
@@ -39,33 +38,27 @@ const renderStars = (rating: number) =>
 
 const ContactCard = ({
   onOpenQuoteModal,
+  business,
 }: {
   onOpenQuoteModal: () => void;
+  business: NonNullable<ReturnType<typeof usePublicBusinessProfile>["data"]>;
 }) => (
   <aside className="rounded-[8px] border border-[#D9DEE7] bg-white px-4 py-5 shadow-[0_1px_2px_rgba(17,24,39,0.04)] lg:sticky lg:top-6">
     <h2 className="text-center text-[12px] font-extrabold text-[#111827]">
-      Contact {businessProfile.name}
+      Contact {business.businessName}
     </h2>
 
     <div className="mt-4 space-y-3">
-      <Link
-        href={`tel:${businessProfile.phone}`}
-        className="flex h-10 items-center justify-center gap-2 rounded-[4px] bg-[#292D73] px-4 text-[12px] font-extrabold text-white transition hover:bg-[#20255F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2"
-      >
-        <Phone className="h-3.5 w-3.5" />
-        {businessProfile.phone}
-      </Link>
-
-      <Link
-        href={businessProfile.websiteUrl}
+      {business.businessWebsiteUrl && <Link
+        href={business.businessWebsiteUrl}
         className="flex h-10 items-center justify-center gap-2 rounded-[4px] border border-[#D9DEE7] bg-white px-4 text-[12px] font-extrabold text-[#111827] transition hover:bg-[#F8FAFC] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2"
       >
         <Globe2 className="h-3.5 w-3.5" />
         Visit Website
-      </Link>
+      </Link>}
 
       <Link
-        href={businessProfile.emailUrl}
+        href={`mailto:${business.businessEmail || business.email || ""}`}
         className="flex h-10 items-center justify-center gap-2 rounded-[4px] bg-[#292D73] px-4 text-[12px] font-extrabold text-white transition hover:bg-[#20255F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2"
       >
         <Mail className="h-3.5 w-3.5" />
@@ -73,14 +66,14 @@ const ContactCard = ({
       </Link>
 
       <Link
-        href={businessProfile.reportUrl}
+        href={`/report?businessId=${business.ownerId}`}
         className="flex h-10 items-center justify-center rounded-[4px] bg-[#9D9D9D] px-4 text-[12px] font-extrabold text-white transition hover:bg-[#858585] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#858585] focus-visible:ring-offset-2"
       >
         Report
       </Link>
         <div className="flex flex-wrap justify-between items-center gap-2">
               <Link
-                href={businessProfile.saveUrl}
+                href={`/account/save-services?businessId=${business.ownerId}`}
                 className="inline-flex h-10 items-center justify-center gap-2 rounded-[6px] border border-[#315CFF] bg-white px-5 text-[13px] font-semibold text-[#315CFF] transition hover:bg-[#F2F5FF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#315CFF]"
               >
                 <Bookmark className="h-4 w-4" />
@@ -103,20 +96,19 @@ const ContactCard = ({
   </aside>
 );
 
-const BusinessViewProfileContainer = () => {
+const BusinessViewProfileContainer = ({ businessId }: { businessId: string }) => {
   const [activeTab, setActiveTab] = useState<ProfileTab>("overview");
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
+  const { data: business, isPending, isError, refetch } = usePublicBusinessProfile(businessId);
+
+  if (isPending) return <main className="bg-[#F5F8F7]"><div className="container max-w-[1240px] py-16 text-sm text-[#667085]">Loading business profile...</div></main>;
+  if (isError || !business) return <main className="bg-[#F5F8F7]"><div className="container max-w-[1240px] py-16"><p className="text-sm text-red-600">Unable to load this business.</p><button type="button" onClick={() => refetch()} className="mt-3 rounded bg-[#292D73] px-4 py-2 text-xs font-bold text-white">Try again</button></div></main>;
 
   const activeContent = {
-    overview: <BusinessOverview overview={businessProfile.overview} />,
-    services: <BusinessServices />,
-    gallery: <BusinessGallery gallery={businessProfile.gallery} />,
-    reviews: (
-      <BusinessReviews
-        summary={businessProfile.reviewsSummary}
-        reviews={businessProfile.reviews}
-      />
-    ),
+    overview: <BusinessOverview overview={business} />,
+    services: <BusinessServices businessId={businessId} />,
+    gallery: <BusinessGallery businessId={businessId} />,
+    reviews: <BusinessReviews businessId={businessId} />,
   }[activeTab];
 
   return (
@@ -127,21 +119,21 @@ const BusinessViewProfileContainer = () => {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <h1 className="text-[28px] font-extrabold leading-tight text-[#111827] sm:text-[32px]">
-                {businessProfile.name}
+                {business.businessName}
               </h1>
 
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 <div className="flex items-center gap-[1px]">
-                  {renderStars(businessProfile.rating)}
+                  {renderStars(business.rating ?? business.reviewSummary?.averageRating ?? 0)}
                 </div>
                 <span className="text-[12px] font-extrabold text-[#111827]">
-                  {businessProfile.rating.toFixed(1)}
+                  {(business.rating ?? business.reviewSummary?.averageRating ?? 0).toFixed(1)}
                 </span>
                 <span className="text-[11px] font-medium text-[#667085]">
-                  ({businessProfile.reviewCount} reviews)
+                  ({business.totalReviews ?? business.reviewSummary?.totalReviews ?? 0} reviews)
                 </span>
                 <span className="rounded-[3px] bg-[#DFEEEE] px-2 py-1 text-[11px] font-semibold text-[#426078]">
-                  {businessProfile.category}
+                  {business.category}
                 </span>
               </div>
             </div>
@@ -191,13 +183,13 @@ const BusinessViewProfileContainer = () => {
       <section className="container max-w-[1240px] py-10 sm:py-12 lg:py-14">
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-5">
           <div>{activeContent}</div>
-          <ContactCard onOpenQuoteModal={() => setIsQuoteModalOpen(true)} />
+          <ContactCard business={business} onOpenQuoteModal={() => setIsQuoteModalOpen(true)} />
         </div>
       </section>
       </main>
       <RequestAQuoteModal
         open={isQuoteModalOpen}
-        businessName={businessProfile.name}
+        businessName={business.businessName}
         onClose={() => setIsQuoteModalOpen(false)}
       />
     </div>
