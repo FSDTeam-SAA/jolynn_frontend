@@ -174,7 +174,7 @@ export const ProfileSummaryCard = () => {
   };
 
   return (
-    <article className="min-h-[470px] rounded-[6px] border border-[#D9DEE7] bg-white px-5 py-6 shadow-[0_6px_14px_rgba(32,42,70,0.10)]">
+    <article className="min-h-[470px] rounded-[6px] border border-[#E6E7E6] bg-[#F8F9FA] px-5 py-6 shadow-[0_6px_14px_rgba(32,42,70,0.10)]">
       <div className="text-center">
         <div className="relative mx-auto flex h-[112px] w-[112px] items-center justify-center overflow-hidden rounded-full border-4 border-[#E6E1D3] bg-[#F2F4F7]">
           {profile?.profilePicture ? (
@@ -261,7 +261,7 @@ export const SavedBusinessGrid = ({ businesses }: { businesses: SavedBusiness[] 
               </div>
             </div>
             <Link
-              href={`/services/businesses/${business.businessOwnerId}`}
+              href={`/services/businesses/${business?.businessOwnerId}?tab=reviews`}
               className="inline-flex h-9 shrink-0 items-center justify-center rounded-[5px] border border-[#F8AA18] bg-[#FFF6D8] px-5 text-[11px] font-medium text-[#E56D00] transition hover:bg-[#F8AA18] hover:text-white"
             >
               Review
@@ -331,7 +331,7 @@ export const AccountPanel = ({
   children: ReactNode;
 }) => {
   return (
-    <article className="min-h-[470px] rounded-[6px] border border-[#D9DEE7] bg-white px-5 py-6 shadow-[0_6px_14px_rgba(32,42,70,0.10)]">
+    <article className="min-h-[470px] rounded-[6px] border border-[#E6E7E6] bg-[#F8F9FA] px-5 py-6 shadow-[0_6px_14px_rgba(32,42,70,0.10)]">
       <h1 className="text-[28px] font-extrabold leading-none text-[#152033]">
         {title}
       </h1>

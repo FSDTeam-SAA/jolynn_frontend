@@ -48,19 +48,22 @@ type DeleteQuoteResponse = {
 
 const PAGE_LIMIT = 10;
 
+const getApiUrl = () => {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!apiUrl) throw new Error("The quote API is not configured.");
+  return apiUrl;
+};
+
 const fetchQuoteRequests = async (
   token: string,
   page: number,
 ): Promise<QuoteRequestsResponse> => {
-  const apiUrl =
-    process.env.NEXT_PUBLIC_QUOTE_API_URL || "http://localhost:5002/api/v1";
   const params = new URLSearchParams({
     sortBy: "createdAt",
     limit: String(PAGE_LIMIT),
     page: String(page),
-    status: "pending",
   });
-  const response = await fetch(`${apiUrl}/qoute/my?${params}`, {
+  const response = await fetch(`${getApiUrl()}/qoute/my?${params}`, {
     headers: {
       Accept: "*/*",
       Authorization: `Bearer ${token}`,
@@ -112,7 +115,7 @@ const RequestQuoteContainer = () => {
   const [quoteToDelete, setQuoteToDelete] = useState<QuoteRequest | null>(null);
 
   const quoteQuery = useQuery<QuoteRequestsResponse>({
-    queryKey: ["my-quote-requests", user?.id ?? "current-user", "pending", page],
+    queryKey: ["my-quote-requests", user?.id ?? "current-user", page],
     queryFn: () => {
       if (!token) throw new Error("Please sign in to view your quote requests.");
       return fetchQuoteRequests(token, page);
@@ -137,11 +140,8 @@ const RequestQuoteContainer = () => {
     mutationKey: ["delete-my-quote-request"],
     mutationFn: async (quoteId) => {
       if (!token) throw new Error("Please sign in to delete this request.");
-      const apiUrl =
-        process.env.NEXT_PUBLIC_QUOTE_API_URL ||
-        "http://localhost:5002/api/v1";
       const response = await fetch(
-        `${apiUrl}/qoute/my/${encodeURIComponent(quoteId)}`,
+        `${getApiUrl()}/qoute/my/${encodeURIComponent(quoteId)}`,
         {
           method: "DELETE",
           headers: {
@@ -217,10 +217,10 @@ const RequestQuoteContainer = () => {
         <div className="flex min-h-[280px] flex-col items-center justify-center rounded-[8px] border border-[#E8ECF2] bg-white px-6 text-center">
           <Inbox className="h-10 w-10 text-[#98A2B3]" />
           <h2 className="mt-3 text-[16px] font-bold text-[#292D73]">
-            No pending quote requests
+            No quote requests
           </h2>
           <p className="mt-1 text-[12px] text-[#667085]">
-            Your pending quote requests will appear here.
+            Your quote requests will appear here.
           </p>
         </div>
       ) : (
@@ -252,7 +252,7 @@ const RequestQuoteContainer = () => {
                       {quote.status}
                     </span>
                   </div>
-                  <div className="flex items-center justify-center gap-2 px-3 py-5">
+                  <div className="flex items-center justify-center gap-2 px-3 py-5 ">
                     <button
                       type="button"
                       onClick={() => setSelectedQuote(quote)}

@@ -10,6 +10,8 @@ export type BusinessOverviewData = {
   serviceArea?: string;
   businessEmail?: string;
   email?: string;
+  phoneNumber?: string;
+  phone?: string;
   businessWebsiteUrl?: string;
   city?: string;
   state?: string;

@@ -42,7 +42,7 @@ const SaveServicesContainer = () => {
         </div>
       ) : (
         <>
-          <SavedBusinessGrid businesses={data.data} />
+          <SavedBusinessGrid businesses={data?.data} />
           {totalPages > 1 && (
             <div className="mt-6 flex items-center justify-center gap-3">
               <button type="button" disabled={page === 1 || isFetching} onClick={() => setPage((current) => current - 1)} className="h-9 rounded-[4px] border border-[#B8C0CC] px-4 text-[12px] font-semibold text-[#475467] disabled:opacity-50">Previous</button>

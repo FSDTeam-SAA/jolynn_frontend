@@ -1,7 +1,8 @@
 "use client";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import DeleteModal from "@/components/modals/delete-modal";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AlertCircle,
   ChevronLeft,
@@ -9,6 +10,7 @@ import {
   Flag,
   Mail,
   Phone,
+  Trash2,
   X,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -18,11 +20,22 @@ import { toast } from "sonner";
 
 type HelpWantedPost = {
   _id: string;
-  userId?: string;
+  userId?:
+    | string
+    | {
+        _id: string;
+        firstName?: string;
+        lastName?: string;
+        email?: string;
+        username?: string;
+        phoneNumber?: string;
+        profilePicture?: string;
+      };
   username: string;
   email: string;
   zipcode: string;
   category: string;
+  profilePicture: string;
   phone: string;
   message: string;
   createdAt: string;
@@ -55,7 +68,17 @@ type JobReportResponse = {
   };
 };
 
+type DeleteHelpWantedResponse = {
+  statusCode: number;
+  success: boolean;
+  message: string;
+  data: HelpWantedPost;
+};
+
 const PAGE_LIMIT = 10;
+
+const getPostUserId = (post: HelpWantedPost) =>
+  typeof post.userId === "string" ? post.userId : post.userId?._id;
 
 const fetchJobPosts = async (page: number): Promise<HelpWantedResponse> => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -101,13 +124,17 @@ const JobPostsSkeleton = () => (
 );
 
 const JobPostsContainer = () => {
+  const queryClient = useQueryClient();
   const { data: session } = useSession();
   const sessionUser = session?.user as
-    | { token?: string; accessToken?: string }
+    | { id?: string; token?: string; accessToken?: string }
     | undefined;
+
+
   const token = sessionUser?.accessToken ?? sessionUser?.token;
   const [page, setPage] = useState(1);
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
+  const [postToDelete, setPostToDelete] = useState<HelpWantedPost | null>(null);
   const [reportMessage, setReportMessage] = useState("");
   const jobPostsQuery = useQuery<HelpWantedResponse>({
     queryKey: ["help-wanted", page, PAGE_LIMIT],
@@ -151,6 +178,45 @@ const JobPostsContainer = () => {
       setSelectedPostId(null);
       setReportMessage("");
       toast.success(result.message);
+    },
+    onError: (error) => toast.error(error.message),
+  });
+
+  const deletePostMutation = useMutation<
+    DeleteHelpWantedResponse,
+    Error,
+    HelpWantedPost
+  >({
+    mutationKey: ["delete-help-wanted"],
+    mutationFn: async (post) => {
+      if (!token) throw new Error("Please sign in to delete this post.");
+      if (!sessionUser?.id || getPostUserId(post) !== sessionUser.id) {
+        throw new Error("You can only delete your own help post.");
+      }
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      if (!apiUrl) throw new Error("The help wanted service is not configured.");
+
+      const response = await fetch(
+        `${apiUrl}/help-wanted/${encodeURIComponent(post?._id)}`,
+        {
+          method: "DELETE",
+          headers: {
+            accept: "*/*",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+      const result = (await response.json()) as DeleteHelpWantedResponse;
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Unable to delete this help post.");
+      }
+      return result;
+    },
+    onSuccess: async (result) => {
+      setPostToDelete(null);
+      if (posts.length === 1 && page > 1) setPage((current) => current - 1);
+      await queryClient.invalidateQueries({ queryKey: ["help-wanted"] });
+      toast.success(result.message || "Help post deleted successfully.");
     },
     onError: (error) => toast.error(error.message),
   });
@@ -223,7 +289,7 @@ const JobPostsContainer = () => {
                   <div className="px-4 pb-4 pt-4 sm:px-5 sm:pb-5 lg:px-6">
                     <div className="flex items-center gap-2.5">
                       <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-lg font-extrabold uppercase text-white shadow-[0_3px_10px_rgba(41,45,115,0.22)] sm:h-12 sm:w-12">
-                        {post.username.trim().charAt(0) || "?"}
+                        {post?.profilePicture || post.username.trim().charAt(0)}
                       </div>
 
                       <div className="min-w-0">
@@ -264,6 +330,20 @@ const JobPostsContainer = () => {
                     </p>
 
                     <div className="mt-5 flex flex-col justify-start gap-2 sm:flex-row sm:justify-end">
+                      {sessionUser?.id && getPostUserId(post) === sessionUser.id && (
+                        <button
+                          type="button"
+                          onClick={() => setPostToDelete(post)}
+                          disabled={
+                            deletePostMutation.isPending &&
+                            deletePostMutation.variables?._id === post._id
+                          }
+                          className="inline-flex h-9 w-full items-center justify-center rounded-[5px] border border-red-500 bg-white px-1 text-red-600 transition hover:bg-red-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-50 sm:w-9"
+                          aria-label="Delete your help post"
+                        >
+                          <Trash2 className="h-6 w-6" />
+                        </button>
+                      )}
                       <button
                         type="button"
                         onClick={() => openReportForm(post._id)}
@@ -273,7 +353,7 @@ const JobPostsContainer = () => {
                         Report
                       </button>
                       <Link
-                        href={`mailto:${post.email}`}
+                        href={`mailto:${post?.email}`}
                         className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-[5px] bg-primary px-4 text-xs font-extrabold text-white shadow-[0_5px_12px_rgba(41,45,115,0.22)] transition hover:bg-[#1F2464] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2 sm:w-auto sm:min-w-[198px] md:text-sm"
                       >
                         <Mail className="h-5 w-5" />
@@ -392,6 +472,19 @@ const JobPostsContainer = () => {
           </form>
         </div>
       )}
+      <DeleteModal
+        isOpen={Boolean(postToDelete)}
+        onClose={() => {
+          if (!deletePostMutation.isPending) setPostToDelete(null);
+        }}
+        onConfirm={() => {
+          if (postToDelete && !deletePostMutation.isPending) {
+            deletePostMutation.mutate(postToDelete);
+          }
+        }}
+        title="Delete help post?"
+        desc="Are you sure you want to delete your help post? This action cannot be undone."
+      />
     </section>
   );
 };
