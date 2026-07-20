@@ -20,6 +20,7 @@ import { signOut, useSession } from "next-auth/react";
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import LogoutModal from "@/components/modals/LogoutModal";
+import { useProfileQuery } from "@/hooks/APicalling";
 
 const navigation = [
   { name: "Dashboard Overview", href: "/overview", icon: LayoutDashboard },
@@ -70,10 +71,16 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
   const { data: session } = useSession();
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const user = session?.user as
-    | { name?: string; email?: string; profileImage?: string }
+    | { name?: string; email?: string; token?: string; accessToken?: string }
     | undefined;
+  const token = user?.accessToken ?? user?.token;
+  const { data: profileResponse } = useProfileQuery(token);
+  const profile = profileResponse?.data;
+  const displayName =
+    profile?.fullName || user?.name || "User";
+  const displayEmail = profile?.email || user?.email || "";
   const initials =
-    user?.name
+    displayName
       ?.split(" ")
       .map((part) => part[0])
       .join("")
@@ -165,8 +172,8 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
           <div className="mb-3 flex items-center gap-3">
             <Avatar className="h-10 w-10 border border-[#CBA24A]/30">
               <AvatarImage
-                src={user?.profileImage}
-                alt={user?.name || "User profile"}
+                src={profile?.profilePicture}
+                alt={displayName}
                 className="object-cover"
               />
               <AvatarFallback className="bg-[#CBA24A]/20 text-xs font-semibold text-[#E5BE6A]">
@@ -176,10 +183,10 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
 
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-[#344054]">
-                {user?.name || "Admin User"}
+                {displayName}
               </p>
               <p className="truncate text-[11px] text-[#667085]">
-                {user?.email || "admin@example.com"}
+                {displayEmail}
               </p>
             </div>
           </div>
@@ -200,7 +207,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
         onClose={() => setIsLogoutModalOpen(false)}
         onConfirm={() => {
           setIsLogoutModalOpen(false);
-          void signOut({ callbackUrl: "/signin" });
+          void signOut({ callbackUrl: "/" });
         }}
       />
     </>

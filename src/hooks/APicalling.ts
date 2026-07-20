@@ -10,7 +10,7 @@ export function useProfileAvatarUpdate(token: string, onSuccessCallback?: () => 
         mutationFn: (payload: File) => updateAvatarInfo(token, payload),
         onSuccess: () => {
             toast.success("Profile image updated successfully");
-            queryClient.invalidateQueries({ queryKey: ["me"] });
+            queryClient.invalidateQueries({ queryKey: ["user-profile"] });
             if (onSuccessCallback) onSuccessCallback();
         },
         onError: (error: unknown) => {
@@ -41,7 +41,7 @@ export function useChangePassword(
 
 export function useProfileQuery(token: string | undefined) {
     return useQuery<UserResponse>({
-        queryKey: ["me"],
+        queryKey: ["user-profile"],
         queryFn: () => {
             if (!token) throw new Error("Token is missing")
             return getProfile(token)
@@ -62,7 +62,7 @@ export function useProfileUpdate(
         onSuccess: (data) => {
             toast.success(data?.message || "Profile updated successfully");
             if (onSuccessCallback) onSuccessCallback(data);
-            queryClient.invalidateQueries({ queryKey: ["me"] });
+            queryClient.invalidateQueries({ queryKey: ["user-profile"] });
         },
         onError: (error: unknown) => {
             if (error instanceof Error) toast.error(error.message || "Update failed");
