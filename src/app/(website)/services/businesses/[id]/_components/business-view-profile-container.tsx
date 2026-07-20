@@ -61,13 +61,13 @@ const ContactCard = ({
     </h2>
 
     <div className="mt-4 space-y-3">
-      {(business.phoneNumber || business.phone) && (
+      {(business?.phoneNumber) && (
         <Link
-          href={`tel:${business.phoneNumber || business.phone}`}
+          href={`tel:${business?.phoneNumber || "#"}`}
           className="flex h-10 items-center justify-center gap-2 rounded-[4px] bg-[#292D73] px-4 text-[12px] font-extrabold text-white transition hover:bg-[#20255F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2"
         >
           <Phone className="h-3.5 w-3.5" />
-          {business.phoneNumber || business.phone}
+          {business?.phoneNumber || "N/A"}
         </Link>
       )}
 

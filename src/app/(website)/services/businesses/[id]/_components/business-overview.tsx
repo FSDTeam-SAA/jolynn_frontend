@@ -13,9 +13,7 @@ const BusinessOverview = ({ overview }: BusinessOverviewProps) => {
           About This Business
         </h2>
         <p className="mt-3 text-[14px] font-medium leading-[1.45] text-[#111827]">
-          {[overview.businessName, overview.category, overview.address, overview.city, overview.state]
-            .filter(Boolean)
-            .join(" · ")}
+          {overview?.bio || "N/A"}
         </p>
       </article>
 {/* 
