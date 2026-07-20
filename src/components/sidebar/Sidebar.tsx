@@ -105,6 +105,9 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
           </button>
         </div>
 
+
+        
+
         {/* Logo */}
         <div className="flex h-[80px] shrink-0 items-center justify-center">
           <Image
