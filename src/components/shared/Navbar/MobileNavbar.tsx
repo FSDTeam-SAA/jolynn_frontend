@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
+import { LayoutDashboard, LogOut, Menu, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -15,9 +15,14 @@ type NavItem = {
 
 type MobileNavbarProps = {
   navItems: NavItem[];
+  isAuthenticated: boolean;
+  isAuthLoading: boolean;
+  profileImage?: string;
+  displayName: string;
+  onLogout: () => void;
 };
 
-const MobileNavbar = ({ navItems }: MobileNavbarProps) => {
+const MobileNavbar = ({ navItems, isAuthenticated, isAuthLoading, profileImage, displayName, onLogout }: MobileNavbarProps) => {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -78,13 +83,26 @@ const MobileNavbar = ({ navItems }: MobileNavbarProps) => {
           </nav>
 
           <div className="space-y-3 border-t border-[#9FB8B7] pt-5">
-            <Link
-              href="/login"
-              onClick={closeSheet}
-              className="flex h-12 items-center justify-center rounded-[5px] border border-[#22245F] px-4 text-base font-semibold text-[#22245F] transition hover:bg-white/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22245F]"
-            >
-              Login
-            </Link>
+            {isAuthLoading ? (
+              <div className="h-12 animate-pulse rounded-[5px] bg-white/60" />
+            ) : isAuthenticated ? (
+              <div className="space-y-2">
+                <div className="mb-4 flex items-center gap-3 rounded-[5px] bg-white/60 p-3">
+                  <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-[#22245F] bg-white text-[#22245F]">
+                    {profileImage ? <Image src={profileImage} alt={displayName} fill sizes="44px" className="object-cover" /> : <User className="h-5 w-5" />}
+                  </div>
+                  <span className="min-w-0 truncate text-sm font-semibold text-[#22245F]">{displayName}</span>
+                </div>
+                <Link href="/account/profile" onClick={closeSheet} className="flex h-12 items-center gap-3 rounded-[5px] border border-[#22245F] px-4 text-base font-semibold text-[#22245F] transition hover:bg-white/60">
+                  <LayoutDashboard className="h-5 w-5" />Dashboard
+                </Link>
+                <button type="button" onClick={() => { closeSheet(); onLogout(); }} className="flex h-12 w-full items-center gap-3 rounded-[5px] border border-red-500 px-4 text-base font-semibold text-red-600 transition hover:bg-red-50">
+                  <LogOut className="h-5 w-5" />Logout
+                </button>
+              </div>
+            ) : (
+              <Link href="/login" onClick={closeSheet} className="flex h-12 items-center justify-center rounded-[5px] border border-[#22245F] px-4 text-base font-semibold text-[#22245F] transition hover:bg-white/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22245F]">Login</Link>
+            )}
             <Link
               href="/contact"
               onClick={closeSheet}

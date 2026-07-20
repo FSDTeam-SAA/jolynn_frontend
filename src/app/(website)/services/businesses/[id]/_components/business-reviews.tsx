@@ -1,12 +1,15 @@
 "use client";
 
+import { useBusinessReviews } from "@/hooks/use-business-profile-sections";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Star, BadgeCheck } from "lucide-react";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
-import type { BusinessProfile } from "./business-profile-data";
+import { useState } from "react";
+import { toast } from "sonner";
 
 type BusinessReviewsProps = {
-  summary: BusinessProfile["reviewsSummary"];
-  reviews: BusinessProfile["reviews"];
+  businessId: string;
 };
 
 const renderStars = (rating: number, className = "h-4 w-4") =>
@@ -19,17 +22,70 @@ const renderStars = (rating: number, className = "h-4 w-4") =>
     />
   ));
 
-const BusinessReviews = ({ summary, reviews }: BusinessReviewsProps) => {
+const BusinessReviews = ({ businessId }: BusinessReviewsProps) => {
+  const { data: session } = useSession();
+  const queryClient = useQueryClient();
+  const { data, isPending, isError } = useBusinessReviews(businessId);
+  const [rating, setRating] = useState(5);
+  const [message, setMessage] = useState("");
+  const sessionUser = session?.user as
+    | { token?: string; accessToken?: string }
+    | undefined;
+  const token = sessionUser?.accessToken ?? sessionUser?.token;
+  const summary = data?.data.summary;
+  const reviews = data?.data.reviews ?? [];
+  const distribution = [5, 4, 3, 2, 1].map((stars) => {
+    const count = summary?.ratingBreakdown[String(stars) as "1" | "2" | "3" | "4" | "5"] ?? 0;
+    return {
+      stars,
+      percent: summary?.totalReviews ? Math.round((count / summary.totalReviews) * 100) : 0,
+    };
+  });
+
+  const reviewMutation = useMutation({
+    mutationFn: async () => {
+      if (!token) throw new Error("Please sign in to submit a review.");
+      if (!message.trim()) throw new Error("Please write your review.");
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      if (!apiUrl) throw new Error("The reviews API is not configured.");
+      const response = await fetch(`${apiUrl}/reviews`, {
+        method: "POST",
+        headers: {
+          accept: "*/*",
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ businessId, rating, message: message.trim() }),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Unable to submit your review.");
+      }
+      return result;
+    },
+    onSuccess: async (result) => {
+      toast.success(result.message || "Review submitted successfully.");
+      setMessage("");
+      setRating(5);
+      await queryClient.invalidateQueries({ queryKey: ["business-reviews", businessId] });
+      await queryClient.invalidateQueries({ queryKey: ["public-business", businessId] });
+    },
+    onError: (error) => toast.error(error instanceof Error ? error.message : "Unable to submit your review."),
+  });
+
+  if (isPending) return <div className="rounded-[8px] border border-[#E1E7EC] bg-white px-5 py-8 text-[13px] text-[#667085]">Loading reviews...</div>;
+  if (isError || !summary) return <div className="rounded-[8px] border border-[#E1E7EC] bg-white px-5 py-8 text-[13px] text-red-600">Unable to load reviews.</div>;
+
   return (
     <div className="space-y-5">
       <article className="rounded-[8px] border border-[#E1E7EC] bg-white px-5 py-5 shadow-[0_1px_2px_rgba(17,24,39,0.03)]">
         <div className="grid gap-5 sm:grid-cols-[90px_minmax(0,1fr)] sm:items-center">
           <div>
             <p className="text-[34px] font-extrabold leading-none text-[#292D73]">
-              {summary.rating.toFixed(1)}
+              {summary.averageRating.toFixed(1)}
             </p>
             <div className="mt-3 flex items-center gap-[1px]">
-              {renderStars(Math.round(summary.rating), "h-3.5 w-3.5")}
+              {renderStars(Math.round(summary.averageRating), "h-3.5 w-3.5")}
             </div>
             <p className="mt-1 text-[11px] font-medium text-[#667085]">
               {summary.totalReviews} reviews
@@ -37,7 +93,7 @@ const BusinessReviews = ({ summary, reviews }: BusinessReviewsProps) => {
           </div>
 
           <div className="space-y-2">
-            {summary.distribution.map((item) => (
+            {distribution.map((item) => (
               <div
                 key={item.stars}
                 className="grid grid-cols-[18px_12px_minmax(0,1fr)_32px] items-center gap-2 text-[11px] font-medium text-[#667085]"
@@ -60,29 +116,23 @@ const BusinessReviews = ({ summary, reviews }: BusinessReviewsProps) => {
       <div className="space-y-5">
         {reviews.map((review) => (
           <article
-            key={review.id}
+            key={review._id}
             className="rounded-[8px] border border-[#E1E7EC] bg-white px-4 py-4 shadow-[0_1px_2px_rgba(17,24,39,0.03)] sm:px-5"
           >
             <div className="flex items-start justify-between gap-4">
               <div className="flex min-w-0 items-start gap-3">
-                <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full">
-                  <Image
-                    src={review.avatar}
-                    alt={`${review.name} avatar`}
-                    fill
-                    sizes="40px"
-                    className="object-cover"
-                  />
+                <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#EAF2F7] text-xs font-bold text-[#292D73]">
+                  {review.reviewerAvatar ? <Image src={review.reviewerAvatar} alt={`${review.reviewerName} avatar`} fill sizes="40px" className="object-cover" /> : review.reviewerName.charAt(0).toUpperCase()}
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-1">
                     <h3 className="truncate text-[14px] font-extrabold leading-tight text-[#292D73]">
-                      {review.name}
+                      {review.reviewerName}
                     </h3>
                     <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-[#4E67D8]" />
                   </div>
                   <p className="mt-0.5 text-[10px] font-medium text-[#667085]">
-                    {review.date}
+                    {new Intl.DateTimeFormat("en-US", { dateStyle: "medium" }).format(new Date(review.createdAt))}
                   </p>
                 </div>
               </div>
@@ -93,7 +143,7 @@ const BusinessReviews = ({ summary, reviews }: BusinessReviewsProps) => {
             </div>
 
             <p className="mt-3 text-[13px] font-medium leading-[1.45] text-[#172033]">
-              {review.comment}
+              {review.message}
             </p>
           </article>
         ))}
@@ -104,10 +154,16 @@ const BusinessReviews = ({ summary, reviews }: BusinessReviewsProps) => {
           Write a review
         </h2>
         <div className="mt-3 flex items-center gap-1">
-          {renderStars(5, "h-6 w-6")}
+          {Array.from({ length: 5 }).map((_, index) => (
+            <button key={index} type="button" onClick={() => setRating(index + 1)} aria-label={`Rate ${index + 1} stars`}>
+              <Star className={`h-6 w-6 ${index < rating ? "fill-[#FFB800] text-[#FFB800]" : "text-[#D9DEE7]"}`} />
+            </button>
+          ))}
         </div>
 
         <textarea
+          value={message}
+          onChange={(event) => setMessage(event.target.value)}
           className="mt-4 min-h-[126px] w-full resize-none rounded-[5px] border border-[#B8C0CC] px-4 py-3 text-[13px] font-medium text-[#111827] outline-none transition placeholder:text-[#999999] focus:border-[#292D73] focus:ring-2 focus:ring-[#292D73]/15"
           placeholder="Oh my man this is incredible, I never get a service as fast as like this..."
         />
@@ -115,15 +171,18 @@ const BusinessReviews = ({ summary, reviews }: BusinessReviewsProps) => {
         <div className="mt-4 flex items-center justify-between gap-3">
           <button
             type="button"
+            onClick={() => { setMessage(""); setRating(5); }}
             className="h-9 rounded-[6px] border border-[#8290A3] bg-white px-5 text-[13px] font-medium text-[#344054] transition hover:bg-[#F8FAFC] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73]"
           >
             Cancel
           </button>
           <button
             type="button"
+            onClick={() => reviewMutation.mutate()}
+            disabled={reviewMutation.isPending}
             className="h-9 rounded-[6px] bg-[#292D73] px-6 text-[13px] font-bold text-white transition hover:bg-[#20255F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2"
           >
-            Submit
+            {reviewMutation.isPending ? "Submitting..." : "Submit"}
           </button>
         </div>
       </article>

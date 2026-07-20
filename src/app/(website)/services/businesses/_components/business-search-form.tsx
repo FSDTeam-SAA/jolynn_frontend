@@ -4,7 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useServices } from "@/hooks/use-services";
 import { MapPin, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 
 type BusinessSearchFormProps = {
   initialService?: string;
@@ -20,6 +20,23 @@ const BusinessSearchForm = ({
   const [location, setLocation] = useState(initialLocation);
   const { data, isPending, isError, refetch, isFetching } = useServices();
   const services = data?.data ?? [];
+  const canonicalInitialService = useMemo(
+    () =>
+      services.find(
+        (item) =>
+          item._id === initialService ||
+          item.title.toLowerCase() === initialService.toLowerCase(),
+      )?.title || initialService,
+    [initialService, services],
+  );
+
+  useEffect(() => {
+    setService(canonicalInitialService);
+  }, [canonicalInitialService]);
+
+  useEffect(() => {
+    setLocation(initialLocation);
+  }, [initialLocation]);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -74,7 +91,7 @@ const BusinessSearchForm = ({
           type="text"
           value={location}
           onChange={(event) => setLocation(event.target.value)}
-          placeholder="City or Zip code"
+          placeholder="Location"
           className="w-full bg-transparent text-[13px] font-medium text-[#292E78] outline-none placeholder:text-[#7E7E7E]"
         />
       </label>

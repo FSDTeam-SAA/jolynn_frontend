@@ -1,5 +1,6 @@
 export interface UserResponse {
-  status: boolean
+  statusCode: number
+  success: boolean
   message: string
   data: {
     _id: string
@@ -7,12 +8,19 @@ export interface UserResponse {
     lastName: string
     email: string
     phoneNumber: string
-    address: string
-    designation: string
+    address?: string
+    city?: string
+    state?: string
+    country?: string
+    postcode?: string
+    gender: "male" | "female"
+    username: string
     role: string
+    status: string
+    tag: string
     createdAt: string
     updatedAt: string
     __v: number
-    profileImage: string
+    profilePicture?: string
   }
 }
