@@ -81,6 +81,8 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
       .toUpperCase() || "U";
 
   return (
+
+    
     <>
       {/* Mobile Overlay */}
       {open && (
