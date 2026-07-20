@@ -175,10 +175,10 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
             </Avatar>
 
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-[#F5E7C8]">
+              <p className="truncate text-sm font-semibold text-[#344054]">
                 {user?.name || "Admin User"}
               </p>
-              <p className="truncate text-[11px] text-[#9A8060]">
+              <p className="truncate text-[11px] text-[#667085]">
                 {user?.email || "admin@example.com"}
               </p>
             </div>
