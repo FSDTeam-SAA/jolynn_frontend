@@ -4,8 +4,9 @@ export interface UserResponse {
   message: string
   data: {
     _id: string
-    firstName: string
-    lastName: string
+    firstName?: string
+    lastName?: string
+    fullName?: string
     email: string
     phoneNumber: string
     address?: string
@@ -22,5 +23,11 @@ export interface UserResponse {
     updatedAt: string
     __v: number
     profilePicture?: string
+    businessName?: string
+    businessEmail?: string
+    businessWebsiteUrl?: string
+    serviceArea?: string
+    category?: string
+    bio?: string
   }
 }

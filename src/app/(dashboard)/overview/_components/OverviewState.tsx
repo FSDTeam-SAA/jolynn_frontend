@@ -1,36 +1,42 @@
-import React from 'react'
+"use client";
+
 import { Card, CardContent } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton";
+import { useBusinessOverview } from "@/hooks/use-dashboard-overview";
 import { Image, Box, Star, MessageSquare } from "lucide-react"
+import { useSession } from "next-auth/react";
 
 // কার্ডের ডেটাগুলোকে একটা অ্যারেতে সাজিয়ে নেওয়া হয়েছে যাতে কোড ক্লিন থাকে
 const cardData = [
   {
     title: "Gallery Image",
-    value: "06",
-    percentage: "+180.1%",
+    key: "galleryImages" as const,
     icon: Image,
   },
   {
     title: "Total Services",
-    value: "12",
-    percentage: "+180.1%",
+    key: "totalServices" as const,
     icon: Box,
   },
   {
     title: "Total Reviews",
-    value: "12",
-    percentage: "+180.1%",
+    key: "totalReviews" as const,
     icon: Star,
   },
   {
     title: "Total Quote",
-    value: "12",
-    percentage: "+180.1%",
+    key: "totalQuotes" as const,
     icon: MessageSquare,
   },
 ]
 
 export default function OverviewStates() {
+  const { data: session, status } = useSession();
+  const user = session?.user as { token?: string; accessToken?: string } | undefined;
+  const token = user?.accessToken ?? user?.token;
+  const overviewQuery = useBusinessOverview(token);
+  const isLoading = status === "loading" || (Boolean(token) && overviewQuery.isPending);
+
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-10">
       {cardData.map((item, index) => {
@@ -49,11 +55,23 @@ export default function OverviewStates() {
                   {item.title}
                 </p>
                 <h3 className="text-3xl font-bold tracking-tight text-[#0f172a]">
-                  {item.value}
+                  {isLoading ? (
+                    <Skeleton className="h-9 w-12" />
+                  ) : overviewQuery.isError || !overviewQuery.data ? (
+                    "—"
+                  ) : (
+                    overviewQuery.data.data[item.key]
+                  )}
                 </h3>
-                <p className="text-xs text-emerald-600 font-medium">
-                  {item.percentage} <span className="text-gray-400 font-normal">from last month</span>
-                </p>
+                {overviewQuery.isError && (
+                  <button
+                    type="button"
+                    onClick={() => overviewQuery.refetch()}
+                    className="text-left text-xs font-medium text-red-500 hover:underline"
+                  >
+                    Retry
+                  </button>
+                )}
               </div>
             </CardContent>
           </Card>
