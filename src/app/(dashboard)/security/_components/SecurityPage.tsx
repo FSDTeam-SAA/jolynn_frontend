@@ -19,15 +19,17 @@ type ChangePasswordResponse = {
 };
 
 function getApiBaseUrl() {
-  const baseUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL;
-  if (!baseUrl) throw new Error("Backend API URL is not configured.");
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!baseUrl) throw new Error("The change password API is not configured.");
   return baseUrl.replace(/\/$/, "");
 }
 
 function SecurityPage() {
   const { data: session } = useSession();
-  const accessToken = (session?.user as { accessToken?: string } | undefined)
-    ?.accessToken;
+  const user = session?.user as
+    | { accessToken?: string; token?: string }
+    | undefined;
+  const accessToken = user?.accessToken ?? user?.token;
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -71,6 +73,7 @@ function SecurityPage() {
     confirmPassword.length > 0 && newPassword === confirmPassword;
   const isFormValid =
     currentPassword.length > 0 &&
+    currentPassword !== newPassword &&
     requirements.every((requirement) => requirement.valid) &&
     passwordsMatch;
 
@@ -120,6 +123,10 @@ function SecurityPage() {
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!accessToken) return toast.error("Please sign in to change your password.");
+    if (currentPassword === newPassword) {
+      return toast.error("New password must be different from current password.");
+    }
     if (!isFormValid || changePasswordMutation.isPending) return;
     changePasswordMutation.mutate();
   };
@@ -127,7 +134,7 @@ function SecurityPage() {
   return (
     <section className="rounded-[9px] bg-white px-4 py-4 sm:px-5">
       <h1 className="text-[18px] font-medium text-[#171717]">
-        Changes Password
+        Change Password
       </h1>
 
       <form
@@ -201,6 +208,12 @@ function SecurityPage() {
             <li className="flex items-center gap-2 text-[#FF254B]">
               <X className="h-4 w-4 shrink-0" strokeWidth={1.7} />
               <span>New password and confirm password must match.</span>
+            </li>
+          )}
+          {newPassword && currentPassword === newPassword && (
+            <li className="flex items-center gap-2 text-[#FF254B]">
+              <X className="h-4 w-4 shrink-0" strokeWidth={1.7} />
+              <span>New password must be different from current password.</span>
             </li>
           )}
         </ul>

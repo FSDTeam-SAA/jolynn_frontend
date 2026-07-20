@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import { useProfileQuery } from "@/hooks/APicalling";
+import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSession } from "next-auth/react";
 import { Menu } from "lucide-react";
@@ -12,41 +13,24 @@ interface HeaderProps {
 }
 
 export default function Header({ setSidebarOpen }: HeaderProps) {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const avatarRef = useRef<HTMLDivElement>(null);
-
   const pathname = usePathname();
 
   const pageInfo = getPageConfig(pathname);
 
   const { data: session } = useSession();
 
-  const user = session?.user as {
+  const sessionUser = session?.user as {
+    name?: string;
     email?: string;
-  };
-
-  const email = user?.email;
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node) &&
-        avatarRef.current &&
-        !avatarRef.current.contains(event.target as Node)
-      ) {
-        setIsDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+    token?: string;
+    accessToken?: string;
+  } | undefined;
+  const token = sessionUser?.accessToken ?? sessionUser?.token;
+  const { data: profileResponse } = useProfileQuery(token);
+  const profile = profileResponse?.data;
+  const displayName = profile?.fullName || sessionUser?.name || "User";
+  const email = profile?.email || sessionUser?.email || "";
+  const initials = displayName.split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase();
 
   return (
     <div className="fixed top-0 right-0 left-0 z-30 h-[100px] flex items-center justify-between px-4 md:px-6 bg-[#FFFFFF]">
@@ -74,18 +58,15 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
 
       {/* Right Side */}
       <div className="relative flex items-center">
-        <div
-          ref={avatarRef}
-          className="flex items-center gap-2 cursor-pointer"
-          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-        >
-          <span className="hidden sm:block text-sm text-[#F7E4B3]">
-            {email}
-          </span>
+        <div className="flex items-center gap-3">
+          <div className="hidden max-w-[220px] text-right sm:block">
+            <p className="truncate text-sm font-semibold text-[#344054]">{displayName}</p>
+            <p className="truncate text-[11px] text-[#667085]">{email}</p>
+          </div>
 
-          <Avatar className="h-9 w-9">
-            <AvatarImage src="/placeholder.svg" />
-            <AvatarFallback className="text-black">TA</AvatarFallback>
+          <Avatar className="h-10 w-10 border border-[#CBA24A]/30">
+            <AvatarImage src={profile?.profilePicture} alt={displayName} className="object-cover" />
+            <AvatarFallback className="bg-[#CBA24A]/20 text-xs font-semibold text-[#30347F]">{initials || "U"}</AvatarFallback>
           </Avatar>
         </div>
       </div>
