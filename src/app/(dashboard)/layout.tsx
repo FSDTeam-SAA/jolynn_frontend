@@ -8,7 +8,7 @@ function Layout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#382A1A]">
+    <div className="min-h-screen bg-[#F5F8F7]">
       <Header setSidebarOpen={setSidebarOpen} />
 
       <div className="flex min-h-screen">
@@ -18,7 +18,7 @@ function Layout({ children }: { children: React.ReactNode }) {
         />
 
 
-        <main className="mt-[100px] min-w-0 flex-1 overflow-x-auto bg-[#382A1A] p-4 md:p-6">
+        <main className="mt-[100px] min-w-0 flex-1 overflow-x-auto bg-[#F5F8F7] p-4 md:p-6">
           {children}
         </main>
       </div>

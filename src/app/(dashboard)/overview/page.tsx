@@ -1,6 +1,6 @@
 import React from 'react'
-import OverviewStates from '../_components/OverviewStates'
 import RecentQuote from './_components/RecentQuote'
+import OverviewStates from './_components/OverviewState'
 
 function page() {
   return (

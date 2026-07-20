@@ -17,43 +17,45 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { signOut, useSession } from "next-auth/react";
+import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import LogoutModal from "@/components/modals/LogoutModal";
 
 const navigation = [
-  { name: "Dashboard Overview", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Dashboard Overview", href: "/overview", icon: LayoutDashboard },
   {
-    name: "Retailer Management",
-    href: "/retailer-management",
+    name: "My Business",
+    href: "/my-business",
     icon: CreditCard,
   },
   {
-    name: "Master Database",
-    href: "/master-database",
+    name: "My Services",
+    href: "/my-services",
     icon: Plane,
   },
   {
-    name: "Product Approval",
-    href: "/product-approval",
+    name: "My Gallery",
+    href: "/my-gallery",
     icon: GraduationCap,
   },
   {
-    name: "User Management",
-    href: "/user-management",
+    name: "My Reviews",
+    href: "/my-reviews",
     icon: MapPin,
   },
   {
-    name: "Subscription",
-    href: "/subscription",
+    name: "Contact Info",
+    href: "/contact-info",
     icon: CalendarRange,
   },
   {
-    name: "Content Management",
-    href: "/content-management",
+    name: "Quote Request",
+    href: "/quote-request",
     icon: FileText,
   },
   {
-    name: "Settings",
-    href: "/settings",
+    name: "Security",
+    href: "/security",
     icon: UserRound,
   },
 ];
@@ -66,6 +68,7 @@ interface SidebarProps {
 export function Sidebar({ open, setOpen }: SidebarProps) {
   const pathname = usePathname();
   const { data: session } = useSession();
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const user = session?.user as
     | { name?: string; email?: string; profileImage?: string }
     | undefined;
@@ -89,7 +92,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
 
       <div
         className={cn(
-          "fixed lg:sticky top-0 left-0 h-screen w-[280px] lg:w-[320px] bg-[#2A1E10] z-50 flex flex-col transition-transform duration-300",
+          "fixed lg:sticky top-0 left-0 h-screen w-[280px] lg:w-[320px] bg-[#FFFFFF] z-50 flex flex-col transition-transform duration-300",
           open ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
         )}
       >
@@ -101,19 +104,19 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
         </div>
 
         {/* Logo */}
-        <div className="flex h-[104px] shrink-0 items-center justify-center">
+        <div className="flex h-[80px] shrink-0 items-center justify-center">
           <Image
-            src="/assets/images/dashboard-logo.png"
+            src="/assets/images/logo.png"
             alt="Dashboard logo"
-            width={78}
-            height={74}
+            width={64}
+            height={64}
             priority
-            className="h-auto w-[150px] object-contain drop-shadow-[0_4px_8px_rgba(205,155,70,0.25)]"
+            className="h-[64px] w-[64px] object-contain"
           />
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 space-y-2 flex flex-col items-center px-3 overflow-y-auto">
+        <nav className="flex-1 space-y-2 flex flex-col items-center px-3 overflow-y-auto mt-5">
           {navigation.map((item) => {
             const isActive =
               pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -126,19 +129,22 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
                 className={cn(
                   "flex w-full items-center gap-3 rounded-[4px] px-4 py-[11px] text-sm font-medium transition-all duration-200",
                   isActive
-                    ? "bg-[linear-gradient(91.71deg,_#CBA24A4D_0.08%,_#CBA24A33_99.92%)] text-white border-l-[3px] "
-                    : "text-[#616161] hover:bg-slate-200",
+                    ? "bg-[#30347F] text-white"
+                    : "text-[#344054] hover:bg-[#F3F4FA] hover:text-[#30347F]",
                 )}
               >
                 <item.icon
                   className={cn(
                     "h-5 w-5",
-                    isActive ? "text-white" : "text-[#9A8060]",
+                    isActive ? "text-white" : "text-[#667085]",
                   )}
                 />
 
                 <span
-                  className={cn("text-base", isActive ? "font-semibold" : "text-[#9A8060]")}
+                  className={cn(
+                    "text-base",
+                    isActive ? "font-semibold text-white" : "text-[#344054]",
+                  )}
                 >
                   {item.name}
                 </span>
@@ -148,7 +154,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
         </nav>
 
         {/* User profile and logout */}
-        <div className="shrink-0 bg-[#24180D] px-5 py-4">
+        <div className="shrink-0 bg-[#FFFFFF] px-5 py-4">
           <div className="mb-3 flex items-center gap-3">
             <Avatar className="h-10 w-10 border border-[#CBA24A]/30">
               <AvatarImage
@@ -173,7 +179,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
 
           <button
             type="button"
-            onClick={() => signOut({ callbackUrl: "/signin" })}
+            onClick={() => setIsLogoutModalOpen(true)}
             className="flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-[5px] border border-[#D83939] text-sm font-medium text-[#F04444] transition-colors duration-200 hover:bg-[#D83939] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D83939]/50"
           >
             <LogOut className="h-4 w-4" />
@@ -181,6 +187,15 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
           </button>
         </div>
       </div>
+
+      <LogoutModal
+        isOpen={isLogoutModalOpen}
+        onClose={() => setIsLogoutModalOpen(false)}
+        onConfirm={() => {
+          setIsLogoutModalOpen(false);
+          void signOut({ callbackUrl: "/signin" });
+        }}
+      />
     </>
   );
 }
