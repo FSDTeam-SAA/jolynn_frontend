@@ -31,16 +31,17 @@ const footerColumns = [
     links: [
       { label: "Find Services", href: "/services" },
       { label: "Advertise with Us", href: "/advertise-with-us" },
-      { label: "How It Works", href: "#" },
-      { label: "Leave a Review", href: "/reviews" },
+      { label: "How It Works", href: "/#how_it_works" },
+      // { label: "Leave a Review", href: "/reviews" },
     ],
   },
   {
     title: "For Businesses",
     links: [
-      { label: "Get Listed", href: "#" },
-      { label: "Pricing", href: "#" },
-      { label: "Success Stories", href: "#" },
+      { label: "Get Listed", href: "/services/businesses" },
+      { label: "Leave a Review", href: "/reviews" },
+      // { label: "Pricing", href: "#" },
+      // { label: "Success Stories", href: "#" },
     ],
   },
   {
