@@ -141,8 +141,8 @@ const reviews: Review[] = [
 
 const ReviewContainer = () => {
   return (
-    <section className="bg-white px-4 py-12 sm:px-6 md:py-16 lg:px-8 lg:py-20">
-      <div className="container max-w-[1100px]">
+    <section className="bg-white px-4 py-12 sm:px-6 md:py-16 lg:px-8 lg:py-20 xl:py-24">
+      <div className="container">
         <div className="mx-auto max-w-[520px] text-center">
           <h2 className="text-[28px] font-extrabold leading-tight text-[#292D73] sm:text-[32px] lg:text-[36px]">
             What Our Users Say
@@ -153,14 +153,14 @@ const ReviewContainer = () => {
           </p>
         </div>
 
-        <div className="mt-9 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:mt-11 lg:grid-cols-3 lg:gap-x-6 lg:gap-y-10">
+        <div className="mx-auto mt-9 grid max-w-[1080px] grid-cols-1 gap-5 sm:grid-cols-2 lg:mt-11 lg:grid-cols-3 lg:gap-x-5 lg:gap-y-10">
           {reviews.map((review) => (
             <article
               key={review.id}
-              className={`rounded-[7px] bg-[#F0FEFE] px-4 pb-4 pt-3.5 shadow-[0_8px_18px_rgba(30,45,75,0.14)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_15px_28px_rgba(30,45,75,0.18)] sm:px-5 ${
+              className={`flex min-h-[190px] flex-col rounded-[7px] px-4 pb-4 pt-3.5 shadow-[0_7px_16px_rgba(30,45,75,0.16)] transition-[transform,box-shadow] duration-500 ease-out hover:-translate-y-1 hover:shadow-[0_14px_26px_rgba(30,45,75,0.2)] motion-reduce:transform-none motion-reduce:transition-none sm:px-4 ${
                 review.featured
-                  ? "border border-[#315CFF]"
-                  : "border border-[#D9F0F1]"
+                  ? "border border-[#315CFF] bg-white"
+                  : "border border-[#D9F0F1] bg-[#F0FEFE]"
               }`}
             >
               <div className="flex items-center gap-[2px]" aria-label={`${review.rating} out of 5 stars`}>
@@ -172,19 +172,19 @@ const ReviewContainer = () => {
                 ))}
               </div>
 
-              <p className="mt-3 min-h-[88px] text-[12px] font-medium leading-[1.45] text-[#273142]">
+              <p className="mt-3 flex-1 text-[12px] font-medium leading-[1.45] text-[#273142]">
                 &ldquo;{review.quote}&rdquo;
               </p>
 
-              <div className="my-4 h-px bg-[#A7DDE4]" />
+              <div className="mb-3 mt-4 h-px bg-[#A7DDE4]" />
 
               <div className="flex items-center gap-3">
-                <div className="relative h-[42px] w-[42px] shrink-0 overflow-hidden rounded-full ring-2 ring-white">
+                <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full ring-2 ring-white">
                   <Image
                     src={review.avatar}
                     alt={`${review.name} avatar`}
                     fill
-                    sizes="42px"
+                    sizes="40px"
                     className="object-cover"
                   />
                 </div>
@@ -194,7 +194,7 @@ const ReviewContainer = () => {
                     {review.name}
                   </h3>
                   <p className="mt-1 truncate text-[10px] font-medium leading-tight text-[#667085]">
-                    {review.role} - {review.location}
+                    {review.role} · {review.location}
                   </p>
                 </div>
               </div>

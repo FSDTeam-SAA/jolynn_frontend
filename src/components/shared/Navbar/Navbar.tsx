@@ -85,7 +85,7 @@ const Navbar = () => {
           className="hidden min-w-0 flex-[2] justify-center lg:flex"
           aria-label="Primary navigation"
         >
-          <ul className="flex min-w-0 items-center justify-center gap-5 text-[13px] font-medium text-black xl:gap-8">
+          <ul className="flex min-w-0 items-center justify-center gap-5 text-[15px] font-medium text-black xl:gap-8">
             {navItems.map((item) => {
               const isActive =
                 pathname === item.href ||

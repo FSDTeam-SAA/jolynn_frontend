@@ -18,7 +18,7 @@ const ServicesContainer = () => {
           <h1 className="text-[28px] font-extrabold leading-tight text-[#292E78] sm:text-[32px] md:text-[36px]">
             Select a Service
           </h1>
-          <p className="mt-3 text-[12px] font-medium text-[#515E6E] sm:text-[13px]">
+          <p className="mt-3 text-xs lg:text-sm  font-medium text-[#515E6E] sm:text-[13px]">
             Choose a service to get started
           </p>
         </div>
@@ -87,12 +87,12 @@ const ServicesContainer = () => {
                 <h2 className="mt-3 text-[16px] font-extrabold leading-none text-[#292E78]">
                   {service.title}
                 </h2>
-                <p className="mt-2 min-h-[34px] max-w-[210px] text-[10.5px] font-medium leading-[1.15] text-[#6F7D90]">
+                <p className="mt-2 min-h-[50px] line-clamp-2 text-xs md:text-sm font-medium leading-[1.15] text-[#6F7D90]">
                   {service.description}
                 </p>
                 <Link
                   href={`/services/businesses?service=${encodeURIComponent(service.title)}`}
-                  className="mt-auto flex h-[34px] w-full items-center justify-center rounded-[5px] bg-[#F1F1F1] text-[10.5px] font-semibold text-[#171B2F] transition hover:bg-[#292E78] hover:text-white"
+                  className="mt-auto flex h-[34px] w-full items-center justify-center rounded-[5px] bg-[#F1F1F1] text-xs font-semibold text-[#171B2F] transition hover:bg-[#292E78] hover:text-white"
                 >
                   Get Started
                 </Link>

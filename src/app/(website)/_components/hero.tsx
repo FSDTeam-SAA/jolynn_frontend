@@ -112,9 +112,12 @@ const Hero = () => {
   return (
     <section className="relative overflow-hidden bg-white px-4 py-8 sm:px-6 md:py-10 lg:py-14 lg:px-8 mt-20">
       <div className="container">
-        <div className="grid grid-cols-1 md:grid-cols-2 min-h-[330px] items-center gap-8  xl:min-h-[462px]">
+        <div className="grid min-h-[380px] grid-cols-1 items-center gap-8 md:grid-cols-2 xl:min-h-[520px]">
           <div className="md:col-span-1">
-            <div key={activeSlide.id} className="transition duration-500">
+            <div
+              key={activeSlide.id}
+              className="animate-in fade-in slide-in-from-bottom-3 duration-1000 ease-out motion-reduce:animate-none"
+            >
               <h1 className="text-primary font-bold leading-[120%] text-3xl md:text-4xl lg:text-5xl xl:text-6xl">
                 {activeSlide.titleStart}{" "}
                 <span className="text-[#4365D0] font-medium">
@@ -133,11 +136,11 @@ const Hero = () => {
             <div className="mt-4 md:mt-5">
                <Link
                 href="/add-your-business"
-                className="bg-primary inline-flex h-12 items-center justify-center gap-3 rounded-[8px] border border-white px-4 text-sm md:text-base font-semibold leading-[150%] text-white transition hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                className="bg-primary inline-flex h-10 md:h-12 items-center justify-center gap-3 rounded-[8px] border border-white px-2 md:px-4 text-xs md:text-sm lg:text-base font-semibold leading-[150%] text-white transition hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
               >
                 <BriefcaseBusiness className="h-5 w-5 sm:hidden" />
                 Grow your business with Sidequote
-                <ArrowRight className="h-5 w-5" />
+                <ArrowRight className="h-4 md:h-5 w-4 md:w-5" />
               </Link>
             </div>
 
@@ -197,7 +200,7 @@ const Hero = () => {
 
           <div className="md:col-span-1">
             <div className="relative overflow-hidden rounded-[10px] bg-[#EFF4FF] shadow-[0_18px_45px_rgba(32,42,70,0.22)] ring-1 ring-white/70">
-              <div className="relative h-[230px] w-full overflow-hidden transition duration-500 sm:h-[330px] lg:h-[430px]">
+              <div className="relative h-[270px] w-full overflow-hidden sm:h-[370px] lg:h-[480px]">
                 <Image
                   key={activeSlide.id}
                   src={activeSlide.image}
@@ -206,7 +209,7 @@ const Hero = () => {
                   sizes="(max-width: 768px) 100vw, 50vw"
                   priority={activeIndex === 0}
                   unoptimized
-                  className="object-cover object-center"
+                  className="animate-in object-cover object-center fade-in zoom-in-95 duration-1000 ease-out motion-reduce:animate-none"
                   style={{ objectFit: "cover" }}
                 />
               </div>
@@ -221,7 +224,7 @@ const Hero = () => {
               key={slide.id}
               type="button"
               onClick={() => goToSlide(index)}
-              className={`h-2.5 rounded-full transition ${
+              className={`h-2.5 rounded-full transition-all duration-500 ease-out ${
                 activeIndex === index
                   ? "w-7 bg-[#292E78]"
                   : "w-2.5 bg-[#C7CBD6] hover:bg-[#8D94AA]"

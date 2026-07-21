@@ -18,7 +18,7 @@ const MostPopularService = () => {
           <h2 className="text-[24px] font-extrabold leading-tight text-[#292E78] sm:text-[28px] md:text-[30px]">
             Most popular Categories
           </h2>
-          <p className="mt-2 text-[11px] font-medium text-[#515E6E] sm:text-xs">
+          <p className="mt-2 text-xs lg:text-sm font-medium text-[#515E6E] sm:text-xs">
             Choose a service to get started
           </p>
         </div>
@@ -87,10 +87,10 @@ const MostPopularService = () => {
                     className="h-full w-full object-contain"
                   />
                 </div>
-                <h3 className="mt-3 text-[15px] font-extrabold leading-none text-[#292E78]">
+                <h3 className="mt-3 text-[15px] lg:text-base font-extrabold leading-none text-[#292E78]">
                   {service.title}
                 </h3>
-                <p className="mt-2 min-h-[34px] max-w-[190px] text-[10px] font-medium leading-[1.18] text-[#6F7D90]">
+                <p className="mt-2 min-h-[42px] text-[10px] line-clamp-2 md:text-xs font-medium leading-[1.18] text-[#6F7D90]">
                   {service.description}
                 </p>
                 <Link

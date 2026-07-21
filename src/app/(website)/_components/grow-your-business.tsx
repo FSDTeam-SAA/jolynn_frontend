@@ -60,13 +60,13 @@ const businessSteps: BusinessStep[] = [
   },
   {
     id: "get-discovered",
-    title: "2. Get Discovered",
+    title: "3. Get Discovered",
     description: "Customers find you when they search",
     icon: MailCheck,
   },
   {
     id: "grow-business",
-    title: "2. Grow Business",
+    title: "4. Grow Business",
     description: "Receive leads & grow your customer base",
     icon: ChartNoAxesCombined,
   },
@@ -75,9 +75,9 @@ const businessSteps: BusinessStep[] = [
 const GrowYourBusiness = () => {
   return (
     <section className="pb-8 md:pb-10 bg-white">
-      <div className="container max-w-[1300px] overflow-x-hidden rounded-[12px] bg-[linear-gradient(90deg,_#292D73_0%,_#0082D7_100%)]">
+      <div className="container px-4 max-w-[1300px] overflow-x-hidden rounded-[12px] bg-[linear-gradient(90deg,_#292D73_0%,_#0082D7_100%)]">
         <div className="grid min-h-[181px] grid-cols-1 lg:grid-cols-[1fr_3fr]">
-          <div className="flex items-center justify-end px-7 py-8 lg:border-r lg:border-white/20 lg:px-8 lg:py-6">
+          <div className="flex items-center justify-end px-4 md:px-7 py-8 lg:border-r lg:border-white/20 lg:px-8 lg:py-6">
             <div className="text-center">
               <div className="flex justify-center -space-x-2">
                 {ratingAvatars.map((avatar) => (
@@ -133,7 +133,7 @@ const GrowYourBusiness = () => {
             <div className="mt-5 flex items-center justify-center">
               <Link
                 href="/add-your-business"
-                className="inline-flex h-12 items-center justify-center gap-3 rounded-[8px] bg-white px-4 text-sm md:text-base font-semibold leading-[150%] text-primary transition hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                className="inline-flex h-10 md:h-12 items-center justify-center gap-3 rounded-[8px] bg-white px-2 md:px-4 text-xs md:text-sm lg:text-base font-semibold leading-[150%] text-primary transition hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
               >
                 Add your business to Sidequote Directory
                 <ArrowRight className="h-5 w-5" />

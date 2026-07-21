@@ -29,7 +29,7 @@ const BusinessGallery = ({ businessId }: BusinessGalleryProps) => {
         ) : gallery.map((item) => (
           <div
             key={item.publicId}
-            className="relative aspect-[2/1.05] overflow-hidden rounded-[5px] bg-[#EAF2F7]"
+            className="relative aspect-[2/1.05] overflow-hidden rounded-[5px] bg-[#EAF2F7] border shadow-md"
           >
             <Image
               src={item.url}
