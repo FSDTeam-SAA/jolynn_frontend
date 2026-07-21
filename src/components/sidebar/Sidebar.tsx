@@ -6,14 +6,14 @@ import { cn } from "@/lib/utils";
 import {
   CalendarRange,
   FileText,
-  CreditCard,
-  GraduationCap,
   LayoutDashboard,
   LogOut,
-  MapPin,
-  Plane,
-  UserRound,
   X,
+  BriefcaseBusiness,
+  Rows2,
+  BookImage,
+  UserStar,
+  UserCog,
 } from "lucide-react";
 import Image from "next/image";
 import { signOut, useSession } from "next-auth/react";
@@ -27,22 +27,22 @@ const navigation = [
   {
     name: "My Business",
     href: "/my-business",
-    icon: CreditCard,
+    icon: BriefcaseBusiness
   },
   {
     name: "My Services",
     href: "/my-services",
-    icon: Plane,
+    icon: Rows2,
   },
   {
     name: "My Gallery",
     href: "/my-gallery",
-    icon: GraduationCap,
+    icon: BookImage,
   },
   {
     name: "My Reviews",
     href: "/my-reviews",
-    icon: MapPin,
+    icon: UserStar,
   },
   {
     name: "Contact Info",
@@ -57,7 +57,7 @@ const navigation = [
   {
     name: "Security",
     href: "/security",
-    icon: UserRound,
+    icon: UserCog,
   },
 ];
 
@@ -76,8 +76,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
   const token = user?.accessToken ?? user?.token;
   const { data: profileResponse } = useProfileQuery(token);
   const profile = profileResponse?.data;
-  const displayName =
-    profile?.fullName || user?.name || "User";
+  const displayName = profile?.fullName || user?.name || "User";
   const displayEmail = profile?.email || user?.email || "";
   const initials =
     displayName
@@ -86,12 +85,9 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
       .join("")
       .slice(0, 2)
 
-      
       .toUpperCase() || "U";
 
   return (
-
-    
     <>
       {/* Mobile Overlay */}
       {open && (
@@ -114,19 +110,18 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
           </button>
         </div>
 
-
-        
-
         {/* Logo */}
         <div className="flex h-[80px] shrink-0 items-center justify-center">
-          <Image
-            src="/assets/images/logo.png"
-            alt="Dashboard logo"
-            width={64}
-            height={64}
-            priority
-            className="h-[64px] w-[64px] object-contain"
-          />
+          <Link href="/">
+            <Image
+              src="/assets/images/logo.png"
+              alt="Dashboard logo"
+              width={64}
+              height={64}
+              priority
+              className="h-[64px] w-[64px] object-contain"
+            />
+          </Link>
         </div>
 
         {/* Navigation */}
