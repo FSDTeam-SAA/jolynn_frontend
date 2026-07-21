@@ -264,10 +264,11 @@ function PasswordField({
         <input
           type={visible ? "text" : "password"}
           required
+          placeholder="••••••••"
           value={value}
           disabled={disabled}
           onChange={(event) => onChange(event.target.value)}
-          className={`h-[40px] w-full rounded-[3px] border bg-white px-3 pr-11 text-sm text-[#344054] outline-none transition-shadow disabled:cursor-not-allowed disabled:opacity-60 ${
+          className={`h-[40px] w-full rounded-[3px] border bg-white px-3 pr-11 text-sm text-[#344054] outline-none transition-shadow placeholder:tracking-[3px] placeholder:text-[#98A2B3] disabled:cursor-not-allowed disabled:opacity-60 ${
             hasError
               ? "border-[#FF254B] focus:ring-2 focus:ring-[#FF254B]/10"
               : "border-[#C9CDD2] focus:border-[#30347F] focus:ring-2 focus:ring-[#30347F]/10"
