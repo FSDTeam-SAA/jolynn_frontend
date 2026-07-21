@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import { Eye, EyeOff } from "lucide-react";
+import { Check, ChevronsUpDown, Eye, EyeOff, Search } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -11,6 +11,10 @@ import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { useServices } from "@/hooks/use-services";
+import {
+  useLocationCities,
+  useLocationStates,
+} from "@/hooks/use-location-options";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
@@ -30,6 +34,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import AccountCreatedSuccessfulModal from "./account-created-successful-modal";
 import Image from "next/image";
 
@@ -82,19 +91,6 @@ const textFields: TextFieldConfig[] = [
   },
 ] as const satisfies TextFieldConfig[];
 
-const locationFields = [
-  {
-    name: "state",
-    label: "State*",
-    placeholder: "New York",
-  },
-  {
-    name: "city",
-    label: "City*",
-    placeholder: "New York",
-  },
-] as const;
-
 const formSchema = z
   .object({
     businessName: z.string().min(1, "Business name is required."),
@@ -124,7 +120,98 @@ const formSchema = z
   });
 
 type FormValues = z.infer<typeof formSchema>;
-type LocationFieldName = (typeof locationFields)[number]["name"];
+
+type SearchableDropdownProps = {
+  value: string;
+  options: string[];
+  placeholder: string;
+  searchPlaceholder: string;
+  emptyMessage: string;
+  disabled?: boolean;
+  loading?: boolean;
+  onChange: (value: string) => void;
+};
+
+const SearchableDropdown = ({
+  value,
+  options,
+  placeholder,
+  searchPlaceholder,
+  emptyMessage,
+  disabled = false,
+  loading = false,
+  onChange,
+}: SearchableDropdownProps) => {
+  const [open, setOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const filteredOptions = options.filter((option) =>
+    option.toLowerCase().includes(searchTerm.trim().toLowerCase()),
+  );
+
+  return (
+    <Popover
+      open={open}
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen);
+        if (!nextOpen) setSearchTerm("");
+      }}
+    >
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          disabled={disabled || loading}
+          aria-expanded={open}
+          className="flex h-10 w-full items-center justify-between rounded-[8px] border border-[#F5F3FA] bg-white px-4 text-left text-sm font-medium text-primary shadow-[2px_4px_5px_0px_#0000000A] outline-none focus:ring-1 focus:ring-[#292D73] disabled:cursor-not-allowed disabled:bg-[#F8FAFC] disabled:text-[#98A2B3]"
+        >
+          <span className="truncate">
+            {loading ? "Loading..." : value || placeholder}
+          </span>
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        className="w-[var(--radix-popover-trigger-width)] p-0"
+      >
+        <div className="flex items-center border-b px-3">
+          <Search className="h-4 w-4 shrink-0 text-[#98A2B3]" />
+          <input
+            autoFocus
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            placeholder={searchPlaceholder}
+            className="h-10 w-full bg-transparent px-2 text-sm text-primary outline-none placeholder:text-[#98A2B3]"
+          />
+        </div>
+        <div className="max-h-60 overflow-y-auto p-1">
+          {filteredOptions.length === 0 ? (
+            <p className="px-3 py-6 text-center text-sm text-[#667085]">
+              {emptyMessage}
+            </p>
+          ) : (
+            filteredOptions.map((option) => (
+              <button
+                key={option}
+                type="button"
+                onClick={() => {
+                  onChange(option);
+                  setOpen(false);
+                  setSearchTerm("");
+                }}
+                className="flex w-full items-center rounded px-3 py-2 text-left text-sm text-[#344054] hover:bg-[#F2F4F7] focus:bg-[#F2F4F7] focus:outline-none"
+              >
+                <Check
+                  className={`mr-2 h-4 w-4 ${value === option ? "opacity-100" : "opacity-0"}`}
+                />
+                {option}
+              </button>
+            ))
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+};
 
 type RegisterBusinessOwnerResponse = {
   statusCode: number;
@@ -160,6 +247,7 @@ const AddYourBusinessContainer = () => {
     refetch: refetchServices,
   } = useServices();
   const services = servicesData?.data ?? [];
+  const statesQuery = useLocationStates();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [successEmail, setSuccessEmail] = useState("");
@@ -184,6 +272,13 @@ const AddYourBusinessContainer = () => {
       agreementAccepted: false,
     },
   });
+  const selectedStateName = form.watch("state");
+  const selectedState = statesQuery.data?.data.find(
+    (state) => state.name === selectedStateName,
+  );
+  const citiesQuery = useLocationCities(selectedState);
+  const states = statesQuery.data?.data ?? [];
+  const cities = citiesQuery.data?.data.cities ?? [];
 
   const { mutate, isPending } = useMutation<
     RegisterBusinessOwnerResponse,
@@ -379,28 +474,89 @@ const AddYourBusinessContainer = () => {
                   )}
                 />
 
-                {locationFields.map((fieldConfig) => (
-                  <FormField
-                    key={fieldConfig.name}
-                    control={form.control}
-                    name={fieldConfig.name as LocationFieldName}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className={labelClassName}>
-                          {fieldConfig.label}
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder={fieldConfig.placeholder}
-                            className={inputClassName}
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage className={messageClassName} />
-                      </FormItem>
-                    )}
-                  />
-                ))}
+                <FormField
+                  control={form.control}
+                  name="state"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className={labelClassName}>State*</FormLabel>
+                      <FormControl>
+                        <SearchableDropdown
+                          value={field.value}
+                          options={states.map((state) => state.name)}
+                          placeholder={
+                            statesQuery.isError
+                              ? "States unavailable"
+                              : "Select state"
+                          }
+                          searchPlaceholder="Search states..."
+                          emptyMessage="No state found."
+                          loading={statesQuery.isPending}
+                          disabled={statesQuery.isError || states.length === 0}
+                          onChange={(stateName) => {
+                            field.onChange(stateName);
+                            form.setValue("city", "", {
+                              shouldDirty: true,
+                              shouldValidate: false,
+                            });
+                          }}
+                        />
+                      </FormControl>
+                      {statesQuery.isError && (
+                        <button
+                          type="button"
+                          onClick={() => statesQuery.refetch()}
+                          className="text-xs font-medium text-red-600 hover:underline"
+                        >
+                          Unable to load states. Try again
+                        </button>
+                      )}
+                      <FormMessage className={messageClassName} />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="city"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className={labelClassName}>City*</FormLabel>
+                      <FormControl>
+                        <SearchableDropdown
+                          value={field.value}
+                          options={cities}
+                          placeholder={
+                            !selectedState
+                              ? "Select a state first"
+                              : citiesQuery.isError
+                                ? "Cities unavailable"
+                                : "Select city"
+                          }
+                          searchPlaceholder="Search cities..."
+                          emptyMessage="No city found."
+                          loading={Boolean(selectedState) && citiesQuery.isPending}
+                          disabled={
+                            !selectedState ||
+                            citiesQuery.isError ||
+                            (!citiesQuery.isPending && cities.length === 0)
+                          }
+                          onChange={field.onChange}
+                        />
+                      </FormControl>
+                      {selectedState && citiesQuery.isError && (
+                        <button
+                          type="button"
+                          onClick={() => citiesQuery.refetch()}
+                          className="text-xs font-medium text-red-600 hover:underline"
+                        >
+                          Unable to load cities. Try again
+                        </button>
+                      )}
+                      <FormMessage className={messageClassName} />
+                    </FormItem>
+                  )}
+                />
               </div>
 
               <FormField
