@@ -68,7 +68,7 @@ const MobileNavbar = ({ navItems, isAuthenticated, isAuthLoading, profileImage, 
                       href={item.href}
                       onClick={closeSheet}
                       aria-current={isActive ? "page" : undefined}
-                      className={`flex min-h-12 items-center rounded-[5px] px-4 text-base font-medium transition hover:bg-white/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22245F] ${
+                      className={`flex min-h-12 items-center rounded-[5px] px-4 text-[18px] font-medium transition hover:bg-white/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22245F] ${
                         isActive
                           ? "bg-white/70 text-[#22245F]"
                           : "text-slate-950"

@@ -133,7 +133,7 @@ const Faq = () => {
                       current === faq._id ? null : faq._id,
                     )
                   }
-                  className="flex min-h-[40px] w-full items-center justify-between py-0 pl-0 pr-2 text-left text-[13.5px] font-semibold leading-snug text-[#667789] transition-colors hover:text-[#292E78] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292E78] focus-visible:ring-offset-2 sm:min-h-[43px]"
+                  className="flex min-h-[40px] w-full items-center justify-between py-0 pl-0 pr-2 text-left text-[13.5px] lg:text-base font-semibold leading-snug text-[#667789] transition-colors hover:text-[#292E78] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292E78] focus-visible:ring-offset-2 sm:min-h-[43px]"
                 >
                   <span className="pr-5">{faq.question}</span>
                   <ChevronDown
@@ -152,7 +152,7 @@ const Faq = () => {
                   }`}
                 >
                   <div className="overflow-hidden">
-                    <p className="pb-4 pr-10 pt-0 text-[13px] leading-[1.7] text-[#667789] sm:text-sm">
+                    <p className="pb-4 pr-10 pt-0 text-[13px] lg:text-sm leading-[1.7] text-[#667789] sm:text-sm">
                       {faq.answer}
                     </p>
                   </div>

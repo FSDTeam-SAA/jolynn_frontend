@@ -20,6 +20,8 @@ import { useSavedBusinesses } from "@/hooks/use-saved-businesses";
 import BusinessReviews from "./business-reviews";
 import BusinessServices from "./business-services";
 import RequestAQuoteModal from "./request-a-quote-modal";
+import Image from "next/image";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type ProfileTab = "overview" | "services" | "gallery" | "reviews";
 
@@ -41,6 +43,69 @@ const renderStars = (rating: number) =>
       }`}
     />
   ));
+
+const BusinessProfileSkeleton = () => (
+  <main className="min-h-screen bg-[#F5F8F7]" aria-label="Loading business profile">
+    <header className="border-b border-[#E2E8F0] bg-white">
+      <div className="container pb-0 pt-8">
+        <div className="flex items-start gap-4">
+          <Skeleton className="h-14 w-14 shrink-0 rounded-[12px]" />
+          <div className="min-w-0 flex-1">
+            <Skeleton className="h-9 w-full max-w-[280px]" />
+            <div className="mt-3 flex items-center gap-2">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-4 w-7" />
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-6 w-20 rounded-[3px]" />
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 flex h-11 items-center gap-7 border-t border-[#E5E7EB]">
+          {tabs.map((tab, index) => (
+            <Skeleton
+              key={tab.id}
+              className={`h-4 rounded ${index === 0 ? "w-16" : "w-14"}`}
+            />
+          ))}
+        </div>
+      </div>
+    </header>
+
+    <section className="container py-10 sm:py-12 lg:py-14">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-5">
+        <div className="space-y-5">
+          <div className="rounded-[8px] border border-[#D9DEE7] bg-white p-5">
+            <Skeleton className="h-6 w-48" />
+            <Skeleton className="mt-4 h-4 w-full max-w-[620px]" />
+          </div>
+          <div className="rounded-[8px] border border-[#D9DEE7] bg-white p-5">
+            <Skeleton className="h-6 w-32" />
+            <div className="mt-4 flex items-center gap-2">
+              <Skeleton className="h-4 w-4 rounded-full" />
+              <Skeleton className="h-4 w-48" />
+            </div>
+          </div>
+        </div>
+
+        <aside className="rounded-[8px] border border-[#D9DEE7] bg-white px-4 py-5">
+          <Skeleton className="mx-auto h-4 w-44" />
+          <div className="mt-4 space-y-3">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <Skeleton key={index} className="h-10 w-full rounded-[4px]" />
+            ))}
+            <div className="flex items-center justify-between gap-3">
+              <Skeleton className="h-10 w-[108px] rounded-[6px]" />
+              <Skeleton className="h-10 w-[116px] rounded-[6px]" />
+            </div>
+          </div>
+          <div className="mt-6 h-px bg-[#E5E7EB]" />
+          <Skeleton className="mx-auto mt-4 h-3 w-44" />
+        </aside>
+      </div>
+    </section>
+  </main>
+);
 
 const ContactCard = ({
   onOpenQuoteModal,
@@ -88,7 +153,7 @@ const ContactCard = ({
       </Link>
 
       <Link
-        href={`/report?businessId=${business.ownerId}`}
+        href={`/report?businessId=${encodeURIComponent(business?.ownerId)}`}
         className="flex h-10 items-center justify-center rounded-[4px] bg-[#9D9D9D] px-4 text-[12px] font-extrabold text-white transition hover:bg-[#858585] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#858585] focus-visible:ring-offset-2"
       >
         Report
@@ -118,7 +183,7 @@ const ContactCard = ({
     </div>
 
     <div className="mt-6 h-px bg-[#E5E7EB]" />
-    <p className="mt-4 text-center text-[10px] font-medium text-[#98A2B3]">
+    <p className="mt-4 text-center text-xs font-medium text-[#98A2B3]">
       Typically responds within 2 hours
     </p>
   </aside>
@@ -187,7 +252,7 @@ const BusinessViewProfileContainer = ({ businessId }: { businessId: string }) =>
     }
   }, [requestedTab]);
 
-  if (isPending) return <main className="bg-[#F5F8F7]"><div className="container  py-16 text-sm text-[#667085]">Loading business profile...</div></main>;
+  if (isPending) return <BusinessProfileSkeleton />;
   if (isError || !business) return <main className="bg-[#F5F8F7]"><div className="container  py-16"><p className="text-sm text-red-600">Unable to load this business.</p><button type="button" onClick={() => refetch()} className="mt-3 rounded bg-[#292D73] px-4 py-2 text-xs font-bold text-white">Try again</button></div></main>;
 
   const activeContent = {
@@ -203,6 +268,10 @@ const BusinessViewProfileContainer = ({ businessId }: { businessId: string }) =>
       <header className="border-b border-[#E2E8F0] bg-white">
         <div className="container pb-0 pt-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex items-center justify-start gap-2 md:gap-3 lg:gap-4">
+              <div>
+              <Image src={business?.profilePicture || ""} alt={business?.businessName} width={200} height={200} className="w-14 h-14 rounded-[12px]"/>
+            </div>
             <div>
               <h1 className="text-[28px] font-extrabold leading-tight text-[#111827] sm:text-[32px]">
                 {business.businessName}
@@ -222,6 +291,7 @@ const BusinessViewProfileContainer = ({ businessId }: { businessId: string }) =>
                   {business.category}
                 </span>
               </div>
+            </div>
             </div>
 
             {/* <div className="flex flex-wrap items-center gap-2">

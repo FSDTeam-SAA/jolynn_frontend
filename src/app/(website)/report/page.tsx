@@ -3,7 +3,7 @@ import ReportContainer from "./_components/report-container";
 import HeroSection from "@/components/common/hero-section";
 
 type ReportPageProps = {
-  searchParams?: { serviceId?: string };
+  searchParams?: { businessId?: string };
 };
 
 const ReportPage = ({ searchParams }: ReportPageProps) => {
@@ -14,7 +14,7 @@ const ReportPage = ({ searchParams }: ReportPageProps) => {
         desc="Raise your concerns and report to us"
         image="/assets/images/report-hero.jpg"
       />
-      <ReportContainer serviceId={searchParams?.serviceId ?? ""} />
+      <ReportContainer businessId={searchParams?.businessId ?? ""} />
     </div>
   )
 };

@@ -8,7 +8,7 @@ const ReviewPage = () => {
       <HeroSection
         title="Reviews from Our Users"
         desc="For better experience connect and contact with us"
-        image="/assets/images/about-us.jpg"
+        image="/assets/images/review_bg.jpg"
       />
       <ReviewContainer />
     </div>

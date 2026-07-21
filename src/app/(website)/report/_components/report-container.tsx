@@ -20,7 +20,7 @@ const reportFormContent = {
 };
 
 type ReportPayload = {
-  serviceId: string;
+  businessId: string;
   message: string;
 };
 
@@ -38,10 +38,10 @@ type ReportResponse = {
 };
 
 type ReportContainerProps = {
-  serviceId: string;
+  businessId: string;
 };
 
-const ReportContainer = ({ serviceId }: ReportContainerProps) => {
+const ReportContainer = ({ businessId }: ReportContainerProps) => {
   const { data: session, status } = useSession();
   const sessionUser = session?.user as
     | { token?: string; accessToken?: string }
@@ -57,7 +57,7 @@ const ReportContainer = ({ serviceId }: ReportContainerProps) => {
     mutationKey: ["submit-business-report"],
     mutationFn: async (payload: ReportPayload) => {
       if (!token) throw new Error("Please sign in to submit a report.");
-      if (!payload.serviceId) throw new Error("A service must be selected.");
+      if (!payload.businessId) throw new Error("A business must be selected.");
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       if (!apiUrl) throw new Error("The report service is not configured.");
@@ -100,8 +100,8 @@ const ReportContainer = ({ serviceId }: ReportContainerProps) => {
       return;
     }
 
-    if (!serviceId) {
-      toast.error("No service was selected for this report.");
+    if (!businessId) {
+      toast.error("No business was selected for this report.");
       return;
     }
 
@@ -111,7 +111,7 @@ const ReportContainer = ({ serviceId }: ReportContainerProps) => {
     }
 
     mutate({
-      serviceId,
+      businessId,
       message: message.trim(),
     });
   };
@@ -137,9 +137,9 @@ const ReportContainer = ({ serviceId }: ReportContainerProps) => {
             <p className="mt-3 text-[11px] font-medium text-[#7D7D7D] sm:text-[12px]">
               {reportFormContent.description}
             </p>
-            {!serviceId && (
+            {!businessId && (
               <p role="alert" className="mt-3 text-[12px] font-semibold text-red-600">
-                No service selected. Please open this page from a service card.
+                No business selected. Please open this page from a business profile.
               </p>
             )}
 
@@ -160,7 +160,7 @@ const ReportContainer = ({ serviceId }: ReportContainerProps) => {
 
               <button
                 type="submit"
-                disabled={isPending || status === "loading" || !serviceId}
+                disabled={isPending || status === "loading" || !businessId}
                 className="mt-6 h-10 w-full rounded-[3px] bg-[#292D73] text-[12px] font-extrabold text-white transition hover:bg-[#20255F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {isPending ? "Reporting..." : reportFormContent.submitLabel}

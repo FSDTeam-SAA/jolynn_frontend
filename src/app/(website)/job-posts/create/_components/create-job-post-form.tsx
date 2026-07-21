@@ -44,7 +44,7 @@ const initialValues: FormValues = {
 };
 
 const inputClassName =
-  "mt-2 h-11 w-full rounded-[4px] border border-[#C7CBD1] bg-white px-3 text-[13px] text-[#292D73] outline-none transition placeholder:text-[#98A2B3] focus:border-[#292D73] focus:ring-2 focus:ring-[#292D73]/15";
+  "mt-2 h-11 w-full rounded-[4px] border border-[#C7CBD1] bg-white px-3 text-[16px] text-[#292D73] outline-none transition placeholder:text-[#98A2B3] focus:border-[#292D73] focus:ring-2 focus:ring-[#292D73]/15";
 
 const CreateJobPostForm = () => {
   const router = useRouter();
@@ -110,13 +110,13 @@ const CreateJobPostForm = () => {
   return (
     <section className="min-h-[620px] bg-white px-4 py-16 sm:px-6 md:py-20 lg:px-8">
       <div className="mx-auto w-full max-w-[680px]">
-        <h1 className="text-center text-[26px] font-extrabold text-[#111827] md:text-[30px]">
+        <h1 className="text-center text-[30px] font-extrabold text-[#111827] md:text-[34px]">
           Post About Your Necessary Service
         </h1>
 
         <form onSubmit={handleSubmit} className="mt-10">
           <div className="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2">
-            <label className="text-[11px] font-medium text-[#111827]">
+            <label className="text-[16px] font-semibold text-[#111827]">
               User Name
               <input
                 required
@@ -126,7 +126,7 @@ const CreateJobPostForm = () => {
                 className={inputClassName}
               />
             </label>
-            <label className="text-[11px] font-medium text-[#111827]">
+            <label className="text-[16px] font-semibold text-[#111827]">
               Email Address
               <input
                 required
@@ -137,7 +137,7 @@ const CreateJobPostForm = () => {
                 className={inputClassName}
               />
             </label>
-            <label className="text-[11px] font-medium text-[#111827]">
+            <label className="text-[16px] font-semibold text-[#111827]">
               Zip code
               <input
                 required
@@ -149,7 +149,7 @@ const CreateJobPostForm = () => {
                 className={inputClassName}
               />
             </label>
-            <label className="text-[11px] font-medium text-[#111827]">
+            <label className="text-[16px] font-semibold text-[#111827]">
               Category
               <input
                 required
@@ -163,7 +163,7 @@ const CreateJobPostForm = () => {
             </label>
           </div>
 
-          <label className="mt-4 block text-[11px] font-medium text-[#111827]">
+          <label className="mt-4 block text-[16px] font-semibold text-[#111827]">
             Phone Number
             <input
               required
@@ -175,19 +175,19 @@ const CreateJobPostForm = () => {
             />
           </label>
 
-          <label className="mt-4 block text-[11px] font-medium text-[#111827]">
+          <label className="mt-4 block text-[16px] font-semibold text-[#111827]">
             Service wanted Message
             <textarea
               required
               value={values.message}
               onChange={(event) => updateValue("message", event.target.value)}
               placeholder="Describe the service you need, your preferred timeline, and any important details."
-              className="mt-2 min-h-[150px] w-full resize-y rounded-[4px] border border-[#C7CBD1] px-3 py-3 text-[13px] text-[#292D73] outline-none placeholder:text-[#98A2B3] focus:border-[#292D73] focus:ring-2 focus:ring-[#292D73]/15"
+              className="mt-2 min-h-[150px] w-full resize-y rounded-[4px] border border-[#C7CBD1] px-3 py-3 text-[16px] text-[#292D73] outline-none placeholder:text-[#98A2B3] focus:border-[#292D73] focus:ring-2 focus:ring-[#292D73]/15"
             />
           </label>
 
           {formMessage && (
-            <p role="status" className="mt-3 text-center text-xs text-[#292E78]">
+            <p role="status" className="mt-3 text-center text-[15px] text-[#292E78]">
               {formMessage}
             </p>
           )}
@@ -195,7 +195,7 @@ const CreateJobPostForm = () => {
           <button
             type="submit"
             disabled={isPending}
-            className="mx-auto mt-8 flex h-11 w-full max-w-[280px] items-center justify-center rounded-[5px] bg-[#292E78] text-[12px] font-extrabold text-white transition hover:bg-[#20255F] disabled:cursor-not-allowed disabled:opacity-60"
+            className="mx-auto mt-8 flex h-11 w-full max-w-[280px] items-center justify-center rounded-[5px] bg-[#292E78] text-[16px] font-extrabold text-white transition hover:bg-[#20255F] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isPending ? "Posting..." : "Post"}
           </button>

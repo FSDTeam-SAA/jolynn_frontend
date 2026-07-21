@@ -284,7 +284,7 @@ const JobPostsContainer = () => {
               {posts.map((post) => (
                 <article
                   key={post._id}
-                  className="overflow-hidden rounded-[8px] border border-[#D4F0F1] bg-[#F0FEFE] shadow-[0_8px_18px_rgba(19,35,68,0.14)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_14px_28px_rgba(19,35,68,0.18)]"
+                  className="overflow-hidden rounded-[8px] border border-[#D4F0F1] bg-[#F0FEFE] shadow-[0_8px_18px_rgba(19,35,68,0.14)] transition-[transform,box-shadow,border-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-[#A9E1E5] hover:shadow-[0_16px_32px_rgba(19,35,68,0.18)] motion-reduce:transform-none motion-reduce:transition-none"
                 >
                   <div className="px-4 pb-4 pt-4 sm:px-5 sm:pb-5 lg:px-6">
                     <div className="flex items-center gap-2.5">

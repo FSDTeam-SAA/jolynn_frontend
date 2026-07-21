@@ -128,8 +128,8 @@ const LoginForm = () => {
                     <div className="relative">
                       <Input
                         type={showPassword ? "text" : "password"}
-                        className="w-full h-[48px] text-base font-medium leading-[120%] text-primary rounded-[8px] p-4 border border-[#F5F3FA] placeholder:text-[#667481] shadow-[0px_0px_10px_0px_#00000026]"
-                        placeholder="********"
+                        className="w-full h-[48px] text-base font-medium leading-[48px] text-primary rounded-[8px] px-4 py-0 border border-[#F5F3FA] placeholder:text-[#667481] shadow-[0px_0px_10px_0px_#00000026]"
+                        placeholder="************"
                         {...field}
                       />
                       <button

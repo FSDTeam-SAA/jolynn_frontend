@@ -376,14 +376,14 @@ const ServicesSearchContainer = ({
                               <h3 className="line-clamp-1 text-[15px] font-extrabold leading-tight text-[#292D73]">
                                 {business.businessName}
                               </h3>
-                              <span className="mt-1 inline-flex rounded-[3px] bg-[#DFEEEE] px-2 py-0.5 text-[9px] font-semibold leading-none text-[#426078]">
+                              <span className="mt-1 inline-flex rounded-[3px] bg-[#DFEEEE] px-2 py-0.5 text-[11px] font-semibold leading-none text-[#426078]">
                                 {business.category || business.service.title}
                               </span>
                             </div>
                           </div>
                           <Link
                             href={`/services/businesses/${business.businessOwnerId}?tab=reviews`}
-                            className="inline-flex h-9 shrink-0 items-center justify-center rounded-[5px] border border-[#F8AA18] bg-[#FFF6D8] px-4 text-[10px] font-medium text-[#E56D00] transition hover:bg-[#F8AA18] hover:text-white"
+                            className="inline-flex h-9 shrink-0 items-center justify-center rounded-[5px] border border-[#F8AA18] bg-[#FFF6D8] px-4 text-xs font-medium text-[#E56D00] transition hover:bg-[#F8AA18] hover:text-white"
                           >
                             Review
                           </Link>
@@ -405,15 +405,15 @@ const ServicesSearchContainer = ({
                               />
                             ))}
                           </div>
-                          <span className="text-[10px] font-bold text-[#292E78]">
+                          <span className="text-xs font-bold text-[#292E78]">
                             {business.rating.toFixed(1)}
                           </span>
-                          <span className="text-[10px] text-[#667085]">
+                          <span className="text-xs text-[#667085]">
                             ({business.totalReviews} reviews)
                           </span>
                         </div>
 
-                        <div className="mt-3 flex items-start gap-1 text-[10px] text-[#667085]">
+                        <div className="mt-3 flex items-start gap-1 text-xs text-[#667085]">
                           <MapPin className="h-3.5 w-3.5 shrink-0" />
                           <span>
                             {[business.city, business.state]
@@ -421,20 +421,20 @@ const ServicesSearchContainer = ({
                               .join(", ") || business.address || business.serviceArea}
                           </span>
                         </div>
-                        <p className="mt-1.5 line-clamp-2 min-h-[32px] text-[9.5px] leading-[1.4] text-[#667085]">
+                        <p className="mt-1.5 line-clamp-2 min-h-[32px] text-xs leading-[1.4] text-[#667085]">
                           {business.service.description}
                         </p>
 
                         <div className="mt-3 grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_34px] gap-1.5">
                           <Link
-                            href={`/services/businesses/${business.businessOwnerId}`}
-                            className="inline-flex h-8 items-center justify-center rounded-[4px] bg-[#292E78] px-3 text-[9px] font-bold text-white transition hover:bg-[#1F2464]"
+                            href={`/services/businesses/${business?.businessOwnerId}`}
+                            className="inline-flex h-8 items-center justify-center rounded-[4px] bg-[#292E78] px-3 text-xsfont-bold text-white transition hover:bg-[#1F2464]"
                           >
                             View Profile
                           </Link>
                           <Link
-                            href={`/report?serviceId=${encodeURIComponent(business.service.id)}`}
-                            className="inline-flex h-8 items-center justify-center rounded-[4px] bg-[#A7A7A7] px-3 text-[9px] font-bold text-white transition hover:bg-[#8E8E8E]"
+                            href={`/report?serviceId=${encodeURIComponent(business?.businessOwnerId)}`}
+                            className="inline-flex h-8 items-center justify-center rounded-[4px] bg-[#A7A7A7] px-3 text-xs font-bold text-white transition hover:bg-[#8E8E8E]"
                           >
                             Report
                           </Link>

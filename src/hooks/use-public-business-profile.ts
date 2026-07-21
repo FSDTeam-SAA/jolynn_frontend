@@ -13,6 +13,7 @@ export type BusinessOverviewData = {
   phoneNumber?: string;
   phone?: string;
   bio?: string;
+  profilePicture?: string;
   businessWebsiteUrl?: string;
   city?: string;
   state?: string;
