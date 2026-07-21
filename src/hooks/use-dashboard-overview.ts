@@ -68,11 +68,11 @@ export const useBusinessOverview = (token?: string) =>
 
 export const useRecentBusinessQuotes = (token?: string) =>
   useQuery<QuoteResponse>({
-    queryKey: ["business-recent-quotes", "pending", 10],
+    queryKey: ["business-recent-quotes", "pending", 6],
     queryFn: () => {
       if (!token) throw new Error("Please sign in to view quote requests.");
       return getJson(
-        "/qoute/my-business?sortBy=createdAt&limit=10&page=1&status=pending",
+        "/qoute/my-business?sortBy=createdAt&limit=6&page=1&status=pending",
         token,
       );
     },

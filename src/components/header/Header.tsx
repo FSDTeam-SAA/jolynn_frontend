@@ -46,11 +46,11 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
         </button>
 
         <div className="lg:ml-[320px]">
-          <h1 className="text-2xl font-bold leading-[150%] text-[#CD9B46]">
+          <h1 className="text-2xl font-bold leading-[150%] text-[#000000]">
             {pageInfo.title}
           </h1>
 
-          <p className="hidden md:block text-sm text-[#6B7280]">
+          <p className="hidden md:block text-sm text-[#2A2F4D]">
             {pageInfo.description}
           </p>
         </div>
