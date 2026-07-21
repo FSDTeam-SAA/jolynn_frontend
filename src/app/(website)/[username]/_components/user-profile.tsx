@@ -194,7 +194,7 @@ const UserProfile = ({ username }: { username: string }) => {
       <header className="border-b border-[#E2E8F0] bg-white">
         <div className="container py-10 sm:py-12 lg:py-14">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
-            <div className="relative flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-[18px] bg-[#292D73] text-4xl font-extrabold text-white shadow-[0_12px_28px_rgba(41,45,115,0.22)] sm:h-32 sm:w-32">
+               <div className="relative flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-[18px] text-4xl font-extrabold text-white sm:h-32 sm:w-32">
               {profile.profilePicture ? (
                 <Image
                   src={profile.profilePicture}
@@ -202,7 +202,7 @@ const UserProfile = ({ username }: { username: string }) => {
                   fill
                   priority
                   sizes="128px"
-                  className="object-cover"
+                  className="object-cover w-16 h-16 rounded-full border-2"
                 />
               ) : (
                 profile.businessName.charAt(0).toUpperCase()
@@ -405,14 +405,12 @@ const UserProfile = ({ username }: { username: string }) => {
             <p className="mt-5 text-sm text-[#667085]">No gallery images have been added yet.</p>
           ) : (
             <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {galleryImages.map((image, index) => (
+              {galleryImages.map((image) => (
                 <figure
                   key={`${image.groupId}-${image.publicId}`}
-                  className={`group relative overflow-hidden rounded-[9px] bg-[#EAF2F2] ${
-                    index === 0 ? "sm:col-span-2 lg:row-span-2" : ""
-                  }`}
+                  className="group relative w-full overflow-hidden rounded-[9px] bg-[#EAF2F2]"
                 >
-                  <div className={`relative w-full ${index === 0 ? "h-64 lg:h-full lg:min-h-[360px]" : "h-52"}`}>
+                  <div className="relative h-56 w-full">
                     <Image
                       src={image.url}
                       alt={`${image.title} gallery image`}
