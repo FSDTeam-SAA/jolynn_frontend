@@ -46,7 +46,7 @@ export const AccountPageShell = ({
   return (
     <section className="bg-white px-4 py-10 sm:px-6 lg:px-8">
       <div className="container">
-        <div className="grid gap-5 lg:grid-cols-[180px_minmax(0,1fr)]">
+        <div className="grid gap-6 lg:grid-cols-[230px_minmax(0,1fr)]">
           <AccountSidebar active={active} />
           <div
             className={cn(
@@ -73,7 +73,16 @@ const AccountSidebar = ({ active }: { active: AccountSection }) => {
 
   return (
     <>
-      <aside className="flex gap-2 overflow-x-auto lg:block lg:space-y-5 lg:overflow-visible">
+      <aside
+        className="scrollbar-hide flex gap-2 overflow-x-auto pb-2 lg:h-full lg:flex-col lg:gap-1.5 lg:overflow-visible lg:rounded-[12px] lg:border lg:border-[#E4E7EC] lg:bg-white lg:p-3 lg:pb-3 lg:shadow-[0_8px_24px_rgba(30,45,75,0.08)]"
+        aria-label="Account navigation"
+      >
+        <div className="hidden px-3 pb-2 pt-1 lg:block">
+          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#98A2B3]">
+            My Account
+          </p>
+        </div>
+
         {accountNavItems.map((item) => {
           const Icon = navIcons[item.id];
           const isActive = active === item.id;
@@ -82,15 +91,25 @@ const AccountSidebar = ({ active }: { active: AccountSection }) => {
             <Link
               key={item.id}
               href={item.href}
+              aria-current={isActive ? "page" : undefined}
               className={cn(
-                "flex h-10 shrink-0 items-center gap-2 rounded-[5px] px-3 text-[12px] font-semibold transition lg:w-full",
+                "group flex h-11 shrink-0 items-center gap-2.5 rounded-[8px] px-3 text-[14px] font-semibold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2 lg:h-12 lg:w-full",
                 isActive
-                  ? "bg-[#292D73] text-white"
-                  : "text-[#667085] hover:bg-[#F2F4F7] hover:text-[#292D73]",
+                  ? "bg-[#292D73] text-white shadow-[0_6px_14px_rgba(41,45,115,0.22)]"
+                  : "text-[#667085] hover:bg-[#F2F5FF] hover:text-[#292D73]",
               )}
             >
-              <Icon className="h-4 w-4" />
-              {item.label}
+              <span
+                className={cn(
+                  "flex h-8 w-8 shrink-0 items-center justify-center rounded-[7px] transition-colors duration-300",
+                  isActive
+                    ? "bg-white/15"
+                    : "bg-[#F2F4F7] text-[#667085] group-hover:bg-white group-hover:text-[#292D73]",
+                )}
+              >
+                <Icon className="h-[17px] w-[17px]" />
+              </span>
+              <span className="whitespace-nowrap">{item.label}</span>
             </Link>
           );
         })}
@@ -98,10 +117,12 @@ const AccountSidebar = ({ active }: { active: AccountSection }) => {
         <button
           type="button"
           onClick={() => setIsLogoutOpen(true)}
-          className="flex h-10 shrink-0 items-center gap-2 rounded-[5px] px-3 text-[12px] font-semibold text-[#EF4444] transition hover:bg-red-50 lg:w-full"
+          className="group flex h-11 shrink-0 items-center gap-2.5 rounded-[8px] px-3 text-[14px] font-semibold text-[#EF4444] transition-all duration-300 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 lg:mt-2 lg:h-12 lg:w-full lg:border-t lg:border-[#FEE2E2]"
         >
-          <LogOut className="h-4 w-4" />
-          Log Out
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[7px] bg-red-50 transition-colors group-hover:bg-white">
+            <LogOut className="h-[17px] w-[17px]" />
+          </span>
+          <span className="whitespace-nowrap">Log Out</span>
         </button>
       </aside>
 

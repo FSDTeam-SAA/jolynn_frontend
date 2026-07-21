@@ -128,3 +128,43 @@ export const savedBusinesses = [
     reviewUrl: "#",
   },
 ];
+
+
+
+
+
+
+
+
+
+// <aside className="flex gap-2 overflow-x-auto lg:block lg:space-y-5 lg:overflow-visible ">
+//         {accountNavItems.map((item) => {
+//           const Icon = navIcons[item.id];
+//           const isActive = active === item.id;
+
+//           return (
+//             <Link
+//               key={item.id}
+//               href={item.href}
+//               className={cn(
+//                 "flex h-10 shrink-0 items-center gap-2 rounded-[5px] px-3 text-[12px] font-semibold transition lg:w-full",
+//                 isActive
+//                   ? "bg-[#292D73] text-white"
+//                   : "text-[#667085] hover:bg-[#F2F4F7] hover:text-[#292D73]",
+//               )}
+//             >
+//               <Icon className="h-4 w-4" />
+//               {item.label}
+//             </Link>
+//           );
+//         })}
+
+//         <button
+//           type="button"
+//           onClick={() => setIsLogoutOpen(true)}
+//           className="flex h-10 shrink-0 items-center gap-2 rounded-[5px] px-3 text-[12px] font-semibold text-[#EF4444] transition hover:bg-red-50 lg:w-full"
+//         >
+//           <LogOut className="h-4 w-4" />
+//           Log Out
+//         </button>
+//       </aside>
