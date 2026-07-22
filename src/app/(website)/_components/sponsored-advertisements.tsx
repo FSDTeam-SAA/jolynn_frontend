@@ -155,7 +155,7 @@ const SponsoredAdvertisements = () => {
                 />
                 <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/18 to-black/82" />
                 <div className="absolute inset-0 flex flex-col justify-between p-3">
-                  <h3 className="text-xl font-bold leading-normal text-white md:text-2xl lg:text-3xl">
+                  <h3 className="text-xl font-bold leading-normal text-white md:text-2xl ">
                     {ad.title}
                   </h3>
                   <p className="line-clamp-4 text-xs font-normal leading-normal text-white md:text-sm">

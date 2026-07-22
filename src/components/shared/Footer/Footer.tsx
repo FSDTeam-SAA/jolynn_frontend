@@ -1,6 +1,10 @@
-import { Facebook, Instagram, Linkedin, Youtube } from "lucide-react";
+"use client";
+
+// import { Facebook, Instagram, Linkedin, Youtube } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import type { MouseEvent } from "react";
 
 export interface ContactInfoResponse {
   status: boolean;
@@ -40,6 +44,7 @@ const footerColumns = [
     links: [
       { label: "Get Listed", href: "/services/businesses" },
       { label: "Leave a Review", href: "/reviews" },
+       { label: "Contact Us", href: "/contact" },
       // { label: "Pricing", href: "#" },
       // { label: "Success Stories", href: "#" },
     ],
@@ -49,42 +54,56 @@ const footerColumns = [
     links: [
       { label: "About Us", href: "/about-us" },
       { label: "FAQ", href: "/#faq" },
-      { label: "Contact Us", href: "/contact" },
-      { label: "Terms of Service", href: "#" },
-      { label: "Privacy Policy", href: "#" },
+      // { label: "Contact Us", href: "/contact" },
+      { label: "Terms of Service", href: "/terms-and-condition" },
+      { label: "Privacy Policy", href: "/privacy-policy" },
     ],
   },
 ];
 
-const socialLinks = [
-  {
-    label: "Facebook",
-    href: "https://www.facebook.com",
-    icon: <Facebook className="h-3.5 w-3.5" />,
-  },
-  {
-    label: "X",
-    href: "https://x.com",
-    icon: <span className="text-[13px] font-medium leading-none">X</span>,
-  },
-  {
-    label: "Instagram",
-    href: "https://www.instagram.com",
-    icon: <Instagram className="h-3.5 w-3.5" />,
-  },
-  {
-    label: "LinkedIn",
-    href: "https://www.linkedin.com",
-    icon: <Linkedin className="h-3.5 w-3.5" />,
-  },
-  {
-    label: "YouTube",
-    href: "https://www.youtube.com",
-    icon: <Youtube className="h-3.5 w-3.5" />,
-  },
-];
+// const socialLinks = [
+//   {
+//     label: "Facebook",
+//     href: "https://www.facebook.com",
+//     icon: <Facebook className="h-3.5 w-3.5" />,
+//   },
+//   {
+//     label: "X",
+//     href: "https://x.com",
+//     icon: <span className="text-[13px] font-medium leading-none">X</span>,
+//   },
+//   {
+//     label: "Instagram",
+//     href: "https://www.instagram.com",
+//     icon: <Instagram className="h-3.5 w-3.5" />,
+//   },
+//   {
+//     label: "LinkedIn",
+//     href: "https://www.linkedin.com",
+//     icon: <Linkedin className="h-3.5 w-3.5" />,
+//   },
+//   {
+//     label: "YouTube",
+//     href: "https://www.youtube.com",
+//     icon: <Youtube className="h-3.5 w-3.5" />,
+//   },
+// ];
 
 const Footer = () => {
+  const pathname = usePathname();
+
+  const handleHowItWorksClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (pathname !== "/") return;
+
+    const section = document.getElementById("how_it_works");
+
+    if (!section) return;
+
+    event.preventDefault();
+    window.history.pushState(null, "", "/#how_it_works");
+    section.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
     <footer className="bg-[#292E78] text-white">
       <div className="container px-4 py-10 sm:px-6 sm:py-12 md:py-14 lg:px-8 lg:pb-9 lg:pt-20 xl:px-10">
@@ -108,7 +127,7 @@ const Footer = () => {
               roofers, and more in your area.
             </p>
 
-            <ul className="mt-6 flex flex-wrap items-center gap-3">
+            {/* <ul className="mt-6 flex flex-wrap items-center gap-3">
               {socialLinks?.map((item) => (
                 <li key={item.label}>
                   <Link
@@ -122,7 +141,7 @@ const Footer = () => {
                   </Link>
                 </li>
               ))}
-            </ul>
+            </ul> */}
           </div>
 
           <div className="grid grid-cols-1 gap-8 min-[520px]:grid-cols-2 md:grid-cols-3 md:gap-7 lg:gap-10 xl:gap-14">
@@ -136,6 +155,11 @@ const Footer = () => {
                     <li key={item.label}>
                       <Link
                         href={item.href}
+                        onClick={
+                          item.href === "/#how_it_works"
+                            ? handleHowItWorksClick
+                            : undefined
+                        }
                         className="inline-flex min-h-7 items-center text-sm font-light leading-snug text-white/85 transition hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:text-[15px]"
                       >
                         {item.label}

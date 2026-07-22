@@ -1,30 +1,22 @@
-// import Image from "next/image";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
 import React from "react";
-// import haviasFooterLogo from '../../../public/images/authlogo.png'
-// import loginimage from '../../../public/images/loginimage.png'
 
 const AuthLayoutDesign = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="h-full md:h-screen grid grid-cols-1 md:grid-cols-1 gap-2 bg-[linear-gradient(180deg,_#292D73_0%,_#91C7D9_50%,_#CBE4E3_100%),_linear-gradient(0deg,_rgba(0,0,0,0.2),_rgba(0,0,0,0.2))]  ">
-      {/* <div className="  relative md:grid-cols-1 flex ">
-        <Image
-          src={loginimage}
-          width={1082}
-          height={960}
-          alt="auth image"
-          className="w-full h-full  object-cover"
-        />
-        <div className="absolute  top-0 ring-0 w-[172px] h-[214px]">
-          <Image
-            src={haviasFooterLogo}
-            width={1082}
-            height={960}
-            alt="auth logo"
-            className="w-full h-full  object-cover"
-          />
-        </div>
-      </div> */}
-      <div className="md:grid-cols-1 h-full w-full flex items-center justify-center">{children}</div>
+    <div className="relative min-h-dvh bg-[linear-gradient(180deg,_#292D73_0%,_#91C7D9_50%,_#CBE4E3_100%),_linear-gradient(0deg,_rgba(0,0,0,0.2),_rgba(0,0,0,0.2))]">
+      <Link
+        href="/"
+        aria-label="Back to home"
+        className="fixed left-4 top-4 z-20 inline-flex h-10 items-center gap-2 rounded-full border border-white/40 bg-white/90 px-4 text-xs font-semibold text-[#292D73] shadow-md backdrop-blur-sm transition hover:-translate-x-0.5 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#292D73] sm:left-6 sm:top-6 sm:h-11 sm:px-5 sm:text-sm lg:left-8 lg:top-8"
+      >
+        <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+        <span>Back to Home</span>
+      </Link>
+
+      <div className="flex min-h-dvh w-full items-center justify-center px-0 pb-6 pt-20 sm:pb-8 sm:pt-24 md:py-24 lg:py-28">
+        {children}
+      </div>
     </div>
   );
 };

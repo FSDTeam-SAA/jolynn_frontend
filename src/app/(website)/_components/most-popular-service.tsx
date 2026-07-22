@@ -73,7 +73,7 @@ const MostPopularService = () => {
           </div>
         ) : (
           <div className="mt-7 grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-5 lg:grid-cols-4 lg:gap-6">
-            {services.slice(0, 8).map((service) => (
+            {services?.slice(0, 8).map((service) => (
               <article
                 key={service._id}
                 className="group flex min-h-[176px] flex-col items-center rounded-[6px] bg-white px-3 pb-3.5 pt-3.5 text-center shadow-[0_1px_2px_rgba(32,42,70,0.04)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_16px_34px_rgba(32,42,70,0.10)] sm:px-4"
@@ -104,7 +104,8 @@ const MostPopularService = () => {
           </div>
         )}
 
-        <div className="mt-6 flex justify-center">
+       {
+        services?.length > 8 &&  <div className="mt-6 flex justify-center">
           <Link
             href="/services"
             className="inline-flex h-[40px] items-center justify-center rounded-[5px] bg-[#292E78] px-6 text-[11px] font-bold text-white shadow-[0_8px_18px_rgba(41,46,120,0.18)] transition hover:-translate-y-0.5 hover:bg-[#1F2464]"
@@ -112,6 +113,7 @@ const MostPopularService = () => {
             View All Services
           </Link>
         </div>
+       }
       </div>
     </section>
   );
