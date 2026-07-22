@@ -114,6 +114,15 @@ const AccountSidebar = ({ active }: { active: AccountSection }) => {
           );
         })}
 
+        <div>
+           <Link
+            href="/add-your-business"
+            className="w-full inline-flex h-9 items-center justify-center rounded-[5px] bg-[#22245F] px-5 text-[13px] font-semibold text-white transition hover:bg-[#17194D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22245F] focus-visible:ring-offset-2 focus-visible:ring-offset-[#E6F2F2]"
+          >
+            Add your business
+          </Link>
+        </div>
+
         <button
           type="button"
           onClick={() => setIsLogoutOpen(true)}

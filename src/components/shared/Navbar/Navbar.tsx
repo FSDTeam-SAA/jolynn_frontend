@@ -45,7 +45,7 @@ const Navbar = () => {
     | undefined;
 
 
-    console.log(sessionUser?.role)
+    // console.log(sessionUser?.role)
   const { data: profileResponse } = useProfileQuery(
     sessionUser?.accessToken ?? sessionUser?.token,
   );
@@ -128,7 +128,7 @@ const Navbar = () => {
                 className="w-44 bg-white p-1.5"
               >
                 <DropdownMenuItem asChild className="cursor-pointer py-2.5">
-                  <Link href={`${sessionUser?.role === "businessOwner" ? "/overview" : "/account/profile"}`}><LayoutDashboard className="h-4 w-4" />Dashboard</Link>
+                  <Link href={`${sessionUser?.role === "businessOwner" ? "/overview" : "/account/profile"}`}><LayoutDashboard className="h-4 w-4" />Profile</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem onSelect={() => setIsLogoutOpen(true)} className="cursor-pointer py-2.5 text-red-600 focus:text-red-600">
                   <LogOut className="h-4 w-4" />Logout
@@ -139,14 +139,14 @@ const Navbar = () => {
             <Link href="/login" className="inline-flex h-9 min-w-[76px] items-center justify-center rounded-[5px] border border-[#22245F] px-4 text-[13px] font-semibold text-[#22245F] transition hover:bg-white/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22245F] focus-visible:ring-offset-2 focus-visible:ring-offset-[#E6F2F2]">Login</Link>
           )}
 
-          {
+          {/* {
             sessionUser?.role !== "businessOwner" &&  <Link
             href="/add-your-business"
             className="inline-flex h-9 items-center justify-center rounded-[5px] bg-[#22245F] px-5 text-[13px] font-semibold text-white transition hover:bg-[#17194D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22245F] focus-visible:ring-offset-2 focus-visible:ring-offset-[#E6F2F2]"
           >
             Add your business
           </Link>
-          }
+          } */}
          
         </div>
 

@@ -127,11 +127,13 @@ const JobPostsContainer = () => {
   const queryClient = useQueryClient();
   const { data: session } = useSession();
   const sessionUser = session?.user as
-    | { id?: string; token?: string; accessToken?: string }
+    | { id?: string; token?: string; accessToken?: string; role?: string }
     | undefined;
 
 
   const token = sessionUser?.accessToken ?? sessionUser?.token;
+
+
   const [page, setPage] = useState(1);
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [postToDelete, setPostToDelete] = useState<HelpWantedPost | null>(null);
@@ -277,9 +279,21 @@ const JobPostsContainer = () => {
           </div>
         ) : (
           <>
-            <p className="mb-4 text-xs font-semibold text-[#667481]">
+          <div className="w-full flex items-center justify-between gap-4 pb-6">
+              <p className="mb-4 text-sm lg:text-base font-semibold text-[#667481]">
               {total} job post{total === 1 ? "" : "s"} found
             </p>
+            <div>
+              {
+            sessionUser?.role !== "businessOwner" &&  <Link
+            href="/add-your-business"
+            className="inline-flex h-9 items-center justify-center rounded-[5px] bg-[#22245F] px-5 text-[13px] font-semibold text-white transition hover:bg-[#17194D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22245F] focus-visible:ring-offset-2 focus-visible:ring-offset-[#E6F2F2]"
+          >
+            Add your business
+          </Link>
+          }
+          </div>
+            </div>
             <div className="space-y-5 sm:space-y-6">
               {posts.map((post) => (
                 <article
