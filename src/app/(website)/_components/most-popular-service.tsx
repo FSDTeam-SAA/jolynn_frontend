@@ -12,7 +12,10 @@ const MostPopularService = () => {
   const services = data?.data ?? [];
 
   return (
-    <section className="bg-[#DFF0EE] px-4 py-12 sm:px-6 md:py-14 lg:px-8 lg:py-[50px]">
+    <section
+      id="most-popular-categories"
+      className="scroll-mt-24 bg-[#DFF0EE] px-4 py-12 sm:px-6 md:py-14 lg:px-8 lg:py-[50px]"
+    >
       <div className="container">
         <div className="text-center">
           <h2 className="text-[24px] font-extrabold leading-tight text-[#292E78] sm:text-[28px] md:text-[30px]">

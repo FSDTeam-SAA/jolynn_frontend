@@ -114,7 +114,7 @@ const AccountSidebar = ({ active }: { active: AccountSection }) => {
           );
         })}
 
-        <div>
+        <div className="border-y-[1px] border-primary py-4">
            <Link
             href="/add-your-business"
             className="w-full inline-flex h-9 items-center justify-center rounded-[5px] bg-[#22245F] px-5 text-[13px] font-semibold text-white transition hover:bg-[#17194D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22245F] focus-visible:ring-offset-2 focus-visible:ring-offset-[#E6F2F2]"
@@ -126,7 +126,7 @@ const AccountSidebar = ({ active }: { active: AccountSection }) => {
         <button
           type="button"
           onClick={() => setIsLogoutOpen(true)}
-          className="group flex h-11 shrink-0 items-center gap-2.5 rounded-[8px] px-3 text-[14px] font-semibold text-[#EF4444] transition-all duration-300 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 lg:mt-2 lg:h-12 lg:w-full lg:border-t lg:border-[#FEE2E2]"
+          className="group flex h-11 shrink-0 items-center gap-2.5 rounded-[8px] px-3 text-[14px] font-semibold text-[#EF4444] transition-all duration-300 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 lg:mt-2 lg:h-12 lg:w-full "
         >
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[7px] bg-red-50 transition-colors group-hover:bg-white">
             <LogOut className="h-[17px] w-[17px]" />

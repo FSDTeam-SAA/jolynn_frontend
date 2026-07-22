@@ -1,6 +1,14 @@
 "use client";
 
-import { ArrowRight, BriefcaseBusiness, ChevronLeft, ChevronRight, MapPin, Search } from "lucide-react";
+import {
+  ArrowRight,
+  BriefcaseBusiness,
+  ChevronLeft,
+  ChevronRight,
+  Layers3,
+  MapPin,
+  Search,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -133,16 +141,31 @@ const Hero = () => {
               </p>
             </div>
 
-            <div className="mt-4 md:mt-5">
-               <Link
-                href="/add-your-business"
-                className="bg-primary inline-flex h-10 md:h-12 items-center justify-center gap-3 rounded-[8px] border border-white px-2 md:px-4 text-xs md:text-sm lg:text-base font-semibold leading-[150%] text-white transition hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-              >
-                <BriefcaseBusiness className="h-5 w-5 sm:hidden" />
-                Grow your business with Sidequote
-                <ArrowRight className="h-4 md:h-5 w-4 md:w-5" />
-              </Link>
-            </div>
+            {activeSlide.id !== 1 && (
+              <div className="mt-4 md:mt-5">
+                {activeSlide.id === 2 && (
+                <Link
+                  href="/add-your-business"
+                  className="inline-flex h-10 items-center justify-center gap-2.5 rounded-[8px] bg-primary px-3 text-xs font-semibold leading-[150%] text-white transition hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 md:h-12 md:px-4 md:text-sm lg:text-base"
+                >
+                  <BriefcaseBusiness className="h-4 w-4 md:h-5 md:w-5" />
+                  Grow your business with Sidequote
+                  <ArrowRight className="h-4 w-4 md:h-5 md:w-5" />
+                </Link>
+                )}
+
+                {activeSlide.id === 3 && (
+                <Link
+                  href="#most-popular-categories"
+                  className="inline-flex h-10 items-center justify-center gap-2.5 rounded-[8px] bg-primary px-3 text-xs font-semibold leading-[150%] text-white transition hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 md:h-12 md:px-4 md:text-sm lg:text-base"
+                >
+                  <Layers3 className="h-4 w-4 md:h-5 md:w-5" />
+                  Most Popular Categories
+                  <ArrowRight className="h-4 w-4 md:h-5 md:w-5" />
+                </Link>
+                )}
+              </div>
+            )}
 
             <form
               onSubmit={handleSearch}

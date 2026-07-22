@@ -218,7 +218,7 @@ const SignupForm = () => {
                     <Input
                       type="tel"
                       className={inputClassName}
-                      placeholder="0215874167122"
+                      placeholder="+1 (201) 555-0123"
                       {...field}
                     />
                   </FormControl>
