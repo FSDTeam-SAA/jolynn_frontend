@@ -11,6 +11,8 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  LayoutGrid,
+  List,
   MapPin,
   MessageCircle,
   Star,
@@ -20,6 +22,7 @@ import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import BusinessSearchForm from "./business-search-form";
 import NoBusinessResults from "./no-business-results";
+import ReportBusinessModal from "./report-business-modal";
 
 type ServicesSearchContainerProps = {
   initialService?: string;
@@ -31,6 +34,13 @@ type DraftFilters = {
   minimumRating: string;
   location: string;
   searchTerm: string;
+};
+
+type ViewMode = "list" | "grid";
+
+type SelectedBusiness = {
+  id: string;
+  name: string;
 };
 
 const uniqueValues = (values: string[]) =>
@@ -95,6 +105,9 @@ const ServicesSearchContainer = ({
     searchTerm: "",
   });
   const [page, setPage] = useState(1);
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [selectedBusiness, setSelectedBusiness] =
+    useState<SelectedBusiness | null>(null);
 
   useEffect(() => {
     if (servicesQuery.isPending) return;
@@ -308,9 +321,46 @@ const ServicesSearchContainer = ({
 
               <div>
                 {!servicesQuery.isPending && !servicesQuery.isError && (
-                  <p className="mb-4 text-[12px] font-semibold text-[#515E6E]">
-                    {total} business{total === 1 ? "" : "es"} found
-                  </p>
+                  <div className="mb-4 flex min-h-10 flex-wrap items-center justify-between gap-3">
+                    <p className="text-[12px] font-semibold text-[#515E6E] sm:text-[13px]">
+                      {total} business{total === 1 ? "" : "es"} found
+                    </p>
+
+                    <div
+                      className="inline-flex items-center rounded-[7px] border border-[#D8DEE8] bg-[#F5F7FA] p-1"
+                      role="group"
+                      aria-label="Choose results view"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setViewMode("list")}
+                        aria-pressed={viewMode === "list"}
+                        title="List view"
+                        className={`inline-flex h-8 items-center justify-center gap-1.5 rounded-[5px] px-2.5 text-[11px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73]/40 sm:px-3 ${
+                          viewMode === "list"
+                            ? "bg-[#292D73] text-white shadow-sm"
+                            : "text-[#667085] hover:bg-white hover:text-[#292D73]"
+                        }`}
+                      >
+                        <List className="h-4 w-4" aria-hidden="true" />
+                        <span className="hidden sm:inline">List</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setViewMode("grid")}
+                        aria-pressed={viewMode === "grid"}
+                        title="Grid view"
+                        className={`inline-flex h-8 items-center justify-center gap-1.5 rounded-[5px] px-2.5 text-[11px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73]/40 sm:px-3 ${
+                          viewMode === "grid"
+                            ? "bg-[#292D73] text-white shadow-sm"
+                            : "text-[#667085] hover:bg-white hover:text-[#292D73]"
+                        }`}
+                      >
+                        <LayoutGrid className="h-4 w-4" aria-hidden="true" />
+                        <span className="hidden sm:inline">Grid</span>
+                      </button>
+                    </div>
+                  </div>
                 )}
 
                 {servicesQuery.isPending || businessQuery.isPending ? (
@@ -355,15 +405,136 @@ const ServicesSearchContainer = ({
                     </button>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-                    {businesses.map((business) => (
-                      <article
-                        key={business.businessOwnerId}
-                        className="rounded-[8px] bg-white p-4 shadow-[0_6px_18px_rgba(30,45,75,0.14)] ring-1 ring-[#E8ECF2] transition duration-200 hover:-translate-y-1"
-                      >
+                  <div
+                    className={`grid grid-cols-1 gap-4 ${
+                      viewMode === "grid" ? "xl:grid-cols-2" : ""
+                    }`}
+                  >
+                    {businesses.map((business) => {
+                      if (viewMode === "list") {
+                        const location =
+                          [business.city, business.state]
+                            .filter(Boolean)
+                            .join(", ") ||
+                          business.address ||
+                          business.serviceArea;
+
+                        return (
+                          <article
+                            key={business.businessOwnerId}
+                            className="group relative overflow-hidden rounded-xl border border-[#E3E8EF] bg-white shadow-[0_5px_18px_rgba(30,45,75,0.09)] transition duration-200 hover:border-[#B9C9DC] hover:shadow-[0_10px_28px_rgba(30,45,75,0.14)]"
+                          >
+                            <div className="absolute inset-y-0 left-0 w-1 bg-[linear-gradient(180deg,#292D73,#0082D7)]" />
+
+                            <div className="p-4 pl-5 sm:p-5 sm:pl-6">
+                              <div className="flex items-start gap-3.5 sm:gap-5">
+                                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-[#E8ECF2] bg-[#F4F6F9] shadow-sm sm:h-[72px] sm:w-[72px]">
+                                  <Image
+                                    src={business.service.logo.url}
+                                    alt={`${business.service.title} logo`}
+                                    fill
+                                    sizes="(min-width: 640px) 72px, 56px"
+                                    className="object-cover transition duration-300 group-hover:scale-105"
+                                  />
+                                </div>
+
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+                                    <div className="min-w-0">
+                                      <h3 className="truncate text-base font-extrabold leading-tight text-[#292D73] sm:text-lg">
+                                        {business.businessName}
+                                      </h3>
+                                      <span className="mt-1.5 inline-flex rounded-full bg-[#E6F3F2] px-2.5 py-1 text-[10px] font-semibold leading-none text-[#426078] sm:text-[11px]">
+                                        {business.category || business.service.title}
+                                      </span>
+                                    </div>
+
+                                    <div className="flex shrink-0 items-center gap-1.5 sm:justify-end">
+                                      <div
+                                        className="flex gap-0.5"
+                                        aria-label={`${business.rating} out of 5 stars`}
+                                      >
+                                        {Array.from({ length: 5 }).map((_, index) => (
+                                          <Star
+                                            key={index}
+                                            className={`h-3.5 w-3.5 ${
+                                              index < Math.round(business.rating)
+                                                ? "fill-[#FFB800] text-[#FFB800]"
+                                                : "text-[#D9DEE7]"
+                                            }`}
+                                          />
+                                        ))}
+                                      </div>
+                                      <span className="text-xs font-bold text-[#292E78]">
+                                        {business.rating.toFixed(1)}
+                                      </span>
+                                      <span className="text-[11px] text-[#667085]">
+                                        ({business.totalReviews} reviews)
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  <p className="mt-3 line-clamp-2 text-xs leading-5 text-[#667085] sm:text-[13px]">
+                                    {business.service.description}
+                                  </p>
+
+                                  {location && (
+                                    <div className="mt-2.5 flex items-start gap-1.5 text-xs text-[#667085]">
+                                      <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#0082D7]" />
+                                      <span className="line-clamp-1">{location}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-[#EDF0F4] pt-4 sm:pl-[92px]">
+                                <Link
+                                  href={`/services/businesses/${business.businessOwnerId}`}
+                                  className="inline-flex h-9 flex-1 items-center justify-center rounded-md bg-[#292E78] px-4 text-xs font-bold text-white transition hover:bg-[#1F2464] sm:flex-none"
+                                >
+                                  View Profile
+                                </Link>
+                                <Link
+                                  href={`/services/businesses/${business.businessOwnerId}?tab=reviews`}
+                                  className="inline-flex h-9 flex-1 items-center justify-center rounded-md border border-[#F2C66D] bg-[#FFF8E8] px-4 text-xs font-semibold text-[#C96800] transition hover:border-[#F8AA18] hover:bg-[#FFF2CC] sm:flex-none"
+                                >
+                                  Review
+                                </Link>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setSelectedBusiness({
+                                      id: business.businessOwnerId,
+                                      name: business.businessName,
+                                    })
+                                  }
+                                  className="inline-flex h-9 flex-1 items-center justify-center rounded-md bg-[#A7A7A7] px-4 text-xs font-bold text-white transition hover:bg-[#8E8E8E] sm:flex-none"
+                                >
+                                  Report
+                                </button>
+                                <Link
+                                  href={business.businessWebsiteUrl || "#"}
+                                  target={business.businessWebsiteUrl ? "_blank" : undefined}
+                                  rel={business.businessWebsiteUrl ? "noreferrer" : undefined}
+                                  className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-[#292E78] bg-white text-[#292E78] transition hover:bg-[#292E78] hover:text-white"
+                                  aria-label={`Visit ${business.businessName} website`}
+                                >
+                                  <MessageCircle className="h-4 w-4" />
+                                </Link>
+                              </div>
+                            </div>
+                          </article>
+                        );
+                      }
+
+                      return (
+                        <article
+                          key={business.businessOwnerId}
+                          className="rounded-[8px] bg-white p-4 shadow-[0_6px_18px_rgba(30,45,75,0.14)] ring-1 ring-[#E8ECF2] transition duration-200 hover:-translate-y-1"
+                        >
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex min-w-0 items-start gap-3">
-                            <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-[#4D1979]">
+                            <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl border border-[#E8ECF2] bg-[#F4F6F9] shadow-sm">
                               <Image
                                 src={business.service.logo.url}
                                 alt={`${business.service.title} logo`}
@@ -389,55 +560,63 @@ const ServicesSearchContainer = ({
                           </Link>
                         </div>
 
-                        <div className="mt-3 flex flex-wrap items-center gap-1.5">
-                          <div
-                            className="flex gap-px"
-                            aria-label={`${business.rating} out of 5 stars`}
-                          >
-                            {Array.from({ length: 5 }).map((_, index) => (
-                              <Star
-                                key={index}
-                                className={`h-[12px] w-[12px] ${
-                                  index < Math.round(business.rating)
-                                    ? "fill-[#FFB800] text-[#FFB800]"
-                                    : "text-[#D9DEE7]"
-                                }`}
-                              />
-                            ))}
+                        <div>
+                          <div className="mt-3 flex flex-wrap items-center gap-1.5">
+                            <div
+                              className="flex gap-px"
+                              aria-label={`${business.rating} out of 5 stars`}
+                            >
+                              {Array.from({ length: 5 }).map((_, index) => (
+                                <Star
+                                  key={index}
+                                  className={`h-[12px] w-[12px] ${
+                                    index < Math.round(business.rating)
+                                      ? "fill-[#FFB800] text-[#FFB800]"
+                                      : "text-[#D9DEE7]"
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                            <span className="text-xs font-bold text-[#292E78]">
+                              {business.rating.toFixed(1)}
+                            </span>
+                            <span className="text-xs text-[#667085]">
+                              ({business.totalReviews} reviews)
+                            </span>
                           </div>
-                          <span className="text-xs font-bold text-[#292E78]">
-                            {business.rating.toFixed(1)}
-                          </span>
-                          <span className="text-xs text-[#667085]">
-                            ({business.totalReviews} reviews)
-                          </span>
-                        </div>
 
-                        <div className="mt-3 flex items-start gap-1 text-xs text-[#667085]">
-                          <MapPin className="h-3.5 w-3.5 shrink-0" />
-                          <span>
-                            {[business.city, business.state]
-                              .filter(Boolean)
-                              .join(", ") || business.address || business.serviceArea}
-                          </span>
+                          <div className="mt-3 flex items-start gap-1 text-xs text-[#667085]">
+                            <MapPin className="h-3.5 w-3.5 shrink-0" />
+                            <span>
+                              {[business.city, business.state]
+                                .filter(Boolean)
+                                .join(", ") || business.address || business.serviceArea}
+                            </span>
+                          </div>
+                          <p className="mt-1.5 line-clamp-2 min-h-[32px] text-xs leading-[1.4] text-[#667085]">
+                            {business.service.description}
+                          </p>
                         </div>
-                        <p className="mt-1.5 line-clamp-2 min-h-[32px] text-xs leading-[1.4] text-[#667085]">
-                          {business.service.description}
-                        </p>
 
                         <div className="mt-3 grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_34px] gap-1.5">
                           <Link
                             href={`/services/businesses/${business?.businessOwnerId}`}
-                            className="inline-flex h-8 items-center justify-center rounded-[4px] bg-[#292E78] px-3 text-xsfont-bold text-white transition hover:bg-[#1F2464]"
+                            className="inline-flex h-8 items-center justify-center rounded-[4px] bg-[#292E78] px-3 text-xs font-bold text-white transition hover:bg-[#1F2464]"
                           >
                             View Profile
                           </Link>
-                          <Link
-                            href={`/report?serviceId=${encodeURIComponent(business?.businessOwnerId)}`}
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setSelectedBusiness({
+                                id: business.businessOwnerId,
+                                name: business.businessName,
+                              })
+                            }
                             className="inline-flex h-8 items-center justify-center rounded-[4px] bg-[#A7A7A7] px-3 text-xs font-bold text-white transition hover:bg-[#8E8E8E]"
                           >
                             Report
-                          </Link>
+                          </button>
                           <Link
                             href={business.businessWebsiteUrl || "#"}
                             target={business.businessWebsiteUrl ? "_blank" : undefined}
@@ -448,8 +627,9 @@ const ServicesSearchContainer = ({
                             <MessageCircle className="h-4 w-4" />
                           </Link>
                         </div>
-                      </article>
-                    ))}
+                        </article>
+                      );
+                    })}
                   </div>
                 )}
 
@@ -500,6 +680,15 @@ const ServicesSearchContainer = ({
           </div>
         </section>
       </main>
+
+      <ReportBusinessModal
+        ownerId={selectedBusiness?.id ?? ""}
+        businessName={selectedBusiness?.name ?? ""}
+        open={Boolean(selectedBusiness)}
+        onOpenChange={(open) => {
+          if (!open) setSelectedBusiness(null);
+        }}
+      />
     </div>
   );
 };

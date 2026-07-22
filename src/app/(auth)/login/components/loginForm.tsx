@@ -100,7 +100,7 @@ const LoginForm = () => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="flex items-center gap-1 text-base font-semibold leading-[120%] text-[#4365D0] pb-2">
-                    Email Address/Username
+                    Email Address
                   </FormLabel>
                   <FormControl>
                     <Input

@@ -43,6 +43,9 @@ type ReportContainerProps = {
 
 const ReportContainer = ({ businessId }: ReportContainerProps) => {
   const { data: session, status } = useSession();
+
+console.log(businessId)
+
   const sessionUser = session?.user as
     | { token?: string; accessToken?: string }
     | undefined;

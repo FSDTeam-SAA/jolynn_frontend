@@ -2,6 +2,7 @@
 
 import { Skeleton } from "@/components/ui/skeleton";
 import DeleteModal from "@/components/modals/delete-modal";
+import { useProfileQuery } from "@/hooks/APicalling";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AlertCircle,
@@ -127,11 +128,39 @@ const JobPostsContainer = () => {
   const queryClient = useQueryClient();
   const { data: session } = useSession();
   const sessionUser = session?.user as
-    | { id?: string; token?: string; accessToken?: string }
+    | {
+        id?: string;
+        email?: string | null;
+        token?: string;
+        accessToken?: string;
+        role?: string;
+      }
     | undefined;
 
 
   const token = sessionUser?.accessToken ?? sessionUser?.token;
+  const { data: profileResponse } = useProfileQuery(token);
+  const profile = profileResponse?.data;
+  const currentUserId = profile?._id ?? sessionUser?.id;
+  const currentUserEmail = (profile?.email ?? sessionUser?.email)
+    ?.trim()
+    .toLowerCase();
+
+  const isOwnPost = (post: HelpWantedPost) => {
+    const postUserId = getPostUserId(post);
+    const populatedUserEmail =
+      typeof post.userId === "object" ? post.userId.email : undefined;
+    const postEmails = [post.email, populatedUserEmail]
+      .filter(Boolean)
+      .map((email) => email!.trim().toLowerCase());
+
+    return Boolean(
+      (currentUserId && postUserId === currentUserId) ||
+        (currentUserEmail && postEmails.includes(currentUserEmail)),
+    );
+  };
+
+
   const [page, setPage] = useState(1);
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [postToDelete, setPostToDelete] = useState<HelpWantedPost | null>(null);
@@ -190,7 +219,7 @@ const JobPostsContainer = () => {
     mutationKey: ["delete-help-wanted"],
     mutationFn: async (post) => {
       if (!token) throw new Error("Please sign in to delete this post.");
-      if (!sessionUser?.id || getPostUserId(post) !== sessionUser.id) {
+      if (!isOwnPost(post)) {
         throw new Error("You can only delete your own help post.");
       }
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -277,9 +306,32 @@ const JobPostsContainer = () => {
           </div>
         ) : (
           <>
-            <p className="mb-4 text-xs font-semibold text-[#667481]">
+          <div className="w-full flex items-center justify-between gap-4 pb-6">
+              <p className="mb-4 text-sm lg:text-base font-semibold text-[#667481]">
               {total} job post{total === 1 ? "" : "s"} found
             </p>
+            <div>
+              {
+            sessionUser?.role !== "businessOwner" &&  <div className="flex items-center gap-5">
+
+              <Link
+            href="/job-posts/create"
+            className="inline-flex h-9 items-center justify-center rounded-[5px] bg-[#22245F] px-5 text-[13px] font-semibold text-white transition hover:bg-[#17194D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22245F] focus-visible:ring-offset-2 focus-visible:ring-offset-[#E6F2F2]"
+          >
+            Add Job Post
+          </Link>
+
+              <Link
+            href="/add-your-business"
+            className="inline-flex h-9 items-center justify-center rounded-[5px] bg-[#22245F] px-5 text-[13px] font-semibold text-white transition hover:bg-[#17194D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22245F] focus-visible:ring-offset-2 focus-visible:ring-offset-[#E6F2F2]"
+          >
+            Add your business
+          </Link>
+            </div>
+
+          }
+          </div>
+            </div>
             <div className="space-y-5 sm:space-y-6">
               {posts.map((post) => (
                 <article
@@ -330,7 +382,7 @@ const JobPostsContainer = () => {
                     </p>
 
                     <div className="mt-5 flex flex-col justify-start gap-2 sm:flex-row sm:justify-end">
-                      {sessionUser?.id && getPostUserId(post) === sessionUser.id && (
+                      {isOwnPost(post) && (
                         <button
                           type="button"
                           onClick={() => setPostToDelete(post)}

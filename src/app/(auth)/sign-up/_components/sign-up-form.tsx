@@ -30,7 +30,7 @@ const formSchema = z
     lastName: z.string().min(1, { message: "Last name is required." }),
     username: z.string().min(1, { message: "Username is required." }),
     email: z.string().email({ message: "Please enter a valid email address." }),
-    phoneNumber: z.string().min(1, { message: "Phone number is required." }),
+    phoneNumber: z.string().min(0, { message: "Phone number is required." }),
     password: z
       .string()
       .min(6, { message: "Password must be at least 6 characters long." }),
@@ -218,7 +218,7 @@ const SignupForm = () => {
                     <Input
                       type="tel"
                       className={inputClassName}
-                      placeholder="0215874167122"
+                      placeholder="+1 (201) 555-0123"
                       {...field}
                     />
                   </FormControl>

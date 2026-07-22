@@ -1,6 +1,5 @@
 "use client";
 
-import { Skeleton } from "@/components/ui/skeleton";
 import { useServices } from "@/hooks/use-services";
 import { MapPin, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -18,16 +17,15 @@ const BusinessSearchForm = ({
   const router = useRouter();
   const [service, setService] = useState(initialService);
   const [location, setLocation] = useState(initialLocation);
-  const { data, isPending, isError, refetch, isFetching } = useServices();
-  const services = data?.data ?? [];
+  const { data } = useServices();
   const canonicalInitialService = useMemo(
     () =>
-      services.find(
+      data?.data.find(
         (item) =>
           item._id === initialService ||
           item.title.toLowerCase() === initialService.toLowerCase(),
       )?.title || initialService,
-    [initialService, services],
+    [data?.data, initialService],
   );
 
   useEffect(() => {
@@ -57,32 +55,15 @@ const BusinessSearchForm = ({
     >
       <label className="relative flex min-w-0 flex-1 items-center gap-2 border-b border-[#ECEEF5] px-4 py-3 sm:border-b-0 sm:border-r">
         <Search className="h-5 w-5 shrink-0 text-[#7E7E7E]" />
-        {isPending ? (
-          <Skeleton className="h-5 w-3/4" />
-        ) : isError ? (
-          <button
-            type="button"
-            onClick={() => refetch()}
-            disabled={isFetching}
-            className="text-left text-[12px] font-semibold text-red-600 hover:underline disabled:opacity-60"
-          >
-            {isFetching ? "Loading services..." : "Services unavailable — retry"}
-          </button>
-        ) : (
-          <select
-            value={service}
-            onChange={(event) => setService(event.target.value)}
-            className="w-full appearance-none bg-transparent text-[13px] font-medium text-[#292E78] outline-none"
-            aria-label="Select a service"
-          >
-            <option value="">What services do you need?</option>
-            {services.map((item) => (
-              <option key={item._id} value={item.title}>
-                {item.title}
-              </option>
-            ))}
-          </select>
-        )}
+        <input
+          type="search"
+          value={service}
+          onChange={(event) => setService(event.target.value)}
+          placeholder="What services do you need?"
+          autoComplete="off"
+          aria-label="Search for a service"
+          className="w-full bg-transparent text-[13px] font-medium text-[#292E78] outline-none placeholder:text-[#7E7E7E]"
+        />
       </label>
 
       <label className="flex min-w-0 flex-1 items-center gap-2 border-b border-[#ECEEF5] px-4 py-3 sm:border-b-0 sm:border-r">
