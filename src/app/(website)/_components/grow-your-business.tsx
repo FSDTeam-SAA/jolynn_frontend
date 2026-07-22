@@ -74,7 +74,10 @@ const businessSteps: BusinessStep[] = [
 
 const GrowYourBusiness = () => {
   return (
-    <section id="how_it_works" className="pb-8 md:pb-10 bg-white">
+    <section
+      id="how_it_works"
+      className="scroll-mt-32 bg-white pb-8 md:pb-10"
+    >
       <div className="container px-4 max-w-[1300px] overflow-x-hidden rounded-[12px] bg-[linear-gradient(90deg,_#292D73_0%,_#0082D7_100%)]">
         <div className="grid min-h-[181px] grid-cols-1 lg:grid-cols-[1fr_3fr]">
           <div className="flex items-center justify-end px-4 md:px-7 py-8 lg:border-r lg:border-white/20 lg:px-8 lg:py-6">
