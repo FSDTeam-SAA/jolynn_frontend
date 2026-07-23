@@ -1,6 +1,7 @@
 "use client";
 
 // import { Facebook, Instagram, Linkedin, Youtube } from "lucide-react";
+import { Mail, MapPin, Phone } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -34,31 +35,35 @@ const footerColumns = [
     title: "For Customers",
     links: [
       { label: "Find Services", href: "/services" },
+      { label: "Get Listed", href: "/services/businesses" },
       { label: "Advertise with Us", href: "/advertise-with-us" },
       { label: "How It Works", href: "/#how_it_works" },
-      // { label: "Leave a Review", href: "/reviews" },
+      { label: "Leave a Review", href: "/reviews" },
     ],
   },
   {
     title: "For Businesses",
     links: [
-      { label: "Get Listed", href: "/services/businesses" },
-      { label: "Leave a Review", href: "/reviews" },
+      { label: "About Us", href: "/about-us" },
        { label: "Contact Us", href: "/contact" },
+       { label: "FAQ", href: "/#faq" },
+       { label: "Terms of Service", href: "/terms-and-condition" },
+       { label: "Privacy Policy", href: "/privacy-policy" },
       // { label: "Pricing", href: "#" },
       // { label: "Success Stories", href: "#" },
     ],
   },
-  {
-    title: "Company",
-    links: [
-      { label: "About Us", href: "/about-us" },
-      { label: "FAQ", href: "/#faq" },
-      // { label: "Contact Us", href: "/contact" },
-      { label: "Terms of Service", href: "/terms-and-condition" },
-      { label: "Privacy Policy", href: "/privacy-policy" },
-    ],
-  },
+  // {
+  //   title: "Company",
+  //   links: [
+  //     { label: "About Us", href: "/about-us" },
+  //     { label: "FAQ", href: "/#faq" },
+  //     { label: "Contact Us", href: "/contact" },
+  //     { label: "Terms of Service", href: "/terms-and-condition" },
+  //     { label: "Privacy Policy", href: "/privacy-policy" },
+  //   ],
+  // },
+
 ];
 
 // const socialLinks = [
@@ -169,6 +174,57 @@ const Footer = () => {
                 </ul>
               </div>
             ))}
+
+            <div>
+              <h3 className="text-base font-bold leading-tight">Contact Us</h3>
+              <address className="mt-5 not-italic">
+                <ul className="space-y-4">
+                  <li>
+                    <a
+                      href="mailto:info@sidequote.com"
+                      className="group flex items-start gap-3 text-sm font-light leading-6 text-white/85 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:text-[15px]"
+                    >
+                      <Mail
+                        className="mt-0.5 h-5 w-5 shrink-0 text-white"
+                        aria-hidden="true"
+                      />
+                      <span className="break-all group-hover:underline">
+                        info@sidequote.com
+                      </span>
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="tel:+14159027471"
+                      className="group flex items-start gap-3 text-sm font-light leading-6 text-white/85 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:text-[15px]"
+                    >
+                      <Phone
+                        className="mt-0.5 h-5 w-5 shrink-0 text-white"
+                        aria-hidden="true"
+                      />
+                      <span className="group-hover:underline">
+                        +1 (415) 902-7471
+                      </span>
+                    </a>
+                  </li>
+                  <li className="flex items-start gap-3 text-sm font-light leading-6 text-white/85 sm:text-[15px]">
+                    <MapPin
+                      className="mt-0.5 h-5 w-5 shrink-0 text-white"
+                      aria-hidden="true"
+                    />
+                    <span>
+                      8414 Farm Road
+                      <br />
+                      Ste 180 PMB 1105
+                      <br />
+                      Las Vegas, NV 89131
+                      <br />
+                      United States
+                    </span>
+                  </li>
+                </ul>
+              </address>
+            </div>
           </div>
         </div>
 

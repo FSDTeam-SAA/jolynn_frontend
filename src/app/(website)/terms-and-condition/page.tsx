@@ -8,99 +8,66 @@ export const metadata: Metadata = {
 
 const sections: LegalSection[] = [
   {
-    id: "acceptance",
-    title: "Acceptance of these terms",
+    id: "intellectual-property-rights",
+    title: "Intellectual Property Rights",
     paragraphs: [
-      "By accessing or using SideQuote, you agree to these Terms and Conditions and our Privacy Policy. If you do not agree, please do not use the platform. If you use SideQuote for a business or organization, you confirm that you have authority to accept these terms on its behalf.",
+      "All content on this Site—including text, graphics, logos, and code—is our property or the property of our licensors. It is protected by international copyright, trademark, and intellectual property laws. You may not copy, reproduce, or distribute any content without our prior written consent.",
     ],
   },
   {
-    id: "platform-role",
-    title: "What SideQuote provides",
-    paragraphs: [
-      "SideQuote is an online directory and connection platform that helps customers discover service professionals, view business information, request quotes, and share reviews. SideQuote is not the provider of the services listed and is not a party to agreements made between customers and service professionals.",
-      "We do not guarantee that a listing, credential, review, quote, availability, price, or service outcome is accurate or suitable for your needs. Users are responsible for carrying out their own checks before hiring or performing work.",
-    ],
-  },
-  {
-    id: "accounts",
-    title: "Accounts and eligibility",
+    id: "acceptable-use-policy",
+    title: "Acceptable Use Policy",
     bullets: [
-      "You must be at least 18 years old and legally able to enter into a contract.",
-      "Information provided to SideQuote must be accurate, current, and complete.",
-      "You are responsible for protecting your login details and for activity under your account.",
-      "Tell us promptly if you suspect unauthorized account access or another security issue.",
+      "Agree not to use the Site for any unlawful purpose.",
+      "Agree not to post or transmit harassing, defamatory, harmful, or obscene content.",
+      "Agree not to attempt to breach the security or hack any part of the Site.",
+      "Agree not to scrape data or use automated systems to extract information from the Site.",
+      "Agree to use the REPORT link to report any abuse, fraud or breach to these terms of usage, so that the site can respond and take appropriate action.",
+      "Agree to be part of the SideQuote community and behave in the manner of HELPING THE COMMUNITY.",
     ],
   },
   {
-    id: "business-listings",
-    title: "Business listings and professionals",
+    id: "user-accounts",
+    title: "User Accounts",
     paragraphs: [
-      "Business owners must have the authority to represent the listed business and must keep their profile, licenses, insurance information, prices, availability, and service details accurate. Any verification badge or review performed by SideQuote reflects information available at the time and is not a continuing guarantee.",
-      "Professionals are solely responsible for their work, quotes, contracts, permits, taxes, insurance, legal compliance, customer communications, and any warranties they offer.",
+      "If you register for an account, you are responsible for maintaining password confidentiality. You accept responsibility for all actions occurring under your account credentials. We reserve the right to suspend or terminate accounts at our sole discretion. It is your responsibility to make sure you delete content that you’ve added and conduct due diligence in maintaining password security such as rotating, changing and updating passwords when your security is compromised.",
     ],
   },
   {
-    id: "customer-responsibilities",
-    title: "Customer responsibilities",
+    id: "limitation-of-liability-disclaimers",
+    title: "Limitation of Liability & Disclaimers",
     paragraphs: [
-      "Customers should review a professional’s qualifications, insurance, licenses, experience, references, pricing, and written terms before agreeing to services. You are responsible for providing accurate project details and for paying professionals according to your agreement with them.",
+      'This Site and its contents are provided on an "as-is" and "as-available" basis. We make no warranties that the site will be error-free or uninterrupted. To the maximum extent permitted by law, we shall not be liable for any indirect, incidental, or consequential damages resulting from your use or inability to use this Site. We make no guarantees that vulnerabilities will not be exposed due to third party negligence or oversight.',
     ],
   },
   {
-    id: "acceptable-use",
-    title: "Acceptable use",
-    paragraphs: ["You agree not to misuse SideQuote or interfere with another person’s use of it."],
-    bullets: [
-      "Do not post false, misleading, defamatory, unlawful, discriminatory, or harmful content.",
-      "Do not impersonate others, create fraudulent listings or reviews, or manipulate ratings.",
-      "Do not scrape, copy, reverse engineer, overload, disrupt, or bypass security controls on the platform.",
-      "Do not use SideQuote to send spam, distribute malware, violate privacy, or infringe intellectual property rights.",
-    ],
-  },
-  {
-    id: "reviews-content",
-    title: "Reviews and user content",
+    id: "external-links",
+    title: "External Links",
     paragraphs: [
-      "You retain ownership of content you submit. By posting it, you grant SideQuote a worldwide, non-exclusive, royalty-free license to host, use, reproduce, format, publish, and display that content for operating, promoting, and improving the platform.",
-      "Reviews must reflect genuine experiences and remain fair and relevant. We may moderate, refuse, or remove content that violates these terms, but we are not required to review every submission.",
+      "Our Site may contain links to third-party websites that we do not own or control. We assume no responsibility for the content, privacy policies, or practices of any third-party websites including Sponsored Advertisements that we have no control over.",
     ],
   },
   {
-    id: "third-parties",
-    title: "Third-party services and links",
+    id: "governing-law",
+    title: "Governing Law",
     paragraphs: [
-      "SideQuote may include links to third-party websites, tools, or services. We do not control or endorse them and are not responsible for their content, availability, security, or privacy practices. Your use of third-party services is governed by their own terms.",
+      "These Terms shall be governed by and construed in accordance with the laws of Las Vegas., State of Nevada, United States, without regard to its conflict of law provisions. All litigation will be within the Nevada laws of arbitration process.",
     ],
   },
   {
-    id: "availability",
-    title: "Platform availability and changes",
+    id: "changes-to-these-terms",
+    title: "Changes to These Terms",
     paragraphs: [
-      "We may modify, suspend, or discontinue any part of SideQuote, including features or listings, at any time. We work to keep the platform available and accurate but do not promise uninterrupted, error-free, or fully secure service.",
+      "We reserve the right to modify these Terms at any time with or without notice. Any changes will be posted on this page with an updated effective date. Your continued use of the Site after modifications indicates your acceptance. Third party software, partners and middleware will be subject to its own terms of usage and held accountable to them.",
     ],
   },
   {
-    id: "disclaimers-liability",
-    title: "Disclaimers and limitation of liability",
+    id: "contact-information",
+    title: "Contact Information",
     paragraphs: [
-      "SideQuote is provided on an “as is” and “as available” basis to the extent permitted by law. We disclaim implied warranties, including merchantability, fitness for a particular purpose, and non-infringement.",
-      "To the maximum extent permitted by law, SideQuote will not be liable for indirect, incidental, special, consequential, or punitive damages, loss of profits or data, or disputes, injuries, property damage, or losses arising from services arranged through the platform. Nothing in these terms excludes liability that cannot legally be excluded.",
-    ],
-  },
-  {
-    id: "suspension",
-    title: "Suspension and termination",
-    paragraphs: [
-      "You may stop using SideQuote at any time. We may restrict, suspend, or terminate access, remove content, or close accounts where we reasonably believe these terms, the law, or the rights and safety of others have been violated. Provisions that should logically continue after termination will remain in effect.",
-    ],
-  },
-  {
-    id: "changes-contact",
-    title: "Changes and contact",
-    paragraphs: [
-      "We may revise these terms to reflect changes to SideQuote, our practices, or applicable law. Updated terms will be posted on this page with a revised date. Your continued use after an update means you accept the revised terms.",
-      "For questions about these Terms and Conditions, please contact us through the Contact Us page.",
+      "If you have any questions about these Terms, please contact us at:",
+      "Email : info@sidequote.com",
+      "Address:\nVaingo Enterprises/SideQuote\n8414 Farm Road\nSte 180 PMB 1105\nLas Vegas, NV 89131",
     ],
   },
 ];
@@ -108,12 +75,13 @@ const sections: LegalSection[] = [
 export default function TermsAndConditionsPage() {
   return (
     <LegalPage
-      eyebrow="Clear terms, better connections"
       title="Terms and Conditions"
-      description="These terms explain the rules for using SideQuote and the responsibilities of customers, businesses, and our platform."
-      lastUpdated="July 22, 2026"
+      description={'Welcome to SideQuote (the "Site"), operated by Vaingo Enterprises, LLC ("we," "us," or "our"). By accessing or using our Site, you agree to be bound by these Terms and Conditions. Please read them carefully. If you do not agree, do not use the Site.'}
+      lastUpdated="August 31, 2026"
+      dateLabel="Effective Date"
       sections={sections}
       variant="terms"
+      showContactCta={false}
     />
   );
 }

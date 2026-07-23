@@ -9,9 +9,7 @@ const AboutUsPage = () => {
     <div className="pb-4 md:pb-6">
       <HeroSection
         title="About Us"
-        desc="We make it easy to find trusted professionals for every home service need. Whether you need plumbing, electrical work, painting, roofing, HVAC, flooring, fencing, or kitchen services, we connect you with skilled, verified experts committed to quality workmanship and reliable service.
-
-Our goal is to simplify home maintenance by providing a seamless experience from booking to project completion. With transparent pricing, dependable professionals, and a customer-first approach, we're here to help homeowners complete every job with confidence."
+        desc="Sidequote was started with the intention of people helping people in the community of blue collar work and human resources. SideQuote helps those that have little time for marketing and advertisements, one man shops or startup entrepreneurs who want to dabble in sole proprietorship as a supplement to their income stream. SideQuote is for users that are interested in passive income and have a hobby or expertise that want to monetize. The site is a business directory, search portal and job postings for help wanted."
         image="/assets/images/about_hero.jpg"
       />
       <OurMission />
