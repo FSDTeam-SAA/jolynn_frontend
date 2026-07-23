@@ -9,12 +9,14 @@ export type LegalSection = {
 };
 
 type LegalPageProps = {
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   description: string;
   lastUpdated: string;
+  dateLabel?: string;
   sections: LegalSection[];
   variant: "privacy" | "terms";
+  showContactCta?: boolean;
 };
 
 const LegalPage = ({
@@ -22,8 +24,10 @@ const LegalPage = ({
   title,
   description,
   lastUpdated,
+  dateLabel = "Last updated",
   sections,
   variant,
+  showContactCta = true,
 }: LegalPageProps) => {
   const Icon = variant === "privacy" ? ShieldCheck : FileText;
 
@@ -34,10 +38,12 @@ const LegalPage = ({
         <div className="absolute -bottom-36 -left-16 h-72 w-72 rounded-full bg-cyan-300/10 blur-3xl" />
         <div className="container relative px-4 py-14 sm:px-6 sm:py-16 lg:px-8 lg:py-20 xl:px-10">
           <div className="max-w-3xl">
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3.5 py-2 text-xs font-semibold uppercase tracking-[0.16em] backdrop-blur-sm sm:text-sm">
-              <Icon className="h-4 w-4" aria-hidden="true" />
-              {eyebrow}
-            </div>
+            {eyebrow && (
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3.5 py-2 text-xs font-semibold uppercase tracking-[0.16em] backdrop-blur-sm sm:text-sm">
+                <Icon className="h-4 w-4" aria-hidden="true" />
+                {eyebrow}
+              </div>
+            )}
             <h1 className="text-balance text-3xl font-extrabold leading-tight sm:text-4xl md:text-5xl">
               {title}
             </h1>
@@ -45,7 +51,7 @@ const LegalPage = ({
               {description}
             </p>
             <p className="mt-6 text-xs font-medium text-white/70 sm:text-sm">
-              Last updated: {lastUpdated}
+              {dateLabel}: {lastUpdated}
             </p>
           </div>
         </div>
@@ -92,7 +98,9 @@ const LegalPage = ({
 
                 <div className="mt-5 space-y-4 text-sm leading-7 text-slate-600 sm:text-[15px] sm:leading-8">
                   {section.paragraphs?.map((paragraph) => (
-                    <p key={paragraph}>{paragraph}</p>
+                    <p key={paragraph} className="whitespace-pre-line">
+                      {paragraph}
+                    </p>
                   ))}
                   {section.bullets && (
                     <ul className="space-y-3 pl-1">
@@ -110,23 +118,25 @@ const LegalPage = ({
           </main>
         </div>
 
-        <div className="mt-8 flex flex-col items-start justify-between gap-5 rounded-2xl bg-[#DDEDEC] p-6 sm:flex-row sm:items-center sm:p-8">
-          <div>
-            <h2 className="text-lg font-bold text-[#292D73] sm:text-xl">
-              Have a question about this document?
-            </h2>
-            <p className="mt-2 text-sm leading-6 text-slate-600">
-              Contact the SideQuote team and we’ll be happy to help.
-            </p>
+        {showContactCta && (
+          <div className="mt-8 flex flex-col items-start justify-between gap-5 rounded-2xl bg-[#DDEDEC] p-6 sm:flex-row sm:items-center sm:p-8">
+            <div>
+              <h2 className="text-lg font-bold text-[#292D73] sm:text-xl">
+                Have a question about this document?
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Contact the SideQuote team and we’ll be happy to help.
+              </p>
+            </div>
+            <Link
+              href="/contact"
+              className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-[#292D73] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#20245F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2"
+            >
+              Contact us
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </Link>
           </div>
-          <Link
-            href="/contact"
-            className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-[#292D73] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#20245F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2"
-          >
-            Contact us
-            <ArrowRight className="h-4 w-4" aria-hidden="true" />
-          </Link>
-        </div>
+        )}
       </div>
     </div>
   );

@@ -9,90 +9,69 @@ export const metadata: Metadata = {
 const sections: LegalSection[] = [
   {
     id: "information-we-collect",
-    title: "Information we collect",
+    title: "Information We Collect",
     paragraphs: [
-      "We collect information you provide directly when you create an account, add a business, request a quote, leave a review, contact us, or otherwise use SideQuote.",
-    ],
-    bullets: [
-      "Account and contact details, such as your name, email address, phone number, and password.",
-      "Business profile information, including services, service areas, opening hours, photos, and business contact details.",
-      "Quote requests, reviews, messages, and other content you choose to submit.",
-      "Technical information such as IP address, browser type, device information, pages visited, and approximate location derived from your device or IP address.",
+      "We may collect information about you in a variety of ways, including:",
+      "Personal Data: Voluntarily provided details such as your name, email address, phone number, and shipping or business address when you register, subscribe, or contact us.",
+      "Derivative Data: Information our servers automatically collect when you access the Site, such as your IP address, browser type, operating system, access times, and pages viewed.",
+      "Financial Data: Limited data related to your payment method (such as card brand and expiration date) if you make purchases. We do not store full financial details; all payments are processed by our payment processor, [Processor Name, e.g., Stripe / PayPal].",
     ],
   },
   {
     id: "how-we-use-information",
-    title: "How we use your information",
-    paragraphs: ["We use information to provide, maintain, protect, and improve the SideQuote platform."],
+    title: "How We Use Your Information",
     bullets: [
-      "Create and manage accounts and business listings.",
-      "Connect customers with relevant local service professionals and process quote requests.",
-      "Send service messages, account updates, security alerts, and support responses.",
-      "Personalize search results, measure performance, prevent fraud, and improve our services.",
-      "Meet legal obligations and enforce our Terms and Conditions.",
+      "Deliver and manage your account registration.",
+      "Fulfill and manage purchases, orders, payments, and other transactions.",
+      "Email you regarding your account, orders, or marketing updates (which you can opt out of at any time).",
+      "Improve our Site's functionality, security, and performance based on user usage patterns.",
     ],
   },
   {
-    id: "sharing-information",
-    title: "How information is shared",
+    id: "sharing-and-disclosure",
+    title: "Sharing and Disclosure of Information",
     paragraphs: [
-      "We do not sell your personal information. We share information only when needed to operate the platform, fulfill your request, comply with law, or protect SideQuote and its users.",
-    ],
-    bullets: [
-      "With service professionals when you request a quote or choose to contact a listed business.",
-      "With vendors that support hosting, analytics, communications, security, and other platform operations.",
-      "With authorities or other parties when required by law or reasonably necessary to prevent harm, fraud, or misuse.",
-      "As part of a merger, financing, acquisition, or sale of assets, subject to appropriate confidentiality protections.",
+      "We do not sell your personal data. We may share information we have collected about you in certain situations:",
+      "Third-Party Service Providers: We may share your data with third parties that perform services for us, such as payment processing, data analysis, email delivery, and hosting services.",
+      "By Law or to Protect Rights: If we believe disclosure is necessary to respond to legal process, investigate potential violations, or protect the safety and rights of others.",
     ],
   },
   {
-    id: "public-content",
-    title: "Public profiles and content",
+    id: "tracking-technologies",
+    title: "Tracking Technologies (Cookies)",
     paragraphs: [
-      "Business listings, reviews, ratings, profile images, service details, and other information intended for publication may be visible to anyone and may appear in search engine results. Please avoid posting sensitive personal information in public areas of SideQuote.",
-    ],
-  },
-  {
-    id: "cookies",
-    title: "Cookies and analytics",
-    paragraphs: [
-      "SideQuote may use cookies and similar technologies to keep you signed in, remember preferences, understand platform usage, and improve performance. You can manage cookies through your browser settings, although disabling essential cookies may affect some features.",
+      "We may use cookies, web beacons, tracking pixels, and other tracking technologies on the Site to help customize the Site and improve your experience. Most browsers are set to accept cookies by default. You can remove or reject cookies in your browser settings, but be aware that such action could affect the availability and functionality of the Site.",
     ],
   },
   {
     id: "data-security",
-    title: "Data security and retention",
+    title: "Data Security",
     paragraphs: [
-      "We use reasonable administrative, technical, and organizational safeguards designed to protect your information. No online system is completely secure, so we cannot guarantee absolute security.",
-      "We retain information for as long as needed to provide our services, maintain legitimate business records, resolve disputes, prevent abuse, and meet legal requirements. Retention periods may vary depending on the type of information.",
+      "We use administrative, technical, and physical security measures to help protect your personal information. While we have taken reasonable steps to secure the personal information you provide to us, please be aware that despite our efforts, no security measures are perfect or impenetrable, and no method of data transmission can be guaranteed against any interception or other type of misuse.",
     ],
   },
   {
-    id: "your-choices",
-    title: "Your choices and rights",
+    id: "childrens-privacy",
+    title: "Children's Privacy",
     paragraphs: [
-      "Depending on your location, you may have rights to access, correct, delete, or restrict the use of your personal information. You may update certain account details from your dashboard or contact us to submit a request. We may need to verify your identity before completing it.",
+      "We do not knowingly solicit information from or market to children under the age of 13. If we learn that we have collected personal information from a child under age 13 without verification of parental consent, we will delete that information as quickly as possible.",
     ],
   },
   {
-    id: "children",
-    title: "Children’s privacy",
+    id: "your-privacy-rights",
+    title: "Your Privacy Rights",
     paragraphs: [
-      "SideQuote is not intended for children under 18, and we do not knowingly collect personal information from children. If you believe a child has provided information to us, please contact us so we can review and remove it where appropriate.",
+      "Depending on your location, you may have specific rights regarding your personal data, including the right to access, correct, or request the deletion of the data we hold about you. You can exercise these rights by contacting us using the information below.",
     ],
   },
   {
-    id: "policy-changes",
-    title: "Changes to this policy",
+    id: "contact-information",
+    title: "Contact Information",
     paragraphs: [
-      "We may update this Privacy Policy as SideQuote evolves or legal requirements change. We will post the revised version here and update the date at the top. Continued use of SideQuote after an update means the revised policy applies to your future use.",
-    ],
-  },
-  {
-    id: "contact",
-    title: "Contact us",
-    paragraphs: [
-      "If you have questions, concerns, or a privacy request, please use our Contact Us page. Include enough detail for us to understand and respond to your request.",
+      "If you have questions or comments about this Privacy Policy, please contact us at:",
+      "If you have any questions about these Terms, please contact us at:",
+      "Email: info@sidequote.com",
+      "Address:\nVaingo Enterprises/SideQuote\n8414 Farm Road\nSte 180 PMB 1105\nLas Vegas, NV 89131 United States",
     ],
   },
 ];
@@ -100,12 +79,13 @@ const sections: LegalSection[] = [
 export default function PrivacyPolicyPage() {
   return (
     <LegalPage
-      eyebrow="Your privacy matters"
       title="Privacy Policy"
-      description="This policy explains what information SideQuote collects, why we use it, and the choices available to you."
-      lastUpdated="July 22, 2026"
+      description={'SideQuote ("we," "us," or "our") operates https://www.sidequote.com (the "Site"). This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our Site. Please read this policy carefully. If you do not agree with its terms, please discontinue use of the Site.'}
+      lastUpdated="August 31, 2026"
+      dateLabel="Effective Date"
       sections={sections}
       variant="privacy"
+      showContactCta={false}
     />
   );
 }
