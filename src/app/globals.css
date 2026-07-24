@@ -126,6 +126,24 @@ html {
   }
 }
 
+/* Keep authentication fields visually consistent when the browser autofills them. */
+.auth-input:-webkit-autofill,
+.auth-input:-webkit-autofill:hover,
+.auth-input:-webkit-autofill:focus,
+.auth-input:-webkit-autofill:active {
+  -webkit-text-fill-color: #1a1a2e;
+  caret-color: #1a1a2e;
+  box-shadow:
+    0 0 0 1000px #ffffff inset,
+    0 0 10px 0 #00000026;
+  transition: background-color 9999s ease-out 0s;
+}
+
+/* Asterisks sit high on their text baseline, so center the empty password hint optically. */
+.signup-password-input:placeholder-shown {
+  padding-top: 8px;
+}
+
 
 
 

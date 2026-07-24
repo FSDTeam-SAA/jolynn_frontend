@@ -68,11 +68,7 @@ const CreateJobPostForm = () => {
   useEffect(() => {
     if (!profile || prefilledProfileId.current === profile._id) return;
 
-    const profileName =
-      profile.fullName?.trim() ||
-      [profile.firstName, profile.lastName].filter(Boolean).join(" ").trim() ||
-      profile.username ||
-      "";
+    const profileName = profile.username || "";
 
     setValues((current) => ({
       ...current,
@@ -190,17 +186,6 @@ const CreateJobPostForm = () => {
               />
             </label>
             <label className="text-[16px] font-semibold text-[#111827]">
-              Email Address
-              <input
-                required
-                type="email"
-                value={values.email}
-                onChange={(event) => updateValue("email", event.target.value)}
-                placeholder="hello@example.com"
-                className={inputClassName}
-              />
-            </label>
-            <label className="text-[16px] font-semibold text-[#111827]">
               Zip code
               <input
                 required
@@ -255,18 +240,6 @@ const CreateJobPostForm = () => {
               )}
             </label>
           </div>
-
-          <label className="mt-4 block text-[16px] font-semibold text-[#111827]">
-            Phone Number
-            <input
-              required
-              type="tel"
-              value={values.phone}
-              onChange={(event) => updateValue("phone", event.target.value)}
-              placeholder="+1 (201) 555-0123"
-              className={inputClassName}
-            />
-          </label>
 
           <label className="mt-4 block text-[16px] font-semibold text-[#111827]">
             Service wanted Message

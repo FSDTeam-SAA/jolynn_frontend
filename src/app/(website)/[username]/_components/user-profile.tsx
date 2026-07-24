@@ -14,6 +14,10 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import {
+  isValidPublicUsername,
+  normalizePublicUsername,
+} from "@/lib/public-username";
 
 type PublicProfile = {
   id: string;
@@ -79,8 +83,9 @@ const fetchPublicProfile = async (
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   if (!apiUrl) throw new Error("The public profile service is not configured.");
 
+  const canonicalUsername = normalizePublicUsername(username);
   const response = await fetch(
-    `${apiUrl}/user/public/${encodeURIComponent(username)}`,
+    `${apiUrl}/user/public/${encodeURIComponent(canonicalUsername)}`,
     { headers: { accept: "*/*" } },
   );
   const result = (await response.json()) as PublicProfileResponse;
@@ -128,13 +133,37 @@ const ProfileSkeleton = () => (
 );
 
 const UserProfile = ({ username }: { username: string }) => {
+  const canonicalUsername = normalizePublicUsername(username);
+  const hasValidUsername = isValidPublicUsername(canonicalUsername);
   const profileQuery = useQuery<PublicProfileResponse>({
-    queryKey: ["public-user-profile", username],
-    queryFn: () => fetchPublicProfile(username),
-    enabled: Boolean(username),
+    queryKey: ["public-user-profile", canonicalUsername],
+    queryFn: () => fetchPublicProfile(canonicalUsername),
+    enabled: hasValidUsername,
     staleTime: 5 * 60 * 1000,
     retry: 1,
   });
+
+  if (!hasValidUsername) {
+    return (
+      <main className="min-h-[560px] bg-[#F5F8F7] px-4 py-20">
+        <div className="container flex min-h-[360px] max-w-[720px] flex-col items-center justify-center rounded-[12px] border border-[#E2E8F0] bg-white px-6 text-center shadow-sm">
+          <h1 className="text-2xl font-extrabold text-[#111827]">
+            Profile unavailable
+          </h1>
+          <p className="mt-3 max-w-md text-sm leading-6 text-[#667085]">
+            This profile uses an old display name instead of a public username.
+            Please open it again from a post that has a valid @username.
+          </p>
+          <Link
+            href="/job-posts"
+            className="mt-6 inline-flex h-11 items-center rounded-[6px] bg-[#292D73] px-6 text-sm font-bold text-white transition hover:bg-[#20255F]"
+          >
+            Back to Help Wanted
+          </Link>
+        </div>
+      </main>
+    );
+  }
 
   if (profileQuery.isPending) return <ProfileSkeleton />;
 
@@ -167,6 +196,7 @@ const UserProfile = ({ username }: { username: string }) => {
   const galleryImages = gallery.flatMap((group) =>
     group.images.map((image) => ({ ...image, title: group.title, groupId: group._id })),
   );
+  const publicGalleryImages = galleryImages[1] ? [galleryImages[1]] : [];
   const location = [profile.address, profile.city, profile.state]
     .filter(Boolean)
     .join(", ");
@@ -398,14 +428,14 @@ const UserProfile = ({ username }: { username: string }) => {
           <div className="flex items-center justify-between gap-4">
             <h2 className="text-xl font-extrabold text-[#111827]">Gallery</h2>
             <span className="text-sm font-semibold text-[#667085]">
-              {galleryImages.length} images
+              {publicGalleryImages.length} image
             </span>
           </div>
-          {galleryImages.length === 0 ? (
+          {publicGalleryImages.length === 0 ? (
             <p className="mt-5 text-sm text-[#667085]">No gallery images have been added yet.</p>
           ) : (
             <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {galleryImages.map((image) => (
+              {publicGalleryImages.map((image) => (
                 <figure
                   key={`${image.groupId}-${image.publicId}`}
                   className="group relative w-full overflow-hidden rounded-[9px] bg-[#EAF2F2]"

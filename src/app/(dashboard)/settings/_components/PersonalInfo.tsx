@@ -1,17 +1,17 @@
 "use client";
 
 import React, { ChangeEvent, FormEvent, useEffect, useState } from "react";
-import { Pencil } from "lucide-react";
+import { LogOut, Pencil, UserRound } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { toast } from "sonner";
 import ProfileSummaryCard from "./ProfileSummaryCard";
+import LogoutModal from "@/components/modals/LogoutModal";
 
 export interface SettingsProfile {
   _id: string;
   name: string;
   email: string;
-  gender: string;
   phone?: string;
   profileImage: string;
   createdAt?: string;
@@ -45,8 +45,6 @@ export default function PersonalInfo() {
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [gender, setGender] = useState("male");
-  const [streetAddress, setStreetAddress] = useState("");
   const [location, setLocation] = useState("");
   const [postalCode, setPostalCode] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState("");
@@ -56,6 +54,7 @@ export default function PersonalInfo() {
   const [editingContact, setEditingContact] = useState(false);
   const [profileImageFile, setProfileImageFile] = useState<File>();
   const [profileImagePreview, setProfileImagePreview] = useState("");
+  const [isLogoutOpen, setIsLogoutOpen] = useState(false);
 
   const profileQuery = useQuery({
     queryKey: ["user-profile"],
@@ -84,8 +83,6 @@ export default function PersonalInfo() {
     setLastName(rest.join(" "));
     setEmail(user.email || "");
     setPhone(user.phone || "");
-    setGender(user.gender || "male");
-    setStreetAddress(user.address?.roadArea || "");
     setLocation(user.address?.cityState || user.address?.country || "");
     setCountry(user.address?.country || "");
     setPostalCode(user.address?.postalCode || "");
@@ -109,10 +106,8 @@ export default function PersonalInfo() {
         },
         body: JSON.stringify({
           name: `${firstName.trim()} ${lastName.trim()}`.trim(),
-          gender,
           phone: phone.trim(),
           address: {
-            roadArea: streetAddress.trim(),
             cityState: location.trim(),
             country: country.trim(),
             postalCode: postalCode.trim(),
@@ -180,7 +175,7 @@ export default function PersonalInfo() {
   const user = profileQuery.data;
   const fullName = `${firstName} ${lastName}`.trim() || user?.name || "User";
   const disabled = profileQuery.isLoading || updateProfileMutation.isPending;
-  const inputClass = "h-9 w-full rounded-md border border-[#E7D8B8]/80 bg-[#4B351F] px-3 text-xs text-[#F7E4B3] outline-none placeholder:text-[#A98D68] focus:border-[#D6AA50] disabled:cursor-not-allowed disabled:opacity-75";
+  const inputClass = "h-10 w-full rounded-lg border border-[#E1CFA9]/70 bg-[#48321E] px-3.5 text-xs font-medium text-[#FFF2D2] outline-none transition placeholder:text-[#A98D68] focus:border-[#E0B85C] focus:ring-2 focus:ring-[#E0B85C]/15 disabled:cursor-not-allowed disabled:bg-[#442F1C] disabled:opacity-75";
 
   return (
     <div className="space-y-4">
@@ -194,17 +189,23 @@ export default function PersonalInfo() {
         disabled={disabled}
         onImageChange={handleImage}
       />
-      <form onSubmit={handleSubmit} className="space-y-4">
-      <section className="rounded-lg bg-[#523B21] p-4 sm:p-5">
-        <div className="mb-3 flex items-center justify-between"><h2 className="text-sm font-semibold text-[#F7E4B3]">Personal Information</h2><button type="button" onClick={() => setEditingPersonal((value) => !value)} aria-label="Edit personal information" className="cursor-pointer text-[#F2D78F] hover:text-[#D6AA50]"><Pencil className="h-4 w-4" /></button></div>
+      <form onSubmit={handleSubmit} className="space-y-5">
+      <section className="overflow-hidden rounded-xl border border-[#765B38] bg-[linear-gradient(145deg,#563D22_0%,#49321D_100%)] shadow-[0_12px_30px_rgba(41,28,15,0.18)]">
+        <div className="flex items-center justify-between border-b border-[#755A37]/80 px-4 py-4 sm:px-5">
+          <div className="flex items-center gap-3">
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#E0B85C]/15 text-[#F2D78F]"><UserRound className="h-4 w-4" /></span>
+            <div><h2 className="text-sm font-bold text-[#FFF0C9]">Personal Information</h2><p className="mt-0.5 text-[11px] text-[#BFA98A]">Manage your basic profile details.</p></div>
+          </div>
+          <button type="button" onClick={() => setEditingPersonal((value) => !value)} aria-label="Edit personal information" className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-[#8A6A41] text-[#F2D78F] transition hover:border-[#D6AA50] hover:bg-[#D6AA50]/10 hover:text-[#FFE7A8]"><Pencil className="h-4 w-4" /></button>
+        </div>
         {profileQuery.error && (
-          <p className="mt-5 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+          <p className="mx-4 mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600 sm:mx-5">
             {profileQuery.error instanceof Error
               ? profileQuery.error.message
               : "Unable to load profile."}
           </p>
         )}
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-4 p-4 sm:grid-cols-2 sm:p-5">
             <Field label="First Name">
               <input
                 required
@@ -223,20 +224,18 @@ export default function PersonalInfo() {
               />
             </Field>
             <Field label="Date of Birth"><input type="date" value={dateOfBirth} disabled={disabled || !editingPersonal} onChange={(event) => setDateOfBirth(event.target.value)} className={inputClass} /></Field>
-            <fieldset disabled={disabled || !editingPersonal} className="space-y-2 text-[11px]"><legend>Gender</legend><div className="flex h-9 items-center gap-5">{["male", "female"].map((option) => <label key={option} className="flex cursor-pointer items-center gap-2 capitalize text-[#BFA98A]"><input type="radio" name="gender" checked={gender === option} onChange={() => setGender(option)} className="accent-[#D6AA50]" />{option}</label>)}</div></fieldset>
           </div>
       </section>
 
-      <section className="rounded-lg bg-[#523B21] p-4 sm:p-5">
-        <div className="mb-3 flex items-center justify-between"><h2 className="text-sm font-semibold text-[#F7E4B3]">Contact Information</h2><button type="button" onClick={() => setEditingContact((value) => !value)} aria-label="Edit contact information" className="cursor-pointer text-[#F2D78F] hover:text-[#D6AA50]"><Pencil className="h-4 w-4" /></button></div>
-        <div className="grid gap-3 sm:grid-cols-2">
+      <section className="rounded-xl border border-[#765B38] bg-[linear-gradient(145deg,#563D22_0%,#49321D_100%)] p-4 shadow-[0_12px_30px_rgba(41,28,15,0.18)] sm:p-5">
+        <div className="mb-4 flex items-center justify-between"><div><h2 className="text-sm font-bold text-[#FFF0C9]">Contact Information</h2><p className="mt-0.5 text-[11px] text-[#BFA98A]">Keep your contact and location details current.</p></div><button type="button" onClick={() => setEditingContact((value) => !value)} aria-label="Edit contact information" className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-[#8A6A41] text-[#F2D78F] transition hover:border-[#D6AA50] hover:bg-[#D6AA50]/10"><Pencil className="h-4 w-4" /></button></div>
+        <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Email"><input type="email" value={email} disabled className={inputClass} /></Field>
           <Field label="Phone Number"><input type="tel" value={phone} disabled={disabled || !editingContact} onChange={(event) => setPhone(event.target.value)} placeholder="Enter your phone number" className={inputClass} /></Field>
           <Field label="Country"><select value={country} disabled={disabled || !editingContact} onChange={(event) => setCountry(event.target.value)} className={inputClass}><option value="">Choose any one</option><option>United States</option><option>Cuba</option><option>Bangladesh</option></select></Field>
           <Field label="State/Region"><input value={location} disabled={disabled || !editingContact} onChange={(event) => setLocation(event.target.value)} placeholder="Enter state or region" className={inputClass} /></Field>
           <Field label="Nationality"><select value={nationality} disabled={disabled || !editingContact} onChange={(event) => setNationality(event.target.value)} className={inputClass}><option value="">Choose any one</option><option>American</option><option>Cuban</option><option>Bangladeshi</option></select></Field>
           <Field label="Postcode"><input value={postalCode} disabled={disabled || !editingContact} onChange={(event) => setPostalCode(event.target.value)} placeholder="e.g. 5585" className={inputClass} /></Field>
-          <div className="sm:col-span-2"><Field label="Address"><textarea value={streetAddress} disabled={disabled || !editingContact} onChange={(event) => setStreetAddress(event.target.value)} placeholder="Enter your full address" className={`${inputClass} h-20 resize-none py-3`} /></Field></div>
         </div>
         {(editingPersonal || editingContact) ? <div className="mt-4 flex justify-end gap-2">
             <button
@@ -257,6 +256,30 @@ export default function PersonalInfo() {
           </div> : null}
       </section>
       </form>
+
+      <section className="flex flex-col gap-4 rounded-xl border border-red-300/30 bg-[#4A2E20] p-4 shadow-[0_10px_24px_rgba(41,28,15,0.14)] sm:flex-row sm:items-center sm:justify-between sm:p-5">
+        <div>
+          <h2 className="text-sm font-bold text-[#FFE8DE]">Sign out of your account</h2>
+          <p className="mt-1 text-[11px] leading-5 text-[#C9AA9A]">End your current session securely on this device.</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setIsLogoutOpen(true)}
+          className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-red-600 px-5 text-xs font-bold text-white transition hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#4A2E20]"
+        >
+          <LogOut className="h-4 w-4" />
+          Log out
+        </button>
+      </section>
+
+      <LogoutModal
+        isOpen={isLogoutOpen}
+        onClose={() => setIsLogoutOpen(false)}
+        onConfirm={() => {
+          setIsLogoutOpen(false);
+          void signOut({ callbackUrl: "/" });
+        }}
+      />
     </div>
   );
 }

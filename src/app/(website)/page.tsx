@@ -13,7 +13,6 @@ const HomePage = () => {
       <GrowYourBusiness/>
       <MostPopularService/>
       <SponsoredAdvertisements/>
-     
      <Faq/>
     </div>
   );

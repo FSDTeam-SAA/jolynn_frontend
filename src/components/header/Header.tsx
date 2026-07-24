@@ -19,18 +19,25 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
 
   const { data: session } = useSession();
 
-  const sessionUser = session?.user as {
-    name?: string;
-    email?: string;
-    token?: string;
-    accessToken?: string;
-  } | undefined;
+  const sessionUser = session?.user as
+    | {
+        name?: string;
+        email?: string;
+        token?: string;
+        accessToken?: string;
+      }
+    | undefined;
   const token = sessionUser?.accessToken ?? sessionUser?.token;
   const { data: profileResponse } = useProfileQuery(token);
   const profile = profileResponse?.data;
   const displayName = profile?.fullName || sessionUser?.name || "User";
   const email = profile?.email || sessionUser?.email || "";
-  const initials = displayName.split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase();
+  const initials = displayName
+    .split(/\s+/)
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   return (
     <div className="fixed top-0 right-0 left-0 z-30 h-[100px] flex items-center justify-between px-4 md:px-6 bg-[#FFFFFF]">
@@ -60,13 +67,21 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
       <div className="relative flex items-center">
         <div className="flex items-center gap-3">
           <div className="hidden max-w-[220px] text-right sm:block">
-            <p className="truncate text-sm font-semibold text-[#344054]">{displayName}</p>
+            <p className="truncate text-sm font-semibold text-[#344054]">
+              {displayName}
+            </p>
             <p className="truncate text-[11px] text-[#667085]">{email}</p>
           </div>
 
           <Avatar className="h-10 w-10 border border-[#CBA24A]/30">
-            <AvatarImage src={profile?.profilePicture} alt={displayName} className="object-cover" />
-            <AvatarFallback className="bg-[#CBA24A]/20 text-xs font-semibold text-[#30347F]">{initials || "U"}</AvatarFallback>
+            <AvatarImage
+              src={profile?.profilePicture}
+              alt={displayName}
+              className="object-cover"
+            />
+            <AvatarFallback className="bg-[#CBA24A]/20 text-xs font-semibold text-[#30347F]">
+              {initials || "U"}
+            </AvatarFallback>
           </Avatar>
         </div>
       </div>

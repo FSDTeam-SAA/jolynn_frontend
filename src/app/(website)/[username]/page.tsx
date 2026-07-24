@@ -1,4 +1,5 @@
 import UserProfile from "./_components/user-profile";
+import { normalizePublicUsername } from "@/lib/public-username";
 
 type UserProfilePageProps = {
   params: {
@@ -7,9 +8,7 @@ type UserProfilePageProps = {
 };
 
 const UserProfilePage = ({ params }: UserProfilePageProps) => {
-  return (
-    <UserProfile username={params.username} />
-  );
+  return <UserProfile username={normalizePublicUsername(params.username)} />;
 };
 
 export default UserProfilePage;

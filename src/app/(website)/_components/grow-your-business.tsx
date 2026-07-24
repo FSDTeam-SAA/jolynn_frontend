@@ -76,7 +76,7 @@ const GrowYourBusiness = () => {
   return (
     <section
       id="how_it_works"
-      className="scroll-mt-32 bg-white pb-8 md:pb-10"
+      className="scroll-mt-32 bg-white py-10 md:py-12 lg:py-16"
     >
       <div className="container px-4 max-w-[1300px] overflow-x-hidden rounded-[12px] bg-[linear-gradient(90deg,_#292D73_0%,_#0082D7_100%)]">
         <div className="grid min-h-[181px] grid-cols-1 lg:grid-cols-[1fr_3fr]">
