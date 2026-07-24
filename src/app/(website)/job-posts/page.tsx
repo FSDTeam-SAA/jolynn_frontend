@@ -7,8 +7,9 @@ const JobPostsPage = () => {
     <div>
        <HeroSection
         title="Job Posts"
-        desc="For better experience connect and contact with us"
+        desc="Discover local help-wanted opportunities or post the service support you need—all while keeping your contact details private."
         image="/assets/images/jobs-post.jpg"
+        compact
       />
         <JobPostsContainer/>
     </div>

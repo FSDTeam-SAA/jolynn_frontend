@@ -2,9 +2,8 @@
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
-import { AlertCircle, Megaphone } from "lucide-react";
+import { AlertCircle, ExternalLink, Megaphone } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
 
 type SponsoredAd = {
   _id: string;
@@ -12,6 +11,7 @@ type SponsoredAd = {
   content: string;
   image: string;
   imagePublicId: string;
+  link?: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -53,6 +53,32 @@ const fetchSponsors = async (): Promise<SponsorResponse> => {
   return result;
 };
 
+const getSponsorUrl = (link?: string) => {
+  const trimmedLink = link?.trim();
+  if (!trimmedLink) return null;
+
+  const candidate = /^https?:\/\//i.test(trimmedLink)
+    ? trimmedLink
+    : `https://${trimmedLink}`;
+
+  try {
+    const url = new URL(candidate);
+    return ["http:", "https:"].includes(url.protocol) ? url.toString() : null;
+  } catch {
+    return null;
+  }
+};
+
+const getPlainText = (content: string) =>
+  content
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+
 const SponsorsSkeleton = () => (
   <div
     className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4"
@@ -61,16 +87,13 @@ const SponsorsSkeleton = () => (
     {Array.from({ length: 4 }).map((_, index) => (
       <div
         key={index}
-        className="relative h-[280px] overflow-hidden rounded-[5px] bg-slate-100"
+        className="h-[310px] overflow-hidden rounded-xl border border-slate-200 bg-white"
       >
-        <Skeleton className="h-full w-full" />
-        <div className="absolute inset-0 flex flex-col justify-between p-3">
-          <Skeleton className="h-8 w-3/4 bg-slate-300/70" />
-          <div className="space-y-2">
-            <Skeleton className="h-3 w-full bg-slate-300/70" />
-            <Skeleton className="h-3 w-5/6 bg-slate-300/70" />
-            <Skeleton className="h-3 w-2/3 bg-slate-300/70" />
-          </div>
+        <Skeleton className="h-[190px] w-full" />
+        <div className="space-y-3 p-4">
+          <Skeleton className="h-5 w-3/4" />
+          <Skeleton className="h-3 w-full" />
+          <Skeleton className="h-3 w-4/5" />
         </div>
       </div>
     ))}
@@ -139,31 +162,67 @@ const SponsoredAdvertisements = () => {
             </p>
           </div>
         ) : (
-          <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {sponsoredAds.map((ad) => (
-              <Link
-                key={ad._id}
-                href="/contact"
-                className="group relative block overflow-hidden rounded-[5px] bg-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292E78] focus-visible:ring-offset-2"
-              >
-                <Image
-                  src={ad.image}
-                  alt={ad.title}
-                  width={400}
-                  height={400}
-                  className="h-[280px] w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/18 to-black/82" />
-                <div className="absolute inset-0 flex flex-col justify-between p-3">
-                  <h3 className="text-xl font-bold leading-normal text-white md:text-2xl ">
-                    {ad.title}
-                  </h3>
-                  <p className="line-clamp-4 text-xs font-normal leading-normal text-white md:text-sm">
-                    {ad.content}
-                  </p>
-                </div>
-              </Link>
-            ))}
+          <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {sponsoredAds.map((ad) => {
+              const sponsorUrl = getSponsorUrl(ad.link);
+              const description = getPlainText(ad.content);
+              const cardContent = (
+                <>
+                  <div className="relative h-[185px] overflow-hidden bg-[#EEF2F6]">
+                    <Image
+                      src={ad.image}
+                      alt={ad.title}
+                      fill
+                      sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+                      className="object-cover transition duration-500 ease-out group-hover:scale-[1.06]"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#111827]/35 via-transparent to-transparent" />
+                    <span className="absolute left-3 top-3 inline-flex items-center rounded-full border border-white/60 bg-white/90 px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[0.12em] text-[#292D73] shadow-sm backdrop-blur">
+                      Sponsored
+                    </span>
+                  </div>
+
+                  <div className="flex min-h-[125px] flex-col p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <h3 className="line-clamp-1 text-base font-extrabold leading-6 text-[#292D73]">
+                        {ad.title}
+                      </h3>
+                      {sponsorUrl && (
+                        <ExternalLink className="mt-0.5 h-4 w-4 shrink-0 text-[#7B8798] transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-[#292D73]" />
+                      )}
+                    </div>
+                    {description && (
+                      <p className="mt-2 line-clamp-2 text-xs leading-5 text-[#667085]">
+                        {description}
+                      </p>
+                    )}
+                    <span className="mt-auto pt-3 text-[11px] font-bold text-[#4365D0]">
+                      {sponsorUrl ? "Visit sponsor site" : "Sponsor details"}
+                    </span>
+                  </div>
+                </>
+              );
+
+              return sponsorUrl ? (
+                <a
+                  key={ad._id}
+                  href={sponsorUrl}
+                  target="_blank"
+                  rel="noopener noreferrer sponsored"
+                  aria-label={`Visit ${ad.title} website`}
+                  className="group block overflow-hidden rounded-xl border border-[#E1E7EF] bg-white shadow-[0_5px_18px_rgba(30,45,75,0.08)] transition duration-300 hover:-translate-y-1 hover:border-[#B9C8DF] hover:shadow-[0_14px_32px_rgba(30,45,75,0.15)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292E78] focus-visible:ring-offset-2"
+                >
+                  {cardContent}
+                </a>
+              ) : (
+                <article
+                  key={ad._id}
+                  className="group overflow-hidden rounded-xl border border-[#E1E7EF] bg-white shadow-[0_5px_18px_rgba(30,45,75,0.08)]"
+                >
+                  {cardContent}
+                </article>
+              );
+            })}
           </div>
         )}
       </div>

@@ -6,6 +6,7 @@ type HeroSectionProps = {
   desc?: string;
   image?: string;
   imageAlt?: string;
+  compact?: boolean;
 };
 
 const HeroSection = ({
@@ -13,9 +14,16 @@ const HeroSection = ({
   desc,
   image = "/assets/images/hero.png",
   imageAlt,
+  compact = false,
 }: HeroSectionProps) => {
   return (
-    <div className="relative flex min-h-[480px] items-center justify-center overflow-hidden sm:min-h-[600px] lg:min-h-[631px]">
+    <div
+      className={`relative flex items-center justify-center overflow-hidden ${
+        compact
+          ? "min-h-[300px] sm:min-h-[340px] lg:min-h-[380px]"
+          : "min-h-[480px] sm:min-h-[600px] lg:min-h-[631px]"
+      }`}
+    >
       <Image
         src={image}
         alt={imageAlt || title}

@@ -135,8 +135,23 @@ const ReportBusinessModal = ({
         ) : (
           <form onSubmit={handleSubmit} className="px-5 py-6 sm:px-6">
             <label
-              htmlFor="business-report-message"
+              htmlFor="reported-business-name"
               className="text-sm font-semibold text-[#344054]"
+            >
+              Business name
+            </label>
+            <input
+              id="reported-business-name"
+              type="text"
+              value={businessName || "Selected business"}
+              readOnly
+              aria-readonly="true"
+              className="mt-2 h-11 w-full cursor-default rounded-lg border border-[#D7DEE8] bg-[#F6F8FB] px-3.5 text-sm font-semibold text-[#292D73] outline-none"
+            />
+
+            <label
+              htmlFor="business-report-message"
+              className="mt-5 block text-sm font-semibold text-[#344054]"
             >
               Report message
             </label>

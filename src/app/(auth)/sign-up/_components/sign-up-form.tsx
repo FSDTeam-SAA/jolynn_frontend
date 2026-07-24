@@ -26,21 +26,47 @@ import { useMutation } from "@tanstack/react-query";
 
 const formSchema = z
   .object({
-    firstName: z.string().min(1, { message: "First name is required." }),
-    lastName: z.string().min(1, { message: "Last name is required." }),
-    username: z.string().min(1, { message: "Username is required." }),
-    email: z.string().email({ message: "Please enter a valid email address." }),
-    phoneNumber: z.string().min(0, { message: "Phone number is required." }),
+    firstName: z
+      .string()
+      .trim()
+      .min(1, { message: "Please enter your first name." }),
+    lastName: z
+      .string()
+      .trim()
+      .min(1, { message: "Please enter your last name." }),
+    username: z
+      .string()
+      .trim()
+      .min(1, { message: "Please choose a public username." })
+      .regex(/^[a-z0-9_-]{3,30}$/, {
+        message:
+          "Username must be 3–30 characters using lowercase letters, numbers, underscores, or hyphens.",
+      }),
+    email: z
+      .string()
+      .trim()
+      .min(1, { message: "Please enter your email address." })
+      .email({ message: "Enter a valid email address, for example name@example.com." }),
+    phoneNumber: z
+      .string()
+      .trim()
+      .refine(
+        (value) => !value || /^[+\d][\d\s()-]{7,19}$/.test(value),
+        { message: "Enter a valid phone number or leave this field blank." },
+      ),
     password: z
       .string()
-      .min(6, { message: "Password must be at least 6 characters long." }),
-    confirmPassword: z.string().min(1, { message: "Confirm password is required." }),
+      .min(1, { message: "Please create a password." })
+      .min(6, { message: "Your password must contain at least 6 characters." }),
+    confirmPassword: z
+      .string()
+      .min(1, { message: "Please enter your password again to confirm it." }),
     agreementAccepted: z
       .boolean()
       .refine((value) => value, { message: "Please accept the terms and conditions." }),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match.",
+    message: "The passwords do not match. Please enter the same password in both fields.",
     path: ["confirmPassword"],
   });
 
@@ -70,18 +96,29 @@ const SignupForm = () => {
     mutationFn: async (values: FormValues) => {
       const apiUrl =
         process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api/v1";
+      const { phoneNumber, ...requiredValues } = values;
+      const payload = {
+        ...requiredValues,
+        ...(phoneNumber ? { phoneNumber } : {}),
+      };
       const res = await fetch(`${apiUrl}/auth/register/user`, {
         method: "POST",
         headers: {
           accept: "*/*",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(values),
+        body: JSON.stringify(payload),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => null);
 
       if (!res.ok || !data?.success) {
-        throw new Error(data?.message || "Registration failed");
+        const apiMessage = data?.message;
+        const message = Array.isArray(apiMessage)
+          ? apiMessage.join(" ")
+          : typeof apiMessage === "string"
+            ? apiMessage
+            : "We couldn't create your account. Please check your details and try again.";
+        throw new Error(message);
       }
 
       return data;
@@ -104,34 +141,34 @@ const SignupForm = () => {
   };
 
   const inputClassName =
-    "w-full h-11 md:h-[48px] text-base font-medium leading-[120%] text-primary rounded-[8px] p-4 border border-[#F5F3FA] placeholder:text-[#667481] shadow-[0px_0px_10px_0px_#00000026]";
+    "auth-input h-11 w-full rounded-[8px] border border-[#F5F3FA] bg-white px-4 py-0 text-base font-medium leading-normal text-[#1A1A2E] caret-[#1A1A2E] shadow-[0px_0px_10px_0px_#00000026] placeholder:text-[#667481] focus:bg-white md:h-[48px]";
   const labelClassName =
     "flex items-center gap-1 text-base font-semibold leading-[120%] text-[#4365D0]";
 
   return (
-    <div className="w-full flex items-center justify-center p-4">
-      <div className="w-full md:w-[680px] p-3 md:p-7 lg:p-8 rounded-[16px] bg-white shadow-[0px_5px_10px_0px_#00000029]">
-        <div className="flex items-center justify-center mb-2 md:mb-4">
+    <div className="flex h-full w-full items-center justify-center px-4 py-2">
+      <div className="w-full max-w-[680px] rounded-[16px] bg-white p-3 shadow-[0px_5px_10px_0px_#00000029] sm:p-5 md:p-6">
+        <div className="flex items-center justify-center mb-1 sm:mb-2">
           <Link href="/">
             <Image
               src="/assets/images/logo.png"
               alt="Logo"
               width={100}
               height={100}
-              className="w-16 md:w-[90px] h-16 md:h-[90px]"
+              className="h-12 w-12 sm:h-16 sm:w-16 md:h-[72px] md:w-[72px]"
             />
           </Link>
         </div>
 
-        <h3 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-primary text-center leading-[120%]">
+        <h3 className="text-xl font-extrabold text-primary text-center leading-[120%] sm:text-2xl md:text-3xl">
           Create Your Account
         </h3>
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-3 md:space-y-4 pt-3 md:pt-6"
+            className="space-y-2 pt-2 sm:space-y-3 sm:pt-3"
           >
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <FormField
                 control={form.control}
                 name="firstName"
@@ -168,31 +205,38 @@ const SignupForm = () => {
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="username"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className={labelClassName}>User Name*</FormLabel>
-                    <FormControl>
-                      <Input
-                        className={inputClassName}
-                        placeholder="Type your username"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage className="text-red-500" />
-                  </FormItem>
-                )}
-              />
             </div>
+
+            <FormField
+              control={form.control}
+              name="username"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className={labelClassName}>
+                    Public Username *
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      autoComplete="username"
+                      className={inputClassName}
+                      placeholder="Choose a screen name"
+                      {...field}
+                      onChange={(event) =>
+                        field.onChange(event.target.value.toLowerCase())
+                      }
+                    />
+                  </FormControl>
+                  <FormMessage className="text-red-500" />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className={labelClassName}>Email Address*</FormLabel>
+                  <FormLabel className={labelClassName}>Email Address *</FormLabel>
                   <FormControl>
                     <Input
                       type="email"
@@ -212,7 +256,7 @@ const SignupForm = () => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className={labelClassName}>
-                    Phone number ( Opt )
+                    Phone Number <span className="font-normal text-[#667481]">(Optional)</span>
                   </FormLabel>
                   <FormControl>
                     <Input
@@ -237,7 +281,7 @@ const SignupForm = () => {
                     <div className="relative">
                       <Input
                         type={showPassword ? "text" : "password"}
-                        className={inputClassName}
+                        className={`${inputClassName} signup-password-input pr-12`}
                         placeholder="********"
                         {...field}
                       />
@@ -270,7 +314,7 @@ const SignupForm = () => {
                     <div className="relative">
                       <Input
                         type={showConfirmPassword ? "text" : "password"}
-                        className={inputClassName}
+                        className={`${inputClassName} signup-password-input pr-12`}
                         placeholder="********"
                         {...field}
                       />

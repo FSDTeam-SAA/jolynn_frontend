@@ -7,7 +7,7 @@ import SignupForm from "./_components/sign-up-form";
 const SignupPage = () => {
   return (
     <div>
-      <AuthLayoutDesign>
+      <AuthLayoutDesign preventPageScroll>
          <Suspense fallback={<div>Loading...</div>}>
         <SignupForm/>
          </Suspense>

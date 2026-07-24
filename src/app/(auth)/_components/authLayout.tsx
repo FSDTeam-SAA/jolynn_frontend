@@ -2,9 +2,19 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 
-const AuthLayoutDesign = ({ children }: { children: React.ReactNode }) => {
+const AuthLayoutDesign = ({
+  children,
+  preventPageScroll = false,
+}: {
+  children: React.ReactNode;
+  preventPageScroll?: boolean;
+}) => {
   return (
-    <div className="relative min-h-dvh bg-[linear-gradient(180deg,_#292D73_0%,_#91C7D9_50%,_#CBE4E3_100%),_linear-gradient(0deg,_rgba(0,0,0,0.2),_rgba(0,0,0,0.2))]">
+    <div
+      className={`relative min-h-dvh bg-[linear-gradient(180deg,_#292D73_0%,_#91C7D9_50%,_#CBE4E3_100%),_linear-gradient(0deg,_rgba(0,0,0,0.2),_rgba(0,0,0,0.2))] ${
+        preventPageScroll ? "h-dvh overflow-hidden" : ""
+      }`}
+    >
       <Link
         href="/"
         aria-label="Back to home"
@@ -14,7 +24,13 @@ const AuthLayoutDesign = ({ children }: { children: React.ReactNode }) => {
         <span>Back to Home</span>
       </Link>
 
-      <div className="flex min-h-dvh w-full items-center justify-center px-0 pb-6 pt-20 sm:pb-8 sm:pt-24 md:py-24 lg:py-28">
+      <div
+        className={`flex w-full items-center justify-center px-0 ${
+          preventPageScroll
+            ? "h-dvh py-2 sm:py-4"
+            : "min-h-dvh pb-6 pt-20 sm:pb-8 sm:pt-24 md:py-24 lg:py-28"
+        }`}
+      >
         {children}
       </div>
     </div>

@@ -36,6 +36,8 @@ const LoginForm = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const inputClassName =
+    "auth-input h-[48px] w-full rounded-[8px] border border-[#F5F3FA] bg-white px-4 py-0 text-base font-medium leading-normal text-[#1A1A2E] caret-[#1A1A2E] shadow-[0px_0px_10px_0px_#00000026] placeholder:text-[#667481] focus:bg-white";
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -105,7 +107,7 @@ const LoginForm = () => {
                   <FormControl>
                     <Input
                       type="email"
-                      className="w-full h-[48px] text-base font-medium leading-[120%] text-primary rounded-[8px] p-4 border border-[#F5F3FA] placeholder:text-[#667481] shadow-[0px_0px_10px_0px_#00000026]"
+                      className={inputClassName}
                       placeholder="Type your email or username"
                       {...field}
                     />
@@ -128,7 +130,7 @@ const LoginForm = () => {
                     <div className="relative">
                       <Input
                         type={showPassword ? "text" : "password"}
-                        className="w-full h-[48px] text-base font-medium leading-[48px] text-primary rounded-[8px] px-4 py-0 border border-[#F5F3FA] placeholder:text-[#667481] shadow-[0px_0px_10px_0px_#00000026]"
+                        className={`${inputClassName} signup-password-input pr-12`}
                         placeholder="************"
                         {...field}
                       />
