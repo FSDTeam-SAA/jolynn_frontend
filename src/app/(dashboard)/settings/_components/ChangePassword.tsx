@@ -12,19 +12,12 @@ interface ChangePasswordResponse {
   success?: boolean;
   status?: boolean;
   message?: string;
-
-
-
 }
-
 interface ProfileResponse {
   status?: boolean;
   success?: boolean;
   data?: SettingsProfile;
 }
-
-
-
 
 function getApiBaseUrl() {
   const baseUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL;

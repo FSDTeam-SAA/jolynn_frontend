@@ -7,6 +7,7 @@ type HeroSectionProps = {
   image?: string;
   imageAlt?: string;
   compact?: boolean;
+  imagePosition?: string;
 };
 
 const HeroSection = ({
@@ -15,6 +16,7 @@ const HeroSection = ({
   image = "/assets/images/hero.png",
   imageAlt,
   compact = false,
+  imagePosition = "center",
 }: HeroSectionProps) => {
   return (
     <div
@@ -31,6 +33,7 @@ const HeroSection = ({
         priority
         sizes="100vw"
         className="object-cover"
+        style={{ objectPosition: imagePosition }}
       />
       <div className="absolute inset-0 bg-black/40" />
 

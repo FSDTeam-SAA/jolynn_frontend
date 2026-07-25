@@ -1,10 +1,18 @@
 "use client";
 
 import { useBusinessServices } from "@/hooks/use-business-profile-sections";
+import { useProfileQuery } from "@/hooks/APicalling";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Send, X } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 type QuoteFieldName = "name" | "email" | "phone";
@@ -36,19 +44,19 @@ const quoteFormContent: {
   fields: [
     {
       name: "name",
-      label: "Name",
+      label: "Name *",
       placeholder: "Type your name",
       type: "text",
     },
     {
       name: "email",
-      label: "Email Address",
+      label: "Email Address *",
       placeholder: "Type your email",
       type: "email",
     },
     {
       name: "phone",
-      label: "Phone Number",
+      label: "Phone Number *",
       placeholder: "(512) 555-0000",
       type: "tel",
     },
@@ -96,6 +104,25 @@ const RequestAQuoteModal = ({
     | { token?: string; accessToken?: string }
     | undefined;
   const token = sessionUser?.accessToken ?? sessionUser?.token;
+  const { data: profileResponse } = useProfileQuery(token);
+  const profile = profileResponse?.data;
+
+  useEffect(() => {
+    if (!open || !profile) return;
+
+    const profileName =
+      profile.fullName ||
+      [profile.firstName, profile.lastName].filter(Boolean).join(" ") ||
+      profile.username ||
+      "";
+
+    setFormValues((current) => ({
+      ...current,
+      name: current.name || profileName,
+      email: current.email || profile.email || "",
+      phone: current.phone || profile.phoneNumber || "",
+    }));
+  }, [open, profile]);
 
   const { mutate, isPending } = useMutation({
     mutationKey: ["request-business-quote"],
@@ -155,14 +182,33 @@ const RequestAQuoteModal = ({
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (
-      !formValues.name.trim() ||
-      !formValues.email.trim() ||
-      !formValues.phone.trim() ||
-      !formValues.service.trim() ||
-      !formValues.details.trim()
-    ) {
-      toast.error("Please complete all required fields.");
+    if (!formValues.name.trim()) {
+      toast.error("Please enter your name.");
+      return;
+    }
+
+    if (!formValues.email.trim()) {
+      toast.error("Please enter your email address.");
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formValues.email.trim())) {
+      toast.error("Please enter a valid email address.");
+      return;
+    }
+
+    if (!formValues.phone.trim()) {
+      toast.error("Please enter your phone number.");
+      return;
+    }
+
+    if (!formValues.service.trim()) {
+      toast.error("Please select the service you need.");
+      return;
+    }
+
+    if (!formValues.details.trim()) {
+      toast.error("Please describe your project requirements.");
       return;
     }
 
@@ -170,7 +216,7 @@ const RequestAQuoteModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/55 px-4 py-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-[#111827]/70 px-4 py-6 backdrop-blur-[2px]">
       <form
         onSubmit={handleSubmit}
         className="relative w-full max-w-[720px] rounded-[10px] bg-white px-5 py-7 shadow-[0_24px_60px_rgba(17,24,39,0.32)] sm:px-9"
@@ -191,6 +237,10 @@ const RequestAQuoteModal = ({
           <p className="mt-1 text-[13px] font-medium text-[#667085] sm:text-[15px]">
             {businessName} {quoteFormContent.responseText}
           </p>
+          <p className="mt-2 text-[11px] font-medium text-[#98A2B3]">
+            Fields marked with <span className="font-bold text-red-500">*</span>{" "}
+            are required.
+          </p>
         </div>
 
         <div className="mt-3 space-y-2">
@@ -205,37 +255,54 @@ const RequestAQuoteModal = ({
                 onChange={(event) =>
                   updateField(field.name, event.target.value)
                 }
+                aria-required="true"
                 placeholder={field.placeholder}
                 className="mt-2 h-12 w-full rounded-[8px] border border-[#D0D5DD] p-3 text-[16px] font-medium text-[#292D73] outline-none transition placeholder:text-[#7A7F8C] focus:border-[#4365D0] focus:ring-2 focus:ring-[#4365D0]/15"
               />
             </label>
           ))}
 
-          <label className="block">
-            <span className="text-[18px] font-extrabold text-[#4365D0]">
+          <div className="block">
+            <span
+              id="service-needed-label"
+              className="text-[18px] font-extrabold text-[#4365D0]"
+            >
               {quoteFormContent.serviceLabel}
             </span>
-            <select
+            <Select
               value={formValues.service}
-              onChange={(event) => updateField("service", event.target.value)}
+              onValueChange={(value) => updateField("service", value)}
               disabled={servicesPending || servicesError}
-              className="mt-2 h-12 w-full rounded-[8px] border border-[#D0D5DD] bg-white p-3 text-[16px] font-medium text-[#7A7F8C] outline-none transition focus:border-[#4365D0] focus:ring-2 focus:ring-[#4365D0]/15"
             >
-              <option value="">
-                {servicesPending
+              <SelectTrigger
+                aria-labelledby="service-needed-label"
+                aria-required="true"
+                className="mt-2 h-12 w-full rounded-[8px] border-[#D0D5DD] bg-white px-3 text-[16px] font-medium text-[#292D73] shadow-none focus:border-[#4365D0] focus:ring-2 focus:ring-[#4365D0]/15 data-[placeholder]:text-[#7A7F8C]"
+              >
+                <SelectValue
+                  placeholder={
+                    servicesPending
                   ? "Loading services..."
                   : servicesError
                     ? "Services unavailable"
                     : services.length === 0
                       ? "No services available"
-                      : "Select"}
-              </option>
-              {services.map((service) => (
-                <option key={service._id} value={service.title}>
-                  {service.title}
-                </option>
-              ))}
-            </select>
+                      : "Choose a service"
+                  }
+                />
+              </SelectTrigger>
+              <SelectContent className="rounded-[8px] border-[#D0D5DD]">
+                {services.map((service) => (
+                  <SelectItem
+                    key={service._id}
+                    value={service.title}
+                    className="cursor-pointer py-2.5 text-[14px] font-medium text-[#292D73] focus:bg-[#EEF1FF] focus:text-[#292D73]"
+                  >
+                    {service.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             {servicesError && (
               <button
                 type="button"
@@ -245,7 +312,7 @@ const RequestAQuoteModal = ({
                 Unable to load services. Try again
               </button>
             )}
-          </label>
+          </div>
 
           <label className="block">
             <span className="text-[18px] font-extrabold text-[#4365D0]">
@@ -254,6 +321,7 @@ const RequestAQuoteModal = ({
             <textarea
               value={formValues.details}
               onChange={(event) => updateField("details", event.target.value)}
+              aria-required="true"
               placeholder={quoteFormContent.detailsPlaceholder}
               className="mt-2 min-h-[150px] w-full resize-none rounded-[8px] border border-[#D0D5DD] p-3 text-[16px] font-medium text-[#292D73] outline-none transition placeholder:text-[#7A7F8C] focus:border-[#4365D0] focus:ring-2 focus:ring-[#4365D0]/15"
             />

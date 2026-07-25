@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { FormEvent, useState } from "react";
 import { toast } from "sonner";
+import { usePublicBusinessProfile } from "@/hooks/use-public-business-profile";
 
 const reportFormContent = {
   title: "Report to Admin",
@@ -43,8 +44,11 @@ type ReportContainerProps = {
 
 const ReportContainer = ({ businessId }: ReportContainerProps) => {
   const { data: session, status } = useSession();
-
-console.log(businessId)
+  const {
+    data: business,
+    isPending: isBusinessPending,
+    isError: isBusinessError,
+  } = usePublicBusinessProfile(businessId);
 
   const sessionUser = session?.user as
     | { token?: string; accessToken?: string }
@@ -147,6 +151,29 @@ console.log(businessId)
             )}
 
             <form onSubmit={handleSubmit} className="mt-8">
+              <div className="mb-5">
+                <label
+                  htmlFor="reportedBusinessName"
+                  className="text-[12px] font-semibold text-[#343A40]"
+                >
+                  Business Name
+                </label>
+                <input
+                  id="reportedBusinessName"
+                  type="text"
+                  value={
+                    isBusinessPending
+                      ? "Loading business..."
+                      : isBusinessError
+                        ? "Business name unavailable"
+                        : business?.businessName || ""
+                  }
+                  readOnly
+                  aria-readonly="true"
+                  className="mt-2 h-11 w-full cursor-default rounded-[4px] border border-[#C0C3C1] bg-[#F7F8FA] px-4 text-[12px] font-semibold text-[#292D73] outline-none"
+                />
+              </div>
+
               <label
                 htmlFor={reportFormContent.field.id}
                 className="text-[12px] font-semibold text-[#343A40]"

@@ -1,6 +1,14 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Check, Clock3 } from "lucide-react";
 import Image from "next/image";
 import { FormEvent, useState } from "react";
 import { toast } from "sonner";
@@ -54,6 +62,7 @@ const defaultFormValues: ContactFormValues = {
 const ContactInformation = () => {
   const [formValues, setFormValues] =
     useState<ContactFormValues>(defaultFormValues);
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
 
   const { mutate, isPending } = useMutation({
     mutationKey: ["submit-contact-message"],
@@ -76,9 +85,9 @@ const ContactInformation = () => {
 
       return data;
     },
-    onSuccess: (data) => {
-      toast.success(data?.message || "Message submitted successfully");
+    onSuccess: () => {
       setFormValues(defaultFormValues);
+      setIsSuccessModalOpen(true);
     },
     onError: (error) => {
       toast.error(
@@ -108,7 +117,8 @@ const ContactInformation = () => {
   };
 
   return (
-    <section className="relative min-h-[720px] overflow-hidden px-4 py-14 sm:px-6 md:py-20 lg:px-8">
+    <>
+      <section className="relative min-h-[720px] overflow-hidden px-4 py-14 sm:px-6 md:py-20 lg:px-8">
       <Image
         src={contactContent.image}
         alt={contactContent.imageAlt}
@@ -168,7 +178,40 @@ const ContactInformation = () => {
           </button>
         </form>
       </div>
-    </section>
+      </section>
+
+      <Dialog open={isSuccessModalOpen} onOpenChange={setIsSuccessModalOpen}>
+        <DialogContent className="w-[calc(100%-2rem)] max-w-[480px] overflow-hidden rounded-[20px] border-0 bg-white p-0 shadow-[0_30px_90px_rgba(16,24,40,0.30)]">
+          <div className="relative bg-gradient-to-br from-[#292D73] via-[#354897] to-[#1683A4] px-6 pb-10 pt-9 text-center text-white">
+            <div className="pointer-events-none absolute -right-14 -top-16 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
+            <div className="relative mx-auto flex h-16 w-16 items-center justify-center rounded-full border-4 border-white/30 bg-white text-[#292D73] shadow-[0_12px_30px_rgba(0,0,0,0.20)]">
+              <Check className="h-8 w-8 stroke-[3]" aria-hidden="true" />
+            </div>
+            <DialogTitle className="relative mt-5 text-[25px] font-extrabold leading-tight text-white">
+              Message Sent Successfully
+            </DialogTitle>
+          </div>
+
+          <div className="px-6 pb-7 pt-6 text-center sm:px-8">
+            <DialogDescription className="text-[16px] font-bold leading-6 text-[#292D73]">
+              Thank you for contacting us. We will reach out within 24 hours.
+            </DialogDescription>
+            <div className="mt-5 flex items-center justify-center gap-2 rounded-xl border border-[#DDE5F0] bg-[#F7F9FC] px-4 py-3 text-[12px] font-medium text-[#667085]">
+              <Clock3 className="h-4 w-4 shrink-0 text-[#4365D0]" />
+              Our support team has received your message.
+            </div>
+            <DialogClose asChild>
+              <button
+                type="button"
+                className="mt-6 h-11 w-full rounded-lg bg-[#292D73] text-sm font-extrabold text-white transition hover:bg-[#20255F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2"
+              >
+                Done
+              </button>
+            </DialogClose>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 

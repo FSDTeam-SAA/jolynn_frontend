@@ -2,9 +2,9 @@ import { Mail } from "lucide-react";
 import Link from "next/link";
 
 const contactBottomContent = {
-  message: "Thank you for contacting us, we will reach out within 24 hours",
+  message: "Have a question or need additional assistance?",
   email: "hello@sidequote.com",
-  note: "We typically respond within 24 hours",
+  note: "Send us a message using the form above or contact our support team directly.",
 };
 
 const ContactBottom = () => {

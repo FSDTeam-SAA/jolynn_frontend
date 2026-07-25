@@ -13,6 +13,7 @@ const ReportPage = ({ searchParams }: ReportPageProps) => {
         title="Report to Us"
         desc="Raise your concerns and report to us"
         image="/assets/images/report-hero.jpg"
+        compact
       />
       <ReportContainer businessId={searchParams?.businessId ?? ""} />
     </div>
