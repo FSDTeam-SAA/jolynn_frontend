@@ -2,7 +2,7 @@
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { useServices } from "@/hooks/use-services";
-import { AlertCircle, Layers3 } from "lucide-react";
+import { AlertCircle, ArrowUpRight, Layers3 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -73,28 +73,32 @@ const ServicesContainer = () => {
             {services.map((service) => (
               <article
                 key={service._id}
-                className="group flex min-h-[174px] flex-col items-center rounded-[7px] bg-white px-4 pb-3.5 pt-4 text-center shadow-[0_1px_2px_rgba(32,42,70,0.04)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_16px_34px_rgba(32,42,70,0.12)]"
+                className="group relative isolate flex min-h-[224px] flex-col items-center overflow-hidden rounded-[14px] border border-white/90 bg-white px-4 pb-4 pt-5 text-center shadow-[0_5px_18px_rgba(32,42,70,0.06)] transition-[transform,box-shadow,border-color] duration-500 ease-out hover:-translate-y-1.5 hover:border-[#4365D0]/20 hover:shadow-[0_20px_45px_rgba(32,42,70,0.14)] focus-within:-translate-y-1 focus-within:border-[#4365D0]/30 focus-within:shadow-[0_18px_40px_rgba(32,42,70,0.12)] sm:px-5"
               >
-                <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-[5px] bg-[#E8EEFF] p-1.5 transition group-hover:scale-105">
+                <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-24 bg-gradient-to-b from-[#EEF3FF] to-transparent opacity-70 transition-opacity duration-500 group-hover:opacity-100" />
+                <div className="pointer-events-none absolute -right-10 -top-12 -z-10 h-28 w-28 rounded-full bg-[#4365D0]/[0.06] blur-2xl transition-transform duration-700 group-hover:scale-150" />
+
+                <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl border border-[#4365D0]/10 bg-[#F2F5FF] p-2.5 shadow-[0_6px_16px_rgba(67,101,208,0.10)] transition duration-500 ease-out group-hover:-translate-y-0.5 group-hover:scale-105 group-hover:border-[#4365D0]/20 group-hover:bg-[#E9EEFF]">
                   <Image
                     src={service.logo.url}
-                    alt=""
-                    width={36}
-                    height={36}
+                    alt={`${service.title} service`}
+                    width={56}
+                    height={56}
                     className="h-full w-full object-contain"
                   />
                 </div>
-                <h2 className="mt-3 text-[16px] font-extrabold leading-none text-[#292E78]">
+                <h2 className="mt-4 text-[15px] font-extrabold leading-tight text-[#292E78] transition-colors duration-300 group-hover:text-[#4365D0] lg:text-base">
                   {service.title}
                 </h2>
-                <p className="mt-2 min-h-[50px] line-clamp-2 text-xs md:text-sm font-medium leading-[1.15] text-[#6F7D90]">
+                <p className="mt-2 line-clamp-3 min-h-[45px] text-[11px] font-medium leading-[1.45] text-[#667085] md:text-xs">
                   {service.description}
                 </p>
                 <Link
                   href={`/services/businesses?service=${encodeURIComponent(service.title)}`}
-                  className="mt-auto flex h-[34px] w-full items-center justify-center rounded-[5px] bg-[#F1F1F1] text-xs font-semibold text-[#171B2F] transition hover:bg-[#292E78] hover:text-white"
+                  className="mt-4 flex h-10 w-full items-center justify-center gap-1.5 rounded-lg border border-[#292E78]/10 bg-[#F6F7FA] text-[11px] font-bold text-[#292E78] transition duration-300 hover:border-[#292E78] hover:bg-[#292E78] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292E78] focus-visible:ring-offset-2"
                 >
                   Get Started
+                  <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </Link>
               </article>
             ))}

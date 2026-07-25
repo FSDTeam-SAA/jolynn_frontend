@@ -61,7 +61,7 @@ const BusinessProfileSkeleton = () => (
           </div>
         </div>
 
-        <div className="mt-6 flex h-11 items-center gap-7 border-t border-[#E5E7EB]">
+        <div className="mt-6 flex h-11 items-center gap-7">
           {tabs.map((tab, index) => (
             <Skeleton
               key={tab.id}
@@ -177,7 +177,7 @@ const ContactCard = ({
                 onClick={onOpenQuoteModal}
                 className="inline-flex h-10 items-center justify-center rounded-[6px] bg-[#292D73] px-6 text-[13px] font-extrabold text-white transition hover:bg-[#20255F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2"
               >
-                Get Quote
+                Request a Quote
               </button>
             </div>
     </div>
@@ -307,12 +307,12 @@ const BusinessViewProfileContainer = ({ businessId }: { businessId: string }) =>
                 onClick={() => setIsQuoteModalOpen(true)}
                 className="inline-flex h-10 items-center justify-center rounded-[6px] bg-[#292D73] px-6 text-[13px] font-extrabold text-white transition hover:bg-[#20255F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2"
               >
-                Get Quote
+                Request a Quote
               </button>
             </div> */}
           </div>
 
-          <nav className="mt-6 flex gap-7 overflow-x-auto border-t border-[#E5E7EB] text-[13px] font-medium text-[#475467]">
+          <nav className="mt-6 flex gap-7 overflow-x-auto text-[13px] font-medium text-[#475467]">
             {tabs.map((tab) => (
               <button
                 key={tab.id}

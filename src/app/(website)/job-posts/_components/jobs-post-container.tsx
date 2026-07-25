@@ -3,10 +3,7 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import DeleteModal from "@/components/modals/delete-modal";
 import { useProfileQuery } from "@/hooks/APicalling";
-import {
-  isValidPublicUsername,
-  normalizePublicUsername,
-} from "@/lib/public-username";
+import { normalizePublicUsername } from "@/lib/public-username";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AlertCircle,
@@ -14,7 +11,6 @@ import {
   CalendarDays,
   ChevronLeft,
   ChevronRight,
-  Eye,
   Flag,
   LayoutGrid,
   List,
@@ -199,6 +195,17 @@ const JobPostsContainer = () => {
       ? selectedReportPost.userId.username || selectedReportPost.username
       : selectedReportPost.username
     : "";
+  const viewedPostUser =
+    postToView && typeof postToView.userId === "object"
+      ? postToView.userId
+      : undefined;
+  const viewedPostUsername = postToView
+    ? normalizePublicUsername(
+        viewedPostUser?.username || postToView.username,
+      )
+    : "";
+  const viewedPostProfileImage =
+    postToView?.profilePicture || viewedPostUser?.profilePicture;
 
   const reportMutation = useMutation<
     JobReportResponse,
@@ -402,11 +409,6 @@ const JobPostsContainer = () => {
                 const publicUsername = normalizePublicUsername(
                   populatedUser?.username || post.username,
                 );
-                const hasValidPublicUsername =
-                  isValidPublicUsername(publicUsername);
-                const profileHref = hasValidPublicUsername
-                  ? `/${encodeURIComponent(publicUsername)}`
-                  : "#";
 
                 if (viewMode === "list") {
                   return (
@@ -417,10 +419,11 @@ const JobPostsContainer = () => {
                       <div className="absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-[#292D73] to-[#0082D7]" />
                       <div className="flex flex-col gap-4 p-4 pl-5 sm:pl-6 lg:flex-row lg:items-center">
                         <div className="flex min-w-0 flex-1 items-start gap-3.5">
-                          <Link
-                            href={profileHref}
+                          <button
+                            type="button"
+                            onClick={() => setPostToView(post)}
                             className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary text-lg font-extrabold uppercase text-white shadow-[0_6px_16px_rgba(41,45,115,0.18)] ring-2 ring-white transition hover:ring-[#4365D0]/30"
-                            aria-label={`View ${publicUsername}'s profile`}
+                            aria-label={`View ${publicUsername}'s job details`}
                           >
                             {profileImage ? (
                               <Image
@@ -433,15 +436,16 @@ const JobPostsContainer = () => {
                             ) : (
                               publicUsername.charAt(0)
                             )}
-                          </Link>
+                          </button>
                           <div className="min-w-0 flex-1">
                             <div className="flex min-h-8 items-center">
-                              <Link
-                                href={profileHref}
+                              <button
+                                type="button"
+                                onClick={() => setPostToView(post)}
                                 className="truncate text-base font-extrabold leading-8 text-primary transition hover:text-[#4365D0] hover:underline"
                               >
                                 @{publicUsername}
-                              </Link>
+                              </button>
                             </div>
                             <p className="mt-1.5 text-xs font-bold text-[#344054]">
                               Looking for {post.category} service
@@ -453,14 +457,6 @@ const JobPostsContainer = () => {
                         </div>
 
                         <div className="flex flex-wrap items-center gap-2 lg:shrink-0">
-                          <button
-                            type="button"
-                            onClick={() => setPostToView(post)}
-                            className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-[#B9C9DC] bg-[#F7FAFC] px-3 text-[11px] font-bold text-primary transition hover:border-primary hover:bg-[#EEF2FF]"
-                          >
-                            <Eye className="h-4 w-4" />
-                            View
-                          </button>
                           <button
                             type="button"
                             onClick={() => openReportForm(post._id)}
@@ -504,10 +500,11 @@ const JobPostsContainer = () => {
                   <div className="flex h-full flex-col px-4 pb-4 pt-4 sm:px-5 sm:pb-5">
                     <div className="flex items-start justify-between gap-2.5">
                       <div className="flex min-w-0 items-center gap-2.5">
-                        <Link
-                          href={profileHref}
+                        <button
+                          type="button"
+                          onClick={() => setPostToView(post)}
                           className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary text-lg font-extrabold uppercase text-white shadow-[0_3px_10px_rgba(41,45,115,0.22)] ring-2 ring-white transition hover:ring-[#4365D0]/30 sm:h-12 sm:w-12"
-                          aria-label={`View ${publicUsername}'s profile`}
+                          aria-label={`View ${publicUsername}'s job details`}
                         >
                           {profileImage ? (
                             <Image
@@ -520,24 +517,24 @@ const JobPostsContainer = () => {
                           ) : (
                             publicUsername.charAt(0)
                           )}
-                        </Link>
+                        </button>
 
-                        <Link
-                          href={profileHref}
+                        <button
+                          type="button"
+                          onClick={() => setPostToView(post)}
                           className="min-w-0 truncate text-sm font-bold leading-normal text-primary transition hover:text-[#4365D0] hover:underline md:text-base"
                         >
                           @{publicUsername}
-                        </Link>
+                        </button>
                       </div>
                       <div className="flex shrink-0 items-center gap-1.5">
                         <button
                           type="button"
-                          onClick={() => setPostToView(post)}
-                          className="inline-flex h-7 items-center justify-center gap-1 rounded-md border border-[#B9C9DC] bg-white px-2 text-[10px] font-bold text-primary transition hover:border-primary hover:bg-[#EEF2FF]"
-                          aria-label="View job post details"
+                          onClick={() => openReportForm(post._id)}
+                          className="inline-flex h-7 items-center justify-center gap-1 rounded-md border border-[#D0D5DD] bg-white px-2 text-[10px] font-bold text-[#667085] transition hover:bg-[#F2F4F7]"
                         >
-                          <Eye className="h-3.5 w-3.5" />
-                          View
+                          <Flag className="h-3 w-3" />
+                          Report
                         </button>
                         {isOwnPost(post) && (
                           <button
@@ -553,14 +550,6 @@ const JobPostsContainer = () => {
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>
                         )}
-                        <button
-                          type="button"
-                          onClick={() => openReportForm(post._id)}
-                          className="inline-flex h-7 items-center justify-center gap-1 rounded-md border border-[#D0D5DD] bg-white px-2 text-[10px] font-bold text-[#667085] transition hover:bg-[#F2F4F7]"
-                        >
-                          <Flag className="h-3 w-3" />
-                          Report
-                        </button>
                       </div>
                     </div>
 
@@ -646,7 +635,7 @@ const JobPostsContainer = () => {
 
       {postToView && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-[#101828]/60 px-4 py-6 backdrop-blur-[2px]"
+          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-[#101828]/70 px-4 py-6 backdrop-blur-[3px]"
           role="dialog"
           aria-modal="true"
           aria-labelledby="job-details-title"
@@ -654,33 +643,60 @@ const JobPostsContainer = () => {
             if (event.target === event.currentTarget) setPostToView(null);
           }}
         >
-          <div className="relative max-h-[calc(100vh-3rem)] w-full max-w-[620px] overflow-y-auto rounded-2xl border border-white/60 bg-white shadow-[0_24px_70px_rgba(16,24,40,0.28)]">
-            <div className="bg-gradient-to-r from-[#292D73] to-[#3974A8] px-5 py-5 text-white sm:px-7">
+          <div className="relative max-h-[calc(100vh-3rem)] w-full max-w-[680px] overflow-y-auto rounded-[20px] border border-white/70 bg-white shadow-[0_30px_90px_rgba(16,24,40,0.32)]">
+            <div className="relative overflow-hidden bg-gradient-to-br from-[#292D73] via-[#303C88] to-[#1683A4] px-5 pb-6 pt-5 text-white sm:px-7 sm:pb-7">
+              <div className="pointer-events-none absolute -right-16 -top-20 h-52 w-52 rounded-full bg-white/10 blur-2xl" />
+              <div className="pointer-events-none absolute -bottom-20 left-16 h-40 w-40 rounded-full bg-cyan-300/10 blur-2xl" />
               <button
                 type="button"
                 onClick={() => setPostToView(null)}
-                className="absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/15 transition hover:bg-white/25"
+                className="absolute right-4 top-4 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/10 transition hover:rotate-90 hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
                 aria-label="Close job details"
               >
                 <X className="h-4 w-4" />
               </button>
-              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-white/75">
-                Help Wanted
-              </p>
-              <h2 id="job-details-title" className="mt-1 pr-10 text-xl font-extrabold sm:text-2xl">
+
+              <div className="relative z-[1] flex items-center gap-4 pr-10">
+                <div className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-white/80 bg-white/15 text-xl font-extrabold uppercase text-white shadow-[0_10px_25px_rgba(0,0,0,0.18)] sm:h-[72px] sm:w-[72px]">
+                  {viewedPostProfileImage ? (
+                    <Image
+                      src={viewedPostProfileImage}
+                      alt={viewedPostUsername}
+                      fill
+                      sizes="72px"
+                      className="object-cover"
+                    />
+                  ) : (
+                    viewedPostUsername.charAt(0)
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/70">
+                    Help Wanted
+                  </p>
+                  <p className="mt-1 truncate text-base font-extrabold sm:text-lg">
+                    @{viewedPostUsername}
+                  </p>
+                  <span className="mt-2 inline-flex rounded-full border border-white/20 bg-white/15 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur">
+                    {postToView.category}
+                  </span>
+                </div>
+              </div>
+
+              <h2
+                id="job-details-title"
+                className="relative z-[1] mt-5 text-xl font-extrabold leading-tight sm:text-[26px]"
+              >
                 Looking for {postToView.category} service
               </h2>
             </div>
 
-            <div className="space-y-5 p-5 sm:p-7">
-              <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-5 bg-[#F8FAFC] p-5 sm:p-7">
+              <div className="grid gap-3 sm:grid-cols-3">
                 {[
                   {
-                    label: "Username",
-                    value:
-                      typeof postToView.userId === "object"
-                        ? postToView.userId.username || postToView.username
-                        : postToView.username,
+                    label: "Posted by",
+                    value: `@${viewedPostUsername}`,
                     icon: UserRound,
                   },
                   { label: "Zip code", value: postToView.zipcode, icon: MapPin },
@@ -692,9 +708,9 @@ const JobPostsContainer = () => {
                 ].map(({ label, value, icon: Icon }) => (
                   <div
                     key={label}
-                    className="flex min-w-0 items-start gap-3 rounded-xl border border-[#E4E9F0] bg-[#F8FAFC] p-3.5"
+                    className="flex min-w-0 items-start gap-3 rounded-xl border border-[#E3E8EF] bg-white p-3.5 shadow-[0_3px_10px_rgba(16,24,40,0.04)]"
                   >
-                    <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#E9EEFF] text-primary">
+                    <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#EEF1FF] text-[#4365D0]">
                       <Icon className="h-4 w-4" />
                     </span>
                     <div className="min-w-0">
@@ -709,23 +725,35 @@ const JobPostsContainer = () => {
                 ))}
               </div>
 
-              <div className="rounded-xl border border-[#E4E9F0] p-4">
-                <p className="text-[11px] font-bold uppercase tracking-wide text-[#98A2B3]">
+              <div className="rounded-2xl border border-[#E1E7EF] bg-white p-5 shadow-[0_5px_16px_rgba(16,24,40,0.05)]">
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[#E8F7F7] text-[#1683A4]">
+                    <BriefcaseBusiness className="h-4 w-4" />
+                  </span>
+                  <p className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#667085]">
                   Job details
-                </p>
-                <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-[#475467]">
+                  </p>
+                </div>
+                <p className="mt-4 whitespace-pre-wrap text-sm font-medium leading-6 text-[#475467]">
                   {postToView.message}
                 </p>
               </div>
 
-              <div className="flex justify-end">
+              <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                 <button
                   type="button"
                   onClick={() => setPostToView(null)}
-                  className="inline-flex h-10 items-center justify-center rounded-lg border border-[#D0D5DD] px-5 text-xs font-bold text-[#475467] transition hover:bg-[#F2F4F7]"
+                  className="inline-flex h-11 items-center justify-center rounded-lg border border-[#D0D5DD] bg-white px-6 text-xs font-bold text-[#475467] transition hover:border-[#98A2B3] hover:bg-[#F2F4F7]"
                 >
                   Close
                 </button>
+                <Link
+                  href={`mailto:${postToView.email}`}
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-primary px-6 text-xs font-extrabold text-white shadow-[0_8px_18px_rgba(41,45,115,0.18)] transition hover:-translate-y-0.5 hover:bg-[#1F2464]"
+                >
+                  <Mail className="h-4 w-4" />
+                  Respond by email
+                </Link>
               </div>
             </div>
           </div>
