@@ -1,6 +1,7 @@
 "use client";
 
 import DeleteModal from "@/components/modals/delete-modal";
+import { useServiceCategories } from "@/hooks/use-service-categories";
 import {
   Dialog,
   DialogContent,
@@ -46,16 +47,25 @@ type ServiceResponse = {
 };
 
 type ServiceDraft = {
-  title: string;
+  category: string;
+  requestedCategory: string;
   description: string;
   status: ServiceStatus;
 };
 
 const PAGE_LIMIT = 10;
-const emptyDraft: ServiceDraft = { title: "", description: "", status: "active" };
+const OTHER_CATEGORY = "__other__";
+const emptyDraft: ServiceDraft = {
+  category: "",
+  requestedCategory: "",
+  description: "",
+  status: "active",
+};
 
 const getApiUrl = () => {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  const apiUrl =
+    process.env.NEXT_PUBLIC_API_URL ??
+    process.env.NEXT_PUBLIC_BACKEND_API_URL;
   if (!apiUrl) throw new Error("The services API is not configured.");
   return apiUrl.replace(/\/$/, "");
 };
@@ -82,6 +92,26 @@ function Services() {
   const [draft, setDraft] = useState<ServiceDraft>(emptyDraft);
   const [logoFile, setLogoFile] = useState<File>();
   const [logoPreview, setLogoPreview] = useState("");
+  const categoriesQuery = useServiceCategories();
+  const categories = useMemo(
+    () =>
+      (categoriesQuery.data?.data ?? [])
+        .filter(
+          (category) =>
+            category.name?.trim() &&
+            category.status === "approved" &&
+            category.isActive,
+        )
+        .filter(
+          (category, index, list) =>
+            list.findIndex(
+              (item) =>
+                item.name.trim().toLowerCase() ===
+                category.name.trim().toLowerCase(),
+            ) === index,
+        ),
+    [categoriesQuery.data?.data],
+  );
 
   const servicesQuery = useQuery<ServicesResponse>({
     queryKey: ["my-services", page],
@@ -114,7 +144,13 @@ function Services() {
     mutationFn: async () => {
       if (!token) throw new Error("Please sign in to save a service.");
       const formData = new FormData();
-      formData.append("title", draft.title.trim());
+      formData.append(
+        "title",
+        draft.category === OTHER_CATEGORY ? "Other" : draft.category.trim(),
+      );
+      if (draft.category === OTHER_CATEGORY) {
+        formData.append("requestedCategory", draft.requestedCategory.trim());
+      }
       formData.append("description", draft.description.trim());
       formData.append("status", draft.status);
       if (logoFile) formData.append("logo", logoFile, logoFile.name);
@@ -165,8 +201,21 @@ function Services() {
   };
 
   const openEditModal = (service: Service) => {
+    if (categoriesQuery.isPending) {
+      toast.info("Please wait while service categories are loading.");
+      return;
+    }
+    const matchingCategory = categories.find(
+      (category) =>
+        category.name.trim().toLowerCase() === service.title.trim().toLowerCase(),
+    );
     setEditingService(service);
-    setDraft({ title: service.title, description: service.description, status: service.status || "active" });
+    setDraft({
+      category: matchingCategory?.name.trim() || OTHER_CATEGORY,
+      requestedCategory: matchingCategory ? "" : service.title,
+      description: service.description,
+      status: service.status || "active",
+    });
     setLogoFile(undefined);
     setLogoPreview(service.logo?.url || "");
     setIsFormOpen(true);
@@ -194,9 +243,15 @@ function Services() {
 
   const saveService = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!draft.title.trim()) return toast.error("Service title is required.");
+    if (!draft.category.trim()) return toast.error("Service category is required.");
+    if (
+      draft.category === OTHER_CATEGORY &&
+      !draft.requestedCategory.trim()
+    ) {
+      return toast.error("Please enter your required category.");
+    }
     if (!draft.description.trim()) return toast.error("Service description is required.");
-    if (draft.title.trim().length > 120) return toast.error("Title cannot exceed 120 characters.");
+    if (draft.requestedCategory.trim().length > 120) return toast.error("Category cannot exceed 120 characters.");
     if (draft.description.trim().length > 1000) return toast.error("Description cannot exceed 1000 characters.");
     saveMutation.mutate();
   };
@@ -245,7 +300,7 @@ function Services() {
 
                 <div className="flex shrink-0 items-center gap-2">
                   <button type="button" disabled={isMutating} aria-label={`Delete ${service.title}`} onClick={() => setServiceToDelete(service)} className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FFF0EF] text-[#FF4D4F] transition-colors hover:bg-[#FFD9D6] disabled:opacity-50"><Trash2 className="h-4 w-4" /></button>
-                  <button type="button" disabled={isMutating} aria-label={`Edit ${service.title}`} onClick={() => openEditModal(service)} className="flex h-8 w-8 items-center justify-center rounded-full bg-[#EAF9F0] text-[#20BF6B] transition-colors hover:bg-[#D7F3E2] disabled:opacity-50"><Pencil className="h-4 w-4" /></button>
+                  <button type="button" disabled={isMutating || categoriesQuery.isPending} aria-label={`Edit ${service.title}`} onClick={() => openEditModal(service)} className="flex h-8 w-8 items-center justify-center rounded-full bg-[#EAF9F0] text-[#20BF6B] transition-colors hover:bg-[#D7F3E2] disabled:opacity-50"><Pencil className="h-4 w-4" /></button>
                 </div>
               </article>
             ))}
@@ -275,7 +330,72 @@ function Services() {
             </DialogHeader>
 
             <div className="space-y-4 px-[18px]">
-              <label className="block space-y-2 text-xs font-medium text-[#344054]"><span>Title</span><input autoFocus required maxLength={120} value={draft.title} onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))} placeholder="Enter Service Title" className="h-[38px] w-full rounded-[2px] border border-[#B9BEC5] px-3 text-sm font-normal text-[#344054] outline-none placeholder:text-[#98A2B3] focus:border-[#30347F] focus:ring-1 focus:ring-[#30347F]" /></label>
+              <label className="block space-y-2 text-xs font-medium text-[#344054]">
+                <span>Category</span>
+                <select
+                  autoFocus
+                  required
+                  value={draft.category}
+                  onChange={(event) =>
+                    setDraft((current) => ({
+                      ...current,
+                      category: event.target.value,
+                      requestedCategory:
+                        event.target.value === OTHER_CATEGORY
+                          ? current.requestedCategory
+                          : "",
+                    }))
+                  }
+                  className="h-[38px] w-full rounded-[2px] border border-[#B9BEC5] bg-white px-3 text-sm font-normal text-[#344054] outline-none focus:border-[#30347F] focus:ring-1 focus:ring-[#30347F]"
+                >
+                  <option value="">
+                    {categoriesQuery.isPending
+                      ? "Loading categories..."
+                      : "Select a category"}
+                  </option>
+                  {categories.map((category) => (
+                    <option key={category._id} value={category.name.trim()}>
+                      {category.name.trim()}
+                    </option>
+                  ))}
+                  <option value={OTHER_CATEGORY}>Others</option>
+                </select>
+              </label>
+
+              {categoriesQuery.isError && (
+                <div className="flex items-center justify-between gap-3 rounded-md bg-amber-50 px-3 py-2 text-[11px] text-amber-700">
+                  <span>Categories could not be loaded. You can select Others.</span>
+                  <button
+                    type="button"
+                    onClick={() => categoriesQuery.refetch()}
+                    className="shrink-0 font-semibold underline"
+                  >
+                    Retry
+                  </button>
+                </div>
+              )}
+
+              {draft.category === OTHER_CATEGORY && (
+                <label className="block space-y-2 rounded-md border border-[#D9DDF2] bg-[#F8F9FF] p-3 text-xs font-medium text-[#344054]">
+                  <span>Add your required category</span>
+                  <input
+                    required
+                    maxLength={120}
+                    value={draft.requestedCategory}
+                    onChange={(event) =>
+                      setDraft((current) => ({
+                        ...current,
+                        requestedCategory: event.target.value,
+                      }))
+                    }
+                    placeholder="e.g. Solar panel maintenance"
+                    className="h-[38px] w-full rounded-[2px] border border-[#B9BEC5] bg-white px-3 text-sm font-normal text-[#344054] outline-none placeholder:text-[#98A2B3] focus:border-[#30347F] focus:ring-1 focus:ring-[#30347F]"
+                  />
+                  <span className="block text-[10px] font-normal text-[#667085]">
+                    This category will be submitted for admin review.
+                  </span>
+                </label>
+              )}
               <label className="block space-y-2 text-xs font-medium text-[#344054]"><span>Description</span><textarea required maxLength={1000} rows={4} value={draft.description} onChange={(event) => setDraft((current) => ({ ...current, description: event.target.value }))} placeholder="Describe your Service..." className="min-h-[88px] w-full resize-none rounded-[2px] border border-[#B9BEC5] px-3 py-3 text-sm font-normal text-[#344054] outline-none placeholder:text-[#98A2B3] focus:border-[#30347F] focus:ring-1 focus:ring-[#30347F]" /></label>
               <label className="block space-y-2 text-xs font-medium text-[#344054]"><span>Status</span><select value={draft.status} onChange={(event) => setDraft((current) => ({ ...current, status: event.target.value as ServiceStatus }))} className="h-[38px] w-full rounded-[2px] border border-[#B9BEC5] bg-white px-3 text-sm font-normal text-[#344054] outline-none focus:border-[#30347F]"><option value="active">Active</option><option value="inactive">Inactive</option></select></label>
               <div className="space-y-2">

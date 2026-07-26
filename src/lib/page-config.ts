@@ -1,235 +1,65 @@
-export const pageConfig: Record<
-  string,
-  {
-    title: string;
-    description: string;
-  }
-> = {
-  "/dashboard": {
+type PageConfig = {
+  title: string;
+  description: string;
+};
+
+export const pageConfig: Record<string, PageConfig> = {
+  "/overview": {
     title: "Dashboard Overview",
     description:
-      "Welcome back! Here's what's happening on your platform today.",
+      "Track your business activity, recent quotes, and key performance at a glance.",
   },
-
-  "/payments": {
-    title: "Payments",
+  "/my-business": {
+    title: "My Business",
     description:
-      "Welcome back! Here's what's happening in valoura travel today.",
+      "View and update your business profile, category, and company information.",
   },
-
-  "/visa-applications": {
-    title: "Visa Applications",
-    description: "Welcome back! Here's what's happening in valoura travel today.",
+  "/my-services": {
+    title: "My Services",
+    description:
+      "Add, edit, and manage the services your business offers to customers.",
   },
-
-  "/visa-applications/add-visa": {
-    title: "Add Visa Applications",
-    description: "Manage pricing tiers and subscription plans",
+  "/my-gallery": {
+    title: "My Gallery",
+    description:
+      "Showcase your work by managing your business photos and gallery items.",
   },
-
-  "/student-applications": {
-    title: "Student Applications",
-    description: "Welcome back! Here's what's happening in valoura travel today.",
+  "/my-reviews": {
+    title: "My Reviews",
+    description:
+      "See customer feedback and keep track of your business reputation.",
   },
-  "/student-applications/add": {
-    title: "Add Student Applications",
-    description: "Manage pricing tiers and subscription plans",
+  "/contact-info": {
+    title: "Contact Information",
+    description:
+      "Keep your business contact details and social links accurate and up to date.",
   },
-   "/tour-booking": {
-    title: "Tour Booking",
-    description: "Welcome back! Here's what's happening in valoura travel today.",
+  "/quote-request": {
+    title: "Quote Requests",
+    description:
+      "Review and respond to quote requests submitted by potential customers.",
   },
-  "/tour-booking/add": {
-    title: "Add Tour Booking",
-    description: "Manage pricing tiers and subscription plans",
+  "/security": {
+    title: "Security",
+    description:
+      "Protect your account by managing your password and security preferences.",
   },
-   "/consultation": {
-    title: "Consultation",
-    description: "Welcome back! Here's what's happening in valoura travel today.",
-  },
-  "/consultation/add": {
-    title: "Add Consultation",
-    description: "Manage pricing tiers and subscription plans",
-  },
-  "/user-management": {
-    title: "Users Management",
-    description: "Manage user accounts and permissions",
-  },
-  "/subscription": {
-    title: "Subscription Management",
-    description: "Manage retailer subscription plans and status",
-  },
-  "/content-management": {
-    title: "Content Management",
-    description: "Manage customer and retailer website sections",
-  },
-  "/retailer-management": {
-    title: "Retailer Management",
-    description: "Manage retailer accounts and business information",
-  },
-  "/master-database": {
-    title: "Master Database",
-    description: "Manage the central product database",
-  },
-  "/product-approval": {
-    title: "Product Approval",
-    description: "Review and manage submitted products",
-  },
-   "/countries": {
-    title: "Countries",
-    description: "Welcome back! Here's what's happening in valoura travel today.",
-  },
-   "/countries/add": {
-    title: "Add Country",
-    description: "Manage pricing tiers and subscription plans",
-  },
-
-  "/visa-types": {
-    title: "Visa Types",
-    description: "Welcome back! Here's what's happening in valoura travel today.",
-  },
-   "/visa-types/add": {
-    title: "Add Visa Type",
-    description: "Manage pricing tiers and subscription plans",
-  },
-
-   "/universities": {
-    title: "Universities",
-    description: "Welcome back! Here's what's happening in valoura travel today.",
-  },
-   "/universities/add": {
-    title: "Add University",
-    description: "Manage pricing tiers and subscription plans",
-  },
-
-  "/programs": {
-    title: "Programs",
-    description: "Welcome back! Here's what's happening in valoura travel today.",
-  },
-   "/programs/add": {
-    title: "Add Program",
-    description: "Manage pricing tiers and subscription plans",
-  },
-
-   "/tour-packages": {
-    title: "Tour Packages",
-    description: "Welcome back! Here's what's happening in valoura travel today.",
-  },
-   "/tour-packages/add": {
-    title: "Add Tour Package",
-    description: "Manage pricing tiers and subscription plans",
-  },
-
-     "/blog-management": {
-    title: "Blog Management",
-    description: "Welcome back! Here's what's happening in valoura travel today.",
-  },
-   "/blog-management/add": {
-    title: "Add Blog Post",
-    description: "Manage pricing tiers and subscription plans",
-  },
-
-      "/newsletter": {
-    title: "Newsletter",
-    description: "Welcome back! Here's what's happening in valoura travel today.",
-  },
-      "/settings": {
-    title: "Settings",
-    description: "Manage your account settings",
-  },
-   "/settings/profile": {
-    title: "Profile Settings",
-    description: "Manage your profile information",
-  },
-   "/settings/password": {
-    title: "Password Settings",
-    description: "Manage your password information",
+  "/settings": {
+    title: "Account Settings",
+    description:
+      "Manage your personal information and account preferences.",
   },
 };
 
-export const getPageConfig = (pathname: string) => {
-  // Dynamic Routes
-  if (pathname.startsWith("/product-approval/edit/")) {
-    return {
-      title: "Edit Product Approval",
-      description: "Review and update submitted product information",
-    };
-  }
-
-  if (pathname.startsWith("/visa-applications/edit-visa/")) {
-    return {
-      title: "Edit Visa Application",
-      description: "Update visa application details",
-    };
-  }
-
-  if (pathname.startsWith("/student-applications/edit/")) {
-    return {
-      title: "Edit Student Application",
-      description: "Update student application details",
-    };
-  }
-
-  if (pathname.startsWith("/tour-booking/edit/")) {
-    return {
-      title: "Edit Tour Booking",
-      description: "Update tour booking details",
-    };
-  }
-
-  if (pathname.startsWith("/consultation/edit/")) {
-    return {
-      title: "Edit Consultation",
-      description: "Update consultation details",
-    };
-  }
-
-   if (pathname.startsWith("/countries/edit/")) {
-    return {
-      title: "Edit Country",
-      description: "Update country details",
-    };
-  }
-
-  if (pathname.startsWith("/visa-types/edit/")) {
-    return {
-      title: "Edit Visa Type",
-      description: "Update visa type details",
-    };
-  }
-
-    if (pathname.startsWith("/universities/edit/")) {
-    return {
-      title: "Edit University",
-      description: "Update university details",
-    };
-  }
-
-  if (pathname.startsWith("/programs/edit/")) {
-    return {
-      title: "Edit Program",
-      description: "Update program details",
-    };
-  }
-
-    if (pathname.startsWith("/tour-packages/edit/")) {
-    return {
-      title: "Edit Tour Package",
-      description: "Update tour package details",
-    };
-  }
-
-  if (pathname.startsWith("/blog-management/edit/")) {
-    return {
-      title: "Edit Blog Post",
-      description: "Update blog post details",
-    };
-  }
-
-  return (
-    pageConfig[pathname] || {
-      title: "Dashboard",
-      description: "Welcome back",
-    }
+export const getPageConfig = (pathname: string): PageConfig => {
+  const matchingRoute = Object.keys(pageConfig).find(
+    (route) => pathname === route || pathname.startsWith(`${route}/`),
   );
+
+  return matchingRoute
+    ? pageConfig[matchingRoute]
+    : {
+        title: "Business Dashboard",
+        description: "Manage your business profile and customer activity.",
+      };
 };

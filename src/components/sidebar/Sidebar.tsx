@@ -14,6 +14,8 @@ import {
   BookImage,
   UserStar,
   UserCog,
+  FileUser,
+  Settings,
 } from "lucide-react";
 import Image from "next/image";
 import { signOut, useSession } from "next-auth/react";
@@ -47,7 +49,7 @@ const navigation = [
   {
     name: "Contact Info",
     href: "/contact-info",
-    icon: CalendarRange,
+    icon: FileUser ,
   },
   {
     name: "Quote Request",
@@ -57,7 +59,7 @@ const navigation = [
   {
     name: "Security",
     href: "/security",
-    icon: UserCog,
+    icon: Settings,
   },
 ];
 

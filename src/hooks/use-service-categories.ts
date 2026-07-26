@@ -23,7 +23,10 @@ type ServiceCategoriesResponse = {
 };
 
 const fetchServiceCategories = async (): Promise<ServiceCategoriesResponse> => {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  const apiUrl = (
+    process.env.NEXT_PUBLIC_API_URL ??
+    process.env.NEXT_PUBLIC_BACKEND_API_URL
+  )?.replace(/\/$/, "");
   if (!apiUrl) throw new Error("The service category API is not configured.");
 
   const params = new URLSearchParams({
