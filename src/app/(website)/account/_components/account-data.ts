@@ -2,7 +2,8 @@ export type AccountSection =
   | "profile"
   | "change-password"
   | "save-services"
-  | "request-quote";
+  | "request-quote"
+  | "help-wanted";
 
 export const accountUser = {
   name: "Olivia Rhye",
@@ -33,6 +34,11 @@ export const accountNavItems = [
     id: "request-quote",
     label: "Request Quote",
     href: "/account/request-quote",
+  },
+  {
+    id: "help-wanted",
+    label: "Help Wanted",
+    href: "/account/help-wanted",
   },
 ] as const;
 

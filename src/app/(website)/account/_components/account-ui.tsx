@@ -6,6 +6,7 @@ import type { SavedBusiness } from "@/hooks/use-saved-businesses";
 import { cn } from "@/lib/utils";
 import {
   Bookmark,
+  BriefcaseBusiness,
   FileText,
   LockKeyhole,
   LogOut,
@@ -30,6 +31,7 @@ const navIcons = {
   "change-password": LockKeyhole,
   "save-services": Bookmark,
   "request-quote": FileText,
+  "help-wanted": BriefcaseBusiness,
 };
 
 type AccountPageShellProps = {
@@ -206,20 +208,22 @@ export const ProfileSummaryCard = () => {
   return (
     <article className="min-h-[470px] rounded-[6px] border border-[#E6E7E6] bg-[#F8F9FA] px-5 py-6 shadow-[0_6px_14px_rgba(32,42,70,0.10)]">
       <div className="text-center">
-        <div className="relative mx-auto flex h-[112px] w-[112px] items-center justify-center overflow-hidden rounded-full border-4 border-[#E6E1D3] bg-[#F2F4F7]">
-          {profile?.profilePicture ? (
-            <Image
-              src={profile.profilePicture}
-              alt={name || "Profile picture"}
-              fill
-              sizes="112px"
-              className="object-cover"
-            />
-          ) : (
-            <User className="h-10 w-10 text-[#98A2B3]" />
-          )}
+        <div className="relative mx-auto h-[112px] w-[112px]">
+          <div className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-full border-4 border-[#E6E1D3] bg-[#F2F4F7]">
+            {profile?.profilePicture ? (
+              <Image
+                src={profile.profilePicture}
+                alt={name || "Profile picture"}
+                fill
+                sizes="112px"
+                className="object-cover"
+              />
+            ) : (
+              <User className="h-10 w-10 text-[#98A2B3]" />
+            )}
+          </div>
           <label
-            className="absolute bottom-1 right-1 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-[#292D73] text-white shadow"
+            className="absolute bottom-2 right-0 z-10 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border-2 border-white bg-[#292D73] text-white shadow-md"
             aria-label="Edit profile photo"
             title="Change profile picture"
           >
