@@ -36,7 +36,10 @@ const fetchSavedBusinesses = async (
   page: number,
   limit: number,
 ): Promise<SavedBusinessesResponse> => {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  const apiUrl = (
+    process.env.NEXT_PUBLIC_API_URL ??
+    process.env.NEXT_PUBLIC_BACKEND_API_URL
+  )?.replace(/\/$/, "");
   if (!apiUrl) throw new Error("The API service is not configured.");
 
   const params = new URLSearchParams({ page: String(page), limit: String(limit) });

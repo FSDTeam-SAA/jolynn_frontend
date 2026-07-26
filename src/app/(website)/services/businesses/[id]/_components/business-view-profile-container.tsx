@@ -109,19 +109,19 @@ const BusinessProfileSkeleton = () => (
 
 const ContactCard = ({
   onOpenQuoteModal,
-  onSave,
+  onToggleSave,
   isSaving,
   isSaved,
   business,
 }: {
   onOpenQuoteModal: () => void;
-  onSave: () => void;
+  onToggleSave: () => void;
   isSaving: boolean;
   isSaved: boolean;
   business: NonNullable<ReturnType<typeof usePublicBusinessProfile>["data"]>;
 }) => (
-  <aside className="rounded-[8px] border border-[#D9DEE7] bg-white px-4 py-5 shadow-[0_1px_2px_rgba(17,24,39,0.04)] lg:sticky lg:top-6">
-    <h2 className="text-center text-[12px] font-extrabold text-[#111827]">
+  <aside className="rounded-[10px] border border-[#E1E5EC] bg-white px-4 py-5 shadow-[0_8px_24px_rgba(41,45,115,0.07)] lg:sticky lg:top-6">
+    <h2 className="text-center text-[13px] font-extrabold text-[#292D73]">
       Contact {business?.businessName || "N/A"}
     </h2>
 
@@ -129,7 +129,7 @@ const ContactCard = ({
       {(business?.phoneNumber) && (
         <Link
           href={`tel:${business?.phoneNumber || "#"}`}
-          className="flex h-10 items-center justify-center gap-2 rounded-[4px] bg-[#292D73] px-4 text-[12px] font-extrabold text-white transition hover:bg-[#20255F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2"
+          className="flex h-10 items-center justify-center gap-2 rounded-[6px] bg-[#292D73] px-4 text-[12px] font-bold text-white shadow-sm transition hover:bg-[#20255F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73]/40 focus-visible:ring-offset-2"
         >
           <Phone className="h-3.5 w-3.5" />
           {business?.phoneNumber || "N/A"}
@@ -138,7 +138,7 @@ const ContactCard = ({
 
       {business.businessWebsiteUrl && <Link
         href={business.businessWebsiteUrl}
-        className="flex h-10 items-center justify-center gap-2 rounded-[4px] border border-[#D9DEE7] bg-white px-4 text-[12px] font-extrabold text-[#111827] transition hover:bg-[#F8FAFC] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2"
+        className="flex h-10 items-center justify-center gap-2 rounded-[6px] border border-[#D7DCE5] bg-white px-4 text-[12px] font-bold text-[#344054] transition hover:border-[#292D73]/35 hover:bg-[#F7F7FC] hover:text-[#292D73] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73]/30 focus-visible:ring-offset-2"
       >
         <Globe2 className="h-3.5 w-3.5" />
         Visit Website
@@ -146,7 +146,7 @@ const ContactCard = ({
 
       <Link
         href={`mailto:${business.businessEmail || business.email || ""}`}
-        className="flex h-10 items-center justify-center gap-2 rounded-[4px] bg-[#292D73] px-4 text-[12px] font-extrabold text-white transition hover:bg-[#20255F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2"
+        className="flex h-10 items-center justify-center gap-2 rounded-[6px] border border-[#D7DCE5] bg-white px-4 text-[12px] font-bold text-[#344054] transition hover:border-[#292D73]/35 hover:bg-[#F7F7FC] hover:text-[#292D73] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73]/30 focus-visible:ring-offset-2"
       >
         <Mail className="h-3.5 w-3.5" />
         Email
@@ -154,35 +154,42 @@ const ContactCard = ({
 
       <Link
         href={`/report?businessId=${encodeURIComponent(business?.ownerId)}`}
-        className="flex h-10 items-center justify-center rounded-[4px] bg-[#9D9D9D] px-4 text-[12px] font-extrabold text-white transition hover:bg-[#858585] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#858585] focus-visible:ring-offset-2"
+        className="flex h-10 items-center justify-center rounded-[6px] border border-[#F1C7C7] bg-[#FFF8F8] px-4 text-[12px] font-bold text-[#B42318] transition hover:border-[#E7AAAA] hover:bg-[#FFF0EF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D92D20]/25 focus-visible:ring-offset-2"
       >
         Report
       </Link>
-        <div className="flex flex-wrap justify-between items-center gap-2">
+        <div className="flex flex-col gap-2">
               <button
                 type="button"
-                onClick={onSave}
-                disabled={isSaving || isSaved}
-                className={`inline-flex h-10 items-center justify-center gap-2 rounded-[6px] border border-[#315CFF] px-5 text-[13px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#315CFF] disabled:cursor-not-allowed ${
+                onClick={onToggleSave}
+                disabled={isSaving}
+                aria-pressed={isSaved}
+                className={`inline-flex h-10 w-full items-center justify-center gap-2 rounded-[6px] border border-[#292D73] px-5 text-[13px] font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73]/35 focus-visible:ring-offset-2 disabled:cursor-not-allowed ${
                   isSaved
-                    ? "bg-[#292D73] text-white"
-                    : "bg-white text-[#315CFF] hover:bg-[#F2F5FF]"
+                    ? "bg-[#F0F1FA] text-[#292D73] hover:bg-[#E5E7F5]"
+                    : "bg-white text-[#292D73] hover:bg-[#F3F4FA]"
                 } ${isSaving ? "opacity-60" : ""}`}
               >
-                <Bookmark className="h-4 w-4" />
-                {isSaving ? "Saving..." : isSaved ? "Saved" : "Save"}
+                <Bookmark className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`} />
+                {isSaving
+                  ? isSaved
+                    ? "Unsaving..."
+                    : "Saving..."
+                  : isSaved
+                    ? "Unsave"
+                    : "Save"}
               </button>
               <button
                 type="button"
                 onClick={onOpenQuoteModal}
-                className="inline-flex h-10 items-center justify-center rounded-[6px] bg-[#292D73] px-6 text-[13px] font-extrabold text-white transition hover:bg-[#20255F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2"
+                className="inline-flex h-10 w-full items-center justify-center rounded-[6px] bg-[#292D73] px-6 text-[13px] font-extrabold text-white shadow-sm transition hover:bg-[#20255F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73]/40 focus-visible:ring-offset-2"
               >
                 Request a Quote
               </button>
             </div>
     </div>
 
-    <div className="mt-6 h-px bg-[#E5E7EB]" />
+    <div className="mt-6 h-px bg-[#EAECF0]" />
     <p className="mt-4 text-center text-xs font-medium text-[#98A2B3]">
       Typically responds within 2 hours
     </p>
@@ -198,50 +205,71 @@ const BusinessViewProfileContainer = ({ businessId }: { businessId: string }) =>
     requestedTab === "reviews" ? "reviews" : "overview",
   );
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
-  const [justSaved, setJustSaved] = useState(false);
+  const [savedOverride, setSavedOverride] = useState<boolean | null>(null);
   const { data: business, isPending, isError, refetch } = usePublicBusinessProfile(businessId);
   const sessionUser = session?.user as
     | { token?: string; accessToken?: string }
     | undefined;
   const token = sessionUser?.accessToken ?? sessionUser?.token;
   const { data: savedBusinessesData } = useSavedBusinesses(token, 1, 100);
-  const isSaved =
-    justSaved ||
-    (savedBusinessesData?.data ?? []).some(
+  const savedOnServer = (savedBusinessesData?.data ?? []).some(
       (savedBusiness) =>
         savedBusiness.businessOwner.businessOwnerId === businessId,
     );
+  const isSaved = savedOverride ?? savedOnServer;
 
-  const saveBusinessMutation = useMutation({
-    mutationFn: async () => {
-      if (!token) throw new Error("Please sign in to save this business.");
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  const toggleSaveMutation = useMutation({
+    mutationFn: async (shouldUnsave: boolean) => {
+      if (!token) {
+        throw new Error(
+          `Please sign in to ${shouldUnsave ? "unsave" : "save"} this business.`,
+        );
+      }
+      const apiUrl = (
+        process.env.NEXT_PUBLIC_API_URL ??
+        process.env.NEXT_PUBLIC_BACKEND_API_URL
+      )?.replace(/\/$/, "");
       if (!apiUrl) throw new Error("The save API is not configured.");
 
-      const response = await fetch(`${apiUrl}/save-quote`, {
-        method: "POST",
+      const response = await fetch(
+        shouldUnsave
+          ? `${apiUrl}/save-quote/${encodeURIComponent(businessId)}`
+          : `${apiUrl}/save-quote`,
+        {
+        method: shouldUnsave ? "DELETE" : "POST",
         headers: {
           accept: "*/*",
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ businessOwnerId: businessId }),
+        ...(shouldUnsave
+          ? {}
+          : { body: JSON.stringify({ businessOwnerId: businessId }) }),
       });
       const result = await response.json();
 
       if (!response.ok || !result.success) {
-        throw new Error(result.message || "Unable to save this business.");
+        throw new Error(
+          result.message ||
+            `Unable to ${shouldUnsave ? "unsave" : "save"} this business.`,
+        );
       }
-      return result;
+      return { result, shouldUnsave };
     },
-    onSuccess: (result) => {
-      setJustSaved(true);
-      toast.success(result.message || "Business saved successfully.");
-      queryClient.invalidateQueries({ queryKey: ["saved-businesses"] });
+    onSuccess: async ({ result, shouldUnsave }) => {
+      setSavedOverride(!shouldUnsave);
+      toast.success(
+        result.message ||
+          `Business ${shouldUnsave ? "unsaved" : "saved"} successfully.`,
+      );
+      await queryClient.invalidateQueries({ queryKey: ["saved-businesses"] });
+      setSavedOverride(null);
     },
     onError: (error) => {
       toast.error(
-        error instanceof Error ? error.message : "Unable to save this business.",
+        error instanceof Error
+          ? error.message
+          : "Unable to update this saved business.",
       );
     },
   });
@@ -342,8 +370,8 @@ const BusinessViewProfileContainer = ({ businessId }: { businessId: string }) =>
           <ContactCard
             business={business}
             onOpenQuoteModal={() => setIsQuoteModalOpen(true)}
-            onSave={() => saveBusinessMutation.mutate()}
-            isSaving={saveBusinessMutation.isPending}
+            onToggleSave={() => toggleSaveMutation.mutate(isSaved)}
+            isSaving={toggleSaveMutation.isPending}
             isSaved={isSaved}
           />
         </div>

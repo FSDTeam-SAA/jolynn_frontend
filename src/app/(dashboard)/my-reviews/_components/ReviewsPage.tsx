@@ -3,7 +3,7 @@
 import DeleteModal from "@/components/modals/delete-modal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, MessageSquareReply, Search, Star, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, LayoutGrid, List, MessageSquareReply, Search, Star, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useMemo, useState } from "react";
@@ -78,6 +78,7 @@ function ReviewsPage() {
   const [page, setPage] = useState(1);
   const [rating, setRating] = useState(5);
   const [search, setSearch] = useState("");
+  const [viewMode, setViewMode] = useState<"card" | "list">("card");
   const [reviewToDelete, setReviewToDelete] = useState<Review | null>(null);
 
   const reviewsQuery = useQuery<ReviewsResponse>({
@@ -133,14 +134,40 @@ function ReviewsPage() {
 
         <div className="mb-5 mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <label className="relative block w-full sm:max-w-[340px]"><span className="sr-only">Search reviews on this page</span><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" /><input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search..." className="h-[36px] w-full rounded-[8px] border-0 bg-[#EAECED] pl-9 pr-4 text-xs text-[#344054] outline-none placeholder:text-[#667085] focus:ring-2 focus:ring-[#30347F]/20" /></label>
-          <p className="text-xs text-[#667085]">Showing {rating}-star reviews</p>
+          <div className="flex items-center justify-between gap-3 sm:justify-end">
+            <p className="text-xs text-[#667085]">Showing {rating}-star reviews</p>
+            <div className="flex rounded-[7px] border border-[#D0D5DD] bg-white p-1" aria-label="Review view">
+              <button
+                type="button"
+                onClick={() => setViewMode("card")}
+                aria-label="Card view"
+                aria-pressed={viewMode === "card"}
+                className={`flex h-7 w-8 items-center justify-center rounded-[4px] transition-colors ${
+                  viewMode === "card" ? "bg-[#30347F] text-white" : "text-[#667085] hover:bg-[#F3F4FA]"
+                }`}
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("list")}
+                aria-label="List view"
+                aria-pressed={viewMode === "list"}
+                className={`flex h-7 w-8 items-center justify-center rounded-[4px] transition-colors ${
+                  viewMode === "list" ? "bg-[#30347F] text-white" : "text-[#667085] hover:bg-[#F3F4FA]"
+                }`}
+              >
+                <List className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
         </div>
 
         {isLoading ? (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">{Array.from({ length: 6 }).map((_, index) => <Skeleton key={index} className="h-[250px] rounded-[8px]" />)}</div>
         ) : reviewsQuery.isError || !token ? (
           <div className="rounded-[8px] bg-white px-6 py-14 text-center"><p className="text-sm text-red-600">{reviewsQuery.error instanceof Error ? reviewsQuery.error.message : "Please sign in to view your reviews."}</p>{token && <button type="button" onClick={() => reviewsQuery.refetch()} className="mt-3 text-sm font-semibold text-[#30347F] hover:underline">Try again</button>}</div>
-        ) : filteredReviews.length ? (
+        ) : filteredReviews.length && viewMode === "card" ? (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             {filteredReviews.map((review) => (
               <article key={review._id} className="relative flex min-h-[230px] flex-col rounded-[8px] bg-white px-5 py-5">
@@ -158,6 +185,75 @@ function ReviewsPage() {
                 </div>
               </article>
             ))}
+          </div>
+        ) : filteredReviews.length ? (
+          <div className="overflow-hidden rounded-[8px] bg-white">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[900px] border-collapse text-left">
+                <thead>
+                  <tr className="bg-[#30347F] text-[11px] font-semibold uppercase tracking-wider text-white">
+                    <th className="px-5 py-3.5">Reviewer</th>
+                    <th className="px-4 py-3.5">Rating</th>
+                    <th className="px-4 py-3.5">Review</th>
+                    <th className="px-4 py-3.5">Reply</th>
+                    <th className="px-4 py-3.5">Date</th>
+                    <th className="px-5 py-3.5 text-center">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#EAECF0]">
+                  {filteredReviews.map((review) => (
+                    <tr key={review._id} className="transition-colors hover:bg-[#F9FAFB]">
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#EAECF0]">
+                            {review.reviewerAvatar ? (
+                              <Image src={review.reviewerAvatar} alt={review.reviewerName} fill className="object-cover" />
+                            ) : (
+                              <span className="text-sm font-semibold text-[#667085]">{review.reviewerName.charAt(0).toUpperCase()}</span>
+                            )}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="max-w-[180px] truncate text-sm font-semibold text-[#30347F]">{review.reviewerName}</p>
+                            <p className="max-w-[180px] truncate text-[11px] text-[#7A8190]">{review.businessName}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="flex items-center gap-1" aria-label={`${review.rating} out of 5 stars`}>
+                          <Star className="h-4 w-4 fill-[#FFB000] text-[#FFB000]" />
+                          <span className="text-sm font-semibold text-[#344054]">{review.rating}.0</span>
+                        </div>
+                      </td>
+                      <td className="max-w-[320px] px-4 py-4">
+                        <p className="line-clamp-2 text-[13px] leading-5 text-[#41444A]">{review.message}</p>
+                      </td>
+                      <td className="max-w-[260px] px-4 py-4">
+                        {review.reply ? (
+                          <div>
+                            <p className="line-clamp-2 text-xs leading-5 text-[#5F6368]">{review.reply.message}</p>
+                            <p className="mt-1 text-[10px] font-medium text-[#30347F]">{review.reply.repliedByName}</p>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-[#98A2B3]">No reply</span>
+                        )}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-4 text-xs text-[#667085]">{formatDate(review.createdAt)}</td>
+                      <td className="px-5 py-4 text-center">
+                        <button
+                          type="button"
+                          disabled={deleteMutation.isPending}
+                          aria-label={`Delete review from ${review.reviewerName}`}
+                          onClick={() => setReviewToDelete(review)}
+                          className="mx-auto flex h-8 w-8 items-center justify-center rounded-full bg-[#FFF0EF] text-[#FF4D4F] transition-colors hover:bg-[#FFD9D6] disabled:opacity-50"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         ) : <div className="rounded-[8px] bg-white px-6 py-14 text-center text-sm text-[#667085]">{search ? "No matching reviews found on this page." : `No ${rating}-star reviews found.`}</div>}
 

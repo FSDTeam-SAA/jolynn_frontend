@@ -2,7 +2,17 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import { Check, ChevronsUpDown, Eye, EyeOff, Search } from "lucide-react";
+import {
+  BriefcaseBusiness,
+  Check,
+  ChevronsUpDown,
+  Eye,
+  EyeOff,
+  LockKeyhole,
+  MapPin,
+  Search,
+  Sparkles,
+} from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -10,7 +20,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
-import { useServices } from "@/hooks/use-services";
+import { useServiceCategories } from "@/hooks/use-service-categories";
 import {
   useLocationCities,
   useLocationStates,
@@ -41,6 +51,8 @@ import {
 } from "@/components/ui/popover";
 import AccountCreatedSuccessfulModal from "./account-created-successful-modal";
 import Image from "next/image";
+
+const OTHER_CATEGORY = "__other__";
 
 type TextFieldConfig = {
   name:
@@ -91,8 +103,7 @@ const textFields: TextFieldConfig[] = [
   },
 ] as const satisfies TextFieldConfig[];
 
-const formSchema = z
-  .object({
+const formSchema = z.object({
     businessName: z.string().min(1, "Business name is required."),
     ownerName: z.string().min(1, "Owner name is required."),
     username: z.string().min(1, "User name is required."),
@@ -104,6 +115,7 @@ const formSchema = z
     address: z.string().min(1, "Address is required."),
     serviceArea: z.string().min(1, "Service area is required."),
     category: z.string().min(1, "Category is required."),
+    requestedCategory: z.string().optional(),
     state: z.string().min(1, "State is required."),
     city: z.string().min(1, "City is required."),
     password: z
@@ -114,9 +126,25 @@ const formSchema = z
       .boolean()
       .refine((value) => value, "Please accept the terms and conditions."),
   })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match.",
-    path: ["confirmPassword"],
+  .superRefine((data, context) => {
+    if (data.password !== data.confirmPassword) {
+      context.addIssue({
+        code: "custom",
+        message: "Passwords don't match.",
+        path: ["confirmPassword"],
+      });
+    }
+
+    if (
+      data.category === OTHER_CATEGORY &&
+      (!data.requestedCategory || data.requestedCategory.trim().length < 2)
+    ) {
+      context.addIssue({
+        code: "custom",
+        message: "Please enter the category your business needs.",
+        path: ["requestedCategory"],
+      });
+    }
   });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -240,13 +268,8 @@ type RegisterBusinessOwnerResponse = {
 };
 
 const AddYourBusinessContainer = () => {
-  const {
-    data: servicesData,
-    isPending: servicesPending,
-    isError: servicesError,
-    refetch: refetchServices,
-  } = useServices();
-  const services = servicesData?.data ?? [];
+  const categoriesQuery = useServiceCategories();
+  const categories = categoriesQuery.data?.data ?? [];
   const statesQuery = useLocationStates();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -265,6 +288,7 @@ const AddYourBusinessContainer = () => {
       address: "",
       serviceArea: "",
       category: "",
+      requestedCategory: "",
       state: "",
       city: "",
       password: "",
@@ -272,6 +296,7 @@ const AddYourBusinessContainer = () => {
       agreementAccepted: false,
     },
   });
+  const selectedCategory = form.watch("category");
   const selectedStateName = form.watch("state");
   const selectedState = statesQuery.data?.data.find(
     (state) => state.name === selectedStateName,
@@ -289,13 +314,22 @@ const AddYourBusinessContainer = () => {
     mutationFn: async (values: FormValues) => {
       const apiUrl =
         process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api/v1";
+      const payload = {
+        ...values,
+        category:
+          values.category === OTHER_CATEGORY ? "Other" : values.category,
+        requestedCategory:
+          values.category === OTHER_CATEGORY
+            ? values.requestedCategory?.trim()
+            : undefined,
+      };
       const res = await fetch(`${apiUrl}/auth/register/business-owner`, {
         method: "POST",
         headers: {
           accept: "*/*",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(values),
+        body: JSON.stringify(payload),
       });
       const data = (await res.json()) as RegisterBusinessOwnerResponse;
 
@@ -325,36 +359,54 @@ const AddYourBusinessContainer = () => {
   };
 
   const inputClassName =
-    "h-10 rounded-[8px] border border-[#F5F3FA] bg-white px-4 text-sm font-medium text-primary shadow-[2px_4px_5px_0px_#0000000A] placeholder:text-[#BCBCBC] focus-visible:ring-1 focus-visible:ring-[#292D73]";
-  const labelClassName = "text-sm md:text-base font-normal leading-normal text-[#667481]";
+    "h-11 rounded-[9px] border border-[#D8DDE7] bg-white px-4 text-sm font-medium text-[#20244A] shadow-none placeholder:font-normal placeholder:text-[#98A2B3] focus-visible:border-[#292D73] focus-visible:ring-4 focus-visible:ring-[#292D73]/10";
+  const labelClassName = "text-[13px] font-semibold leading-normal text-[#344054]";
   const messageClassName = "text-xs font-normal leading-normal text-red-500";
 
   return (
-    <section className="min-h-screen bg-[linear-gradient(180deg,_#292D73_0%,_#91C7D9_50%,_#CBE4E3_100%),_linear-gradient(0deg,_rgba(0,0,0,0.2),_rgba(0,0,0,0.2))] px-2 py-10 md:px-4 lg:px-6">
+    <section className="relative min-h-screen overflow-hidden bg-[#F3F6FA] px-3 py-8 sm:px-5 md:py-12 lg:px-8">
+      <div className="pointer-events-none absolute -left-28 top-10 h-80 w-80 rounded-full bg-[#DCE4FF]/70 blur-3xl" />
+      <div className="pointer-events-none absolute -right-28 bottom-10 h-80 w-80 rounded-full bg-[#D9F1EC]/80 blur-3xl" />
       <div className="container">
-        <div className="mx-auto w-full max-w-[1320px] rounded-[12px] bg-white px-5 py-8 shadow-[0_16px_30px_rgba(17,24,39,0.20)] sm:px-8 lg:px-10">
+        <div className="relative mx-auto w-full max-w-[1180px] overflow-hidden rounded-[18px] border border-[#E1E6EE] bg-white shadow-[0_24px_70px_rgba(28,35,70,0.13)]">
+          <div className="h-1.5 bg-[linear-gradient(90deg,#292D73_0%,#5962B8_55%,#75B8AE_100%)]" />
+          <div className="px-5 py-7 sm:px-8 lg:px-10 lg:py-8">
           <div className="text-center">
-            <div className="flex items-center justify-center mb-4">
-          <Link href="/">
-            <Image
-              src="/assets/images/logo.png"
-              alt="Logo"
-              width={100}
-              height={100}
-              className="w-[90px] h-[90px]"
-            />
-          </Link>
-        </div>
-            <h2 className="mt-4 text-2xl md:text-3xl lg:text-4xl xl:text-[40px] font-bold leading-normal text-primary">
+            <Link href="/" className="inline-flex">
+              <Image
+                src="/assets/images/logo.png"
+                alt="Logo"
+                width={64}
+                height={64}
+                className="h-16 w-16 object-contain"
+              />
+            </Link>
+            <span className="mx-auto mt-3 flex w-fit items-center gap-2 rounded-full border border-[#D9DDF2] bg-[#F8F9FF] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#292D73]">
+              <Sparkles className="h-3.5 w-3.5" />
+              Grow your local presence
+            </span>
+            <h2 className="mt-3 text-[28px] font-extrabold leading-tight text-[#171A3A] sm:text-[34px]">
               List Your Business
             </h2>
+            <p className="mx-auto mt-2 max-w-2xl text-[13px] leading-5 text-[#667085]">
+              Create a professional business profile and make it easier for local customers to discover your services.
+            </p>
           </div>
 
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(onSubmit)}
-              className="mt-8 space-y-4"
+              className="mt-7 space-y-6"
             >
+              <div className="flex items-center gap-3 border-b border-[#EAECF0] pb-3">
+                <span className="flex h-9 w-9 items-center justify-center rounded-[9px] bg-[#EEF0FF] text-[#292D73]">
+                  <BriefcaseBusiness className="h-[18px] w-[18px]" />
+                </span>
+                <div>
+                  <h3 className="text-[16px] font-bold text-[#20244A]">Business details</h3>
+                  <p className="text-[11px] text-[#98A2B3]">Tell customers who you are and how to contact your business.</p>
+                </div>
+              </div>
               <div className="grid grid-cols-1 gap-x-4 gap-y-3 md:grid-cols-3">
                 {textFields.map((fieldConfig) => (
                   <FormField
@@ -393,7 +445,7 @@ const AddYourBusinessContainer = () => {
                       <FormControl>
                         <Textarea
                           placeholder="221B Baker Street"
-                          className="min-h-[120px] rounded-[6px] border border-[#EDF0F5] bg-white px-4 py-4 text-[13px] font-medium text-[#292D73] shadow-[0_3px_10px_rgba(0,0,0,0.08)] placeholder:text-[#B7B7B7] focus-visible:ring-1 focus-visible:ring-[#292D73]"
+                          className="min-h-[96px] rounded-[9px] border border-[#D8DDE7] bg-white px-4 py-3 text-[13px] font-medium text-[#20244A] shadow-none placeholder:text-[#98A2B3] focus-visible:border-[#292D73] focus-visible:ring-4 focus-visible:ring-[#292D73]/10"
                           {...field}
                         />
                       </FormControl>
@@ -413,7 +465,7 @@ const AddYourBusinessContainer = () => {
                       <FormControl>
                         <Textarea
                           placeholder="15 miles around New York"
-                          className="min-h-[120px] rounded-[6px] border border-[#EDF0F5] bg-white px-4 py-4 text-[13px] font-medium text-[#292D73] shadow-[0_3px_10px_rgba(0,0,0,0.08)] placeholder:text-[#B7B7B7] focus-visible:ring-1 focus-visible:ring-[#292D73]"
+                          className="min-h-[96px] rounded-[9px] border border-[#D8DDE7] bg-white px-4 py-3 text-[13px] font-medium text-[#20244A] shadow-none placeholder:text-[#98A2B3] focus-visible:border-[#292D73] focus-visible:ring-4 focus-visible:ring-[#292D73]/10"
                           {...field}
                         />
                       </FormControl>
@@ -421,6 +473,16 @@ const AddYourBusinessContainer = () => {
                     </FormItem>
                   )}
                 />
+              </div>
+
+              <div className="flex items-center gap-3 border-b border-[#EAECF0] pb-3 pt-1">
+                <span className="flex h-9 w-9 items-center justify-center rounded-[9px] bg-[#EAF7F4] text-[#28796E]">
+                  <MapPin className="h-[18px] w-[18px]" />
+                </span>
+                <div>
+                  <h3 className="text-[16px] font-bold text-[#20244A]">Category & location</h3>
+                  <p className="text-[11px] text-[#98A2B3]">Choose your main service and the area where your business operates.</p>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 gap-x-4 gap-y-3 md:grid-cols-3">
@@ -433,46 +495,80 @@ const AddYourBusinessContainer = () => {
                         Category*
                       </FormLabel>
                       <Select
-                        onValueChange={field.onChange}
+                        onValueChange={(value) => {
+                          field.onChange(value);
+                          if (value !== OTHER_CATEGORY) {
+                            form.setValue("requestedCategory", "", {
+                              shouldDirty: true,
+                              shouldValidate: false,
+                            });
+                          }
+                        }}
                         value={field.value}
-                        disabled={servicesPending || servicesError || services.length === 0}
                       >
                         <FormControl>
                           <SelectTrigger className={inputClassName}>
                             <SelectValue
                               placeholder={
-                                servicesPending
+                                categoriesQuery.isPending
                                   ? "Loading categories..."
-                                  : servicesError
-                                    ? "Categories unavailable"
-                                    : services.length === 0
-                                      ? "No categories available"
-                                      : "Select category"
+                                  : categoriesQuery.isError
+                                    ? "Select Others to add a category"
+                                    : "Select category"
                               }
                             />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {services.map((service) => (
-                            <SelectItem key={service._id} value={service.title}>
-                              {service.title}
+                          {categories.map((category) => (
+                            <SelectItem key={category._id} value={category.name}>
+                              {category.name}
                             </SelectItem>
                           ))}
+                          <SelectItem value={OTHER_CATEGORY}>Others</SelectItem>
                         </SelectContent>
                       </Select>
-                      {servicesError && (
+                      {categoriesQuery.isError && (
                         <button
                           type="button"
-                          onClick={() => refetchServices()}
+                          onClick={() => categoriesQuery.refetch()}
                           className="text-xs font-medium text-red-600 hover:underline"
                         >
-                          Unable to load categories. Try again
+                          Category list unavailable. Retry, or select Others
                         </button>
                       )}
                       <FormMessage className={messageClassName} />
                     </FormItem>
                   )}
                 />
+
+                {selectedCategory === OTHER_CATEGORY && (
+                  <FormField
+                    control={form.control}
+                    name="requestedCategory"
+                    render={({ field }) => (
+                      <FormItem className="rounded-[10px] border border-[#D9DDF2] bg-[#F8F9FF] p-3 md:col-span-2">
+                        <FormLabel className={labelClassName}>
+                          Add your required category*
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            autoFocus
+                            maxLength={80}
+                            placeholder="e.g. Solar panel installation"
+                            className={inputClassName}
+                            {...field}
+                            value={field.value ?? ""}
+                          />
+                        </FormControl>
+                        <p className="text-[11px] leading-4 text-[#667085]">
+                          This category will be submitted for review with your business registration.
+                        </p>
+                        <FormMessage className={messageClassName} />
+                      </FormItem>
+                    )}
+                  />
+                )}
 
                 <FormField
                   control={form.control}
@@ -559,75 +655,87 @@ const AddYourBusinessContainer = () => {
                 />
               </div>
 
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className={labelClassName}>Password</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Input
-                          type={showPassword ? "text" : "password"}
-                          placeholder="********"
-                          className={`${inputClassName} pr-12`}
-                          {...field}
-                        />
-                        <button
-                          type="button"
-                          className="absolute right-4 top-1/2 -translate-y-1/2 text-[#A3A8B3] transition hover:text-[#292D73]"
-                          onClick={() => setShowPassword((prev) => !prev)}
-                          tabIndex={-1}
-                        >
-                          {showPassword ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
-                        </button>
-                      </div>
-                    </FormControl>
-                    <FormMessage className={messageClassName} />
-                  </FormItem>
-                )}
-              />
+              <div className="flex items-center gap-3 border-b border-[#EAECF0] pb-3 pt-1">
+                <span className="flex h-9 w-9 items-center justify-center rounded-[9px] bg-[#FFF5E6] text-[#A56513]">
+                  <LockKeyhole className="h-[18px] w-[18px]" />
+                </span>
+                <div>
+                  <h3 className="text-[16px] font-bold text-[#20244A]">Account security</h3>
+                  <p className="text-[11px] text-[#98A2B3]">Choose a secure password to protect your business account.</p>
+                </div>
+              </div>
 
-              <FormField
-                control={form.control}
-                name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className={labelClassName}>
-                      Confirm Password
-                    </FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Input
-                          type={showConfirmPassword ? "text" : "password"}
-                          placeholder="********"
-                          className={`${inputClassName} pr-12`}
-                          {...field}
-                        />
-                        <button
-                          type="button"
-                          className="absolute right-4 top-1/2 -translate-y-1/2 text-[#A3A8B3] transition hover:text-[#292D73]"
-                          onClick={() =>
-                            setShowConfirmPassword((prev) => !prev)
-                          }
-                          tabIndex={-1}
-                        >
-                          {showConfirmPassword ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
-                        </button>
-                      </div>
-                    </FormControl>
-                    <FormMessage className={messageClassName} />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className={labelClassName}>Password</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input
+                            type={showPassword ? "text" : "password"}
+                            placeholder="********"
+                            className={`${inputClassName} pr-12`}
+                            {...field}
+                          />
+                          <button
+                            type="button"
+                            className="absolute right-4 top-1/2 -translate-y-1/2 text-[#A3A8B3] transition hover:text-[#292D73]"
+                            onClick={() => setShowPassword((prev) => !prev)}
+                            tabIndex={-1}
+                          >
+                            {showPassword ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                          </button>
+                        </div>
+                      </FormControl>
+                      <FormMessage className={messageClassName} />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className={labelClassName}>
+                        Confirm Password
+                      </FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input
+                            type={showConfirmPassword ? "text" : "password"}
+                            placeholder="********"
+                            className={`${inputClassName} pr-12`}
+                            {...field}
+                          />
+                          <button
+                            type="button"
+                            className="absolute right-4 top-1/2 -translate-y-1/2 text-[#A3A8B3] transition hover:text-[#292D73]"
+                            onClick={() =>
+                              setShowConfirmPassword((prev) => !prev)
+                            }
+                            tabIndex={-1}
+                          >
+                            {showConfirmPassword ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                          </button>
+                        </div>
+                      </FormControl>
+                      <FormMessage className={messageClassName} />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <FormField
                 control={form.control}
@@ -647,7 +755,7 @@ const AddYourBusinessContainer = () => {
                       </FormControl>
                       <Label
                         htmlFor="agreementAccepted"
-                        className="text-sm xl:text-base font-medium leading-[1.3] text-[#667481`]"
+                        className="text-sm font-medium leading-[1.3] text-[#667481]"
                       >
                         I agree to the{" "}
                         <Link
@@ -665,7 +773,7 @@ const AddYourBusinessContainer = () => {
 
               <Button
                 disabled={isPending}
-                className="h-12 w-full rounded-[8px] bg-primary text-[14px] font-semibold text-white transition hover:bg-[#20255F]"
+                className="h-12 w-full rounded-[9px] bg-primary text-[14px] font-bold text-white shadow-[0_8px_18px_rgba(41,45,115,0.22)] transition hover:bg-[#20255F] hover:shadow-[0_10px_24px_rgba(41,45,115,0.28)]"
                 type="submit"
               >
                 {isPending ? "Creating account..." : "Create Account"}
@@ -679,6 +787,7 @@ const AddYourBusinessContainer = () => {
               </p>
             </form>
           </Form>
+          </div>
         </div>
       </div>
 

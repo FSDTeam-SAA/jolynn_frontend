@@ -24,19 +24,25 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Please enter your email and password");
         }
         try {
-          const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                email: credentials.email,
-                password: credentials.password,
-              }),
-            }
-          );
+          const apiUrl = (
+            process.env.NEXT_PUBLIC_API_URL ??
+            process.env.NEXT_PUBLIC_API_URL
+          )?.replace(/\/$/, "");
+
+          if (!apiUrl) {
+            throw new Error("Backend API URL is not configured");
+          }
+
+          const res = await fetch(`${apiUrl}/auth/login`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email: credentials.email,
+              password: credentials.password,
+            }),
+          });
           const response = await res.json();
 
           console.log("Login response:", response);

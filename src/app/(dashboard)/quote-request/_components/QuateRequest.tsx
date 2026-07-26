@@ -1,5 +1,6 @@
 "use client";
 
+import DeleteModal from "@/components/modals/delete-modal";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
@@ -8,10 +9,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight, Eye, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 type QuoteRequest = {
   _id: string;
@@ -36,10 +38,19 @@ type QuoteRequestsResponse = {
   data: QuoteRequest[];
 };
 
+type QuoteRequestResponse = {
+  statusCode: number;
+  success: boolean;
+  message: string;
+  data: QuoteRequest;
+};
+
 const PAGE_LIMIT = 10;
 
 const getApiUrl = () => {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  const apiUrl =
+    process.env.NEXT_PUBLIC_API_URL ??
+    process.env.NEXT_PUBLIC_BACKEND_API_URL;
   if (!apiUrl) throw new Error("The quote API is not configured.");
   return apiUrl.replace(/\/$/, "");
 };
@@ -57,8 +68,10 @@ function QuateRequest() {
   const { data: session, status: sessionStatus } = useSession();
   const user = session?.user as { token?: string; accessToken?: string } | undefined;
   const token = user?.accessToken ?? user?.token;
+  const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [selectedRequest, setSelectedRequest] = useState<QuoteRequest | null>(null);
+  const [requestToDelete, setRequestToDelete] = useState<QuoteRequest | null>(null);
 
   const quoteQuery = useQuery<QuoteRequestsResponse>({
     queryKey: ["business-quote-requests", "pending", page],
@@ -84,6 +97,52 @@ function QuateRequest() {
   const total = quoteQuery.data?.meta.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_LIMIT));
   const isLoading = sessionStatus === "loading" || (Boolean(token) && quoteQuery.isPending);
+
+  const deleteMutation = useMutation<
+    QuoteRequestResponse,
+    Error,
+    QuoteRequest
+  >({
+    mutationFn: async (request) => {
+      if (!token) throw new Error("Please sign in to delete this quote request.");
+      const response = await fetch(
+        `${getApiUrl()}/qoute/my-business/${encodeURIComponent(request._id)}`,
+        {
+          method: "DELETE",
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+      const result = (await response.json().catch(() => null)) as
+        | QuoteRequestResponse
+        | null;
+      if (!response.ok || !result?.success) {
+        throw new Error(result?.message || "Unable to delete quote request.");
+      }
+      return result;
+    },
+    onSuccess: async (result, deletedRequest) => {
+      toast.success(result.message || "Quote request deleted successfully.");
+      setRequestToDelete(null);
+      if (selectedRequest?._id === deletedRequest._id) {
+        setSelectedRequest(null);
+      }
+      if (quoteRequests.length === 1 && page > 1) {
+        setPage((current) => current - 1);
+      }
+      await queryClient.invalidateQueries({
+        queryKey: ["business-quote-requests"],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["business-dashboard-overview"],
+      });
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
 
   return (
     <section className="overflow-hidden rounded-[10px] bg-white">
@@ -116,7 +175,15 @@ function QuateRequest() {
                   <td className="px-3 text-center">
                     <div className="flex items-center justify-center gap-2">
                       <button type="button" aria-label={`View quote request from ${request.name}`} onClick={() => setSelectedRequest(request)} className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#EEF2FF] text-[#30347F] transition-colors hover:bg-[#DDE4FF]"><Eye className="h-[17px] w-[17px]" /></button>
-                      <button type="button" disabled title="Business owner delete API is not available" aria-label={`Delete quote request from ${request.name} (unavailable)`} className="inline-flex h-8 w-8 cursor-not-allowed items-center justify-center rounded-full bg-[#FFF0EF] text-[#FF3434] opacity-50"><Trash2 className="h-[17px] w-[17px]" /></button>
+                      <button
+                        type="button"
+                        disabled={deleteMutation.isPending}
+                        onClick={() => setRequestToDelete(request)}
+                        aria-label={`Delete quote request from ${request.name}`}
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#FFF0EF] text-[#FF3434] transition-colors hover:bg-[#FFD9D6] disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <Trash2 className="h-[17px] w-[17px]" />
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -160,6 +227,24 @@ function QuateRequest() {
           )}
         </DialogContent>
       </Dialog>
+
+      <DeleteModal
+        isOpen={Boolean(requestToDelete)}
+        onClose={() =>
+          !deleteMutation.isPending && setRequestToDelete(null)
+        }
+        onConfirm={() =>
+          requestToDelete &&
+          !deleteMutation.isPending &&
+          deleteMutation.mutate(requestToDelete)
+        }
+        title={
+          deleteMutation.isPending
+            ? "Deleting Quote Request..."
+            : "Delete Quote Request?"
+        }
+        desc={`Are you sure you want to delete ${requestToDelete?.name || "this customer's"} quote request? This action cannot be undone.`}
+      />
     </section>
   );
 }
