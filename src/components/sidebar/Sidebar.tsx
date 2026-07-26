@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
-  CalendarRange,
   FileText,
   LayoutDashboard,
   LogOut,
@@ -13,7 +12,6 @@ import {
   Rows2,
   BookImage,
   UserStar,
-  UserCog,
   FileUser,
   Settings,
 } from "lucide-react";
