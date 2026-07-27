@@ -3,13 +3,14 @@
 import {
   Bookmark,
   Globe2,
+  LogIn,
   Mail,
   Phone,
   Star,
 } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -22,6 +23,14 @@ import BusinessServices from "./business-services";
 import RequestAQuoteModal from "./request-a-quote-modal";
 import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 type ProfileTab = "overview" | "services" | "gallery" | "reviews";
 
@@ -197,6 +206,7 @@ const ContactCard = ({
 );
 
 const BusinessViewProfileContainer = ({ businessId }: { businessId: string }) => {
+  const router = useRouter();
   const { data: session } = useSession();
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
@@ -205,6 +215,7 @@ const BusinessViewProfileContainer = ({ businessId }: { businessId: string }) =>
     requestedTab === "reviews" ? "reviews" : "overview",
   );
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
+  const [isQuoteSignInModalOpen, setIsQuoteSignInModalOpen] = useState(false);
   const [savedOverride, setSavedOverride] = useState<boolean | null>(null);
   const { data: business, isPending, isError, refetch } = usePublicBusinessProfile(businessId);
   const sessionUser = session?.user as
@@ -217,6 +228,23 @@ const BusinessViewProfileContainer = ({ businessId }: { businessId: string }) =>
         savedBusiness.businessOwner.businessOwnerId === businessId,
     );
   const isSaved = savedOverride ?? savedOnServer;
+
+  const openQuoteFlow = () => {
+    if (!token) {
+      setIsQuoteSignInModalOpen(true);
+      return;
+    }
+
+    setIsQuoteModalOpen(true);
+  };
+
+  const signInForQuote = () => {
+    const currentQuery = searchParams.toString();
+    const callbackUrl = `/services/businesses/${businessId}${
+      currentQuery ? `?${currentQuery}` : ""
+    }`;
+    router.push(`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+  };
 
   const toggleSaveMutation = useMutation({
     mutationFn: async (shouldUnsave: boolean) => {
@@ -369,7 +397,7 @@ const BusinessViewProfileContainer = ({ businessId }: { businessId: string }) =>
           <div>{activeContent}</div>
           <ContactCard
             business={business}
-            onOpenQuoteModal={() => setIsQuoteModalOpen(true)}
+            onOpenQuoteModal={openQuoteFlow}
             onToggleSave={() => toggleSaveMutation.mutate(isSaved)}
             isSaving={toggleSaveMutation.isPending}
             isSaved={isSaved}
@@ -383,6 +411,40 @@ const BusinessViewProfileContainer = ({ businessId }: { businessId: string }) =>
         businessName={business.businessName}
         onClose={() => setIsQuoteModalOpen(false)}
       />
+      <Dialog
+        open={isQuoteSignInModalOpen}
+        onOpenChange={setIsQuoteSignInModalOpen}
+      >
+        <DialogContent className="max-w-[92%] rounded-[14px] border-0 bg-white p-6 sm:max-w-[430px]">
+          <DialogHeader className="items-center text-center">
+            <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-[#EEF0FF] text-[#292D73]">
+              <LogIn className="h-6 w-6" aria-hidden="true" />
+            </div>
+            <DialogTitle className="text-xl font-extrabold leading-tight text-[#292D73]">
+              Sign in to request a quote
+            </DialogTitle>
+            <DialogDescription className="pt-2 text-[13px] leading-5 text-[#667085]">
+              You need to sign in before you can send a quote request.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-2 grid grid-cols-2 gap-3 sm:space-x-0">
+            <button
+              type="button"
+              onClick={() => setIsQuoteSignInModalOpen(false)}
+              className="h-10 rounded-[6px] border border-[#B8C0CC] bg-white px-4 text-[13px] font-semibold text-[#344054] transition hover:bg-[#F8FAFC]"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={signInForQuote}
+              className="h-10 rounded-[6px] bg-[#292D73] px-4 text-[13px] font-bold text-white transition hover:bg-[#20255F]"
+            >
+              Sign In
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -57,11 +57,6 @@ type SelectedBusiness = {
   name: string;
 };
 
-const uniqueValues = (values: string[]) =>
-  Array.from(new Set(values.filter(Boolean))).sort((a, b) =>
-    a.localeCompare(b),
-  );
-
 type FilterLocationDropdownProps = {
   value: string;
   options: string[];
@@ -271,11 +266,6 @@ const ServicesSearchContainer = ({
   const total = businessQuery.data?.meta.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / 10));
 
-  const keywords = useMemo(
-    () => uniqueValues(businesses.map((business) => business.businessName)),
-    [businesses],
-  );
-
   const updateFilter = (name: keyof DraftFilters, value: string) => {
     setDraftFilters((current) => ({ ...current, [name]: value }));
   };
@@ -337,6 +327,20 @@ const ServicesSearchContainer = ({
                 </h2>
 
                 <form onSubmit={applyFilters} className="mt-5 space-y-3">
+                  <label className="relative block">
+                    <span className="sr-only">Search businesses</span>
+                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8A8F99]" />
+                    <input
+                      type="search"
+                      value={draftFilters.searchTerm}
+                      onChange={(event) =>
+                        updateFilter("searchTerm", event.target.value)
+                      }
+                      placeholder="Search businesses..."
+                      className="h-11 w-full rounded-[6px] border border-[#A7A7A7] bg-white pl-10 pr-3 text-[12px] font-medium text-[#344054] outline-none placeholder:text-[#8A8F99] focus:ring-2 focus:ring-[#292D73]/20"
+                    />
+                  </label>
+
                   {servicesQuery.isPending ? (
                     <Skeleton className="h-10 w-full" />
                   ) : servicesQuery.isError ? (
@@ -422,25 +426,6 @@ const ServicesSearchContainer = ({
                     }
                     onChange={(nextCity) => updateFilter("city", nextCity)}
                   />
-
-                  <label className="relative block">
-                    <span className="sr-only">Keywords</span>
-                    <select
-                      value={draftFilters.searchTerm}
-                      onChange={(event) =>
-                        updateFilter("searchTerm", event.target.value)
-                      }
-                      className="h-11 w-full appearance-none rounded-[6px] border border-[#A7A7A7] bg-white px-3 pr-9 text-[12px] font-medium text-[#8A8F99] focus:outline-none focus:ring-2 focus:ring-[#292D73]/20"
-                    >
-                      <option value="">Keywords</option>
-                      {keywords.map((keyword) => (
-                        <option key={keyword} value={keyword}>
-                          {keyword}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8A8F99]" />
-                  </label>
 
                   <button
                     type="submit"
