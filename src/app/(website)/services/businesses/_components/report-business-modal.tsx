@@ -12,6 +12,7 @@ import { useMutation } from "@tanstack/react-query";
 import { AlertTriangle } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { usePathname, useSearchParams } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -39,14 +40,23 @@ const ReportBusinessModal = ({
   onOpenChange,
 }: ReportBusinessModalProps) => {
   const { data: session, status } = useSession();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [message, setMessage] = useState("");
+  const [showSignInPrompt, setShowSignInPrompt] = useState(false);
   const sessionUser = session?.user as
     | { token?: string; accessToken?: string }
     | undefined;
   const token = sessionUser?.accessToken ?? sessionUser?.token;
+  const currentQuery = searchParams.toString();
+  const callbackUrl = currentQuery ? `${pathname}?${currentQuery}` : pathname;
+  const signInUrl = `/login?callbackUrl=${encodeURIComponent(callbackUrl)}`;
 
   useEffect(() => {
-    if (!open) setMessage("");
+    if (!open) {
+      setMessage("");
+      setShowSignInPrompt(false);
+    }
   }, [open]);
 
   const reportMutation = useMutation<ReportResponse, Error, ReportPayload>({
@@ -90,6 +100,11 @@ const ReportBusinessModal = ({
       return;
     }
 
+    if (!token) {
+      setShowSignInPrompt(true);
+      return;
+    }
+
     reportMutation.mutate({ ownerId, message: trimmedMessage });
   };
 
@@ -111,7 +126,7 @@ const ReportBusinessModal = ({
           </DialogHeader>
         </div>
 
-        {status !== "loading" && !token ? (
+        {showSignInPrompt ? (
           <div className="px-5 py-6 sm:px-6">
             <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
               You need to sign in before submitting a report.
@@ -119,13 +134,13 @@ const ReportBusinessModal = ({
             <DialogFooter className="mt-5 gap-2 sm:space-x-0">
               <button
                 type="button"
-                onClick={() => onOpenChange(false)}
+                onClick={() => setShowSignInPrompt(false)}
                 className="h-10 rounded-md border border-[#D0D5DD] px-5 text-xs font-semibold text-[#475467] transition hover:bg-[#F5F7FA]"
               >
-                Cancel
+                Back
               </button>
               <Link
-                href="/login"
+                href={signInUrl}
                 className="inline-flex h-10 items-center justify-center rounded-md bg-[#292D73] px-5 text-xs font-bold text-white transition hover:bg-[#20255F]"
               >
                 Sign in
@@ -180,7 +195,9 @@ const ReportBusinessModal = ({
               <button
                 type="submit"
                 disabled={
-                  reportMutation.isPending || status === "loading" || !message.trim()
+                  reportMutation.isPending ||
+                  status === "loading" ||
+                  !message.trim()
                 }
                 className="h-10 rounded-md bg-[#292D73] px-5 text-xs font-bold text-white transition hover:bg-[#20255F] disabled:cursor-not-allowed disabled:opacity-60"
               >

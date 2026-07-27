@@ -20,13 +20,7 @@ import {
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import {
-  FormEvent,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 type FormValues = {
@@ -175,7 +169,11 @@ const Field = ({
       {children}
     </div>
     {error ? (
-      <p id={`${id}-error`} role="alert" className="mt-1.5 text-[12px] font-medium text-[#D92D20]">
+      <p
+        id={`${id}-error`}
+        role="alert"
+        className="mt-1.5 text-[12px] font-medium text-[#D92D20]"
+      >
         {error}
       </p>
     ) : hint ? (
@@ -186,10 +184,12 @@ const Field = ({
 
 const CreateJobPostForm = () => {
   const router = useRouter();
-  const { data: session, status: sessionStatus } = useSession();
+  const { data: session } = useSession();
   const [values, setValues] = useState(initialValues);
   const [errors, setErrors] = useState<FormErrors>({});
-  const [touched, setTouched] = useState<Partial<Record<keyof FormValues, boolean>>>({});
+  const [touched, setTouched] = useState<
+    Partial<Record<keyof FormValues, boolean>>
+  >({});
   const [formMessage, setFormMessage] = useState("");
   const prefilledProfileId = useRef<string | null>(null);
   const sessionUser = session?.user as
@@ -208,27 +208,21 @@ const CreateJobPostForm = () => {
   const profileQuery = useProfileQuery(token);
   const profile = profileQuery.data?.data;
   const categoriesQuery = useServiceCategories();
-  const categoryOptions = useMemo(
-    () => {
-      const categories = categoriesQuery.data?.data ?? [];
-      return Array.from(
-        new Map(
-          categories
-            .filter(
-              (category) =>
-                category.name?.trim() &&
-                category.status === "approved" &&
-                category.isActive,
-            )
-            .map((category) => [
-              category.name.trim().toLowerCase(),
-              category,
-            ]),
-        ).values(),
-      );
-    },
-    [categoriesQuery.data?.data],
-  );
+  const categoryOptions = useMemo(() => {
+    const categories = categoriesQuery.data?.data ?? [];
+    return Array.from(
+      new Map(
+        categories
+          .filter(
+            (category) =>
+              category.name?.trim() &&
+              category.status === "approved" &&
+              category.isActive,
+          )
+          .map((category) => [category.name.trim().toLowerCase(), category]),
+      ).values(),
+    );
+  }, [categoriesQuery.data?.data]);
 
   useEffect(() => {
     if (!sessionUser) return;
@@ -273,7 +267,8 @@ const CreateJobPostForm = () => {
     mutationKey: ["create-help-wanted"],
     mutationFn: async (payload) => {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-      if (!apiUrl) throw new Error("The help wanted service is not configured.");
+      if (!apiUrl)
+        throw new Error("The help wanted service is not configured.");
 
       const response = await fetch(`${apiUrl}/help-wanted`, {
         method: "POST",
@@ -339,6 +334,7 @@ const CreateJobPostForm = () => {
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setFormMessage("");
+
     const nextErrors = validateForm(values);
     setErrors(nextErrors);
     setTouched({
@@ -354,9 +350,7 @@ const CreateJobPostForm = () => {
     if (Object.keys(nextErrors).length > 0) {
       toast.error("Please check the highlighted fields.");
       requestAnimationFrame(() => {
-        document
-          .querySelector<HTMLElement>('[aria-invalid="true"]')
-          ?.focus();
+        document.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
       });
       return;
     }
@@ -366,9 +360,7 @@ const CreateJobPostForm = () => {
       email: values.email.trim().toLowerCase(),
       zipcode: values.zipCode.trim(),
       category:
-        values.category === OTHER_CATEGORY
-          ? "Other"
-          : values.category.trim(),
+        values.category === OTHER_CATEGORY ? "Other" : values.category.trim(),
       ...(values.category === OTHER_CATEGORY
         ? { requestedCategory: values.customCategory.trim() }
         : {}),
@@ -392,7 +384,8 @@ const CreateJobPostForm = () => {
             Tell us what service you need
           </h1>
           <p className="mx-auto mt-1.5 max-w-xl text-[12px] leading-5 text-[#667085] sm:text-[13px]">
-            Share a few details about your request so local professionals can understand how they can help.
+            Share a few details about your request so local professionals can
+            understand how they can help.
           </p>
         </div>
 
@@ -403,16 +396,27 @@ const CreateJobPostForm = () => {
               <div className="flex h-11 w-11 items-center justify-center rounded-[11px] bg-white/12 ring-1 ring-white/15">
                 <Wrench className="h-5 w-5 text-[#F4D48A]" />
               </div>
-              <h2 className="mt-4 text-[20px] font-bold">Create your help post</h2>
+              <h2 className="mt-4 text-[20px] font-bold">
+                Create your help post
+              </h2>
               <p className="mt-2 text-[12px] leading-5 text-[#D8DBF1]">
-                A clear request helps service providers respond with more useful information.
+                A clear request helps service providers respond with more useful
+                information.
               </p>
 
               <ol className="mt-6 space-y-4">
                 {[
                   ["01", "Your details", "Tell providers how to reach you."],
-                  ["02", "Service category", "Choose a service or add your own."],
-                  ["03", "Request details", "Explain the work, timing, and needs."],
+                  [
+                    "02",
+                    "Service category",
+                    "Choose a service or add your own.",
+                  ],
+                  [
+                    "03",
+                    "Request details",
+                    "Explain the work, timing, and needs.",
+                  ],
                 ].map(([number, title, description]) => (
                   <li key={number} className="flex gap-3.5">
                     <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-[11px] font-extrabold text-[#F4D48A] ring-1 ring-white/15">
@@ -420,7 +424,9 @@ const CreateJobPostForm = () => {
                     </span>
                     <div>
                       <p className="text-[13px] font-bold">{title}</p>
-                      <p className="mt-0.5 text-[11px] leading-5 text-[#BFC4E1]">{description}</p>
+                      <p className="mt-0.5 text-[11px] leading-5 text-[#BFC4E1]">
+                        {description}
+                      </p>
                     </div>
                   </li>
                 ))}
@@ -430,7 +436,8 @@ const CreateJobPostForm = () => {
                 <div className="flex items-start gap-3">
                   <CircleHelp className="mt-0.5 h-4 w-4 shrink-0 text-[#F4D48A]" />
                   <p className="text-[11px] leading-5 text-[#D8DBF1]">
-                    Review your contact details before posting. They help interested providers connect with you.
+                    Review your contact details before posting. They help
+                    interested providers connect with you.
                   </p>
                 </div>
               </div>
@@ -440,17 +447,28 @@ const CreateJobPostForm = () => {
           <div className="p-5 sm:p-6 lg:p-7">
             {profile && (
               <div className="mb-4 flex items-start gap-3 rounded-[10px] border border-[#BDE4DA] bg-[#F0FAF7] px-4 py-2.5 text-[11px] leading-5 text-[#35665D]">
-                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#16857A]" aria-hidden="true" />
+                <CheckCircle2
+                  className="mt-0.5 h-4 w-4 shrink-0 text-[#16857A]"
+                  aria-hidden="true"
+                />
                 <p>
-                  Your saved profile details have been added. You can update them for this post if needed.
+                  Your saved profile details have been added. You can update
+                  them for this post if needed.
                 </p>
               </div>
             )}
 
             {token && profileQuery.isError && (
-              <div role="alert" className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-[10px] border border-amber-200 bg-amber-50 px-4 py-2.5 text-[11px] text-amber-800">
+              <div
+                role="alert"
+                className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-[10px] border border-amber-200 bg-amber-50 px-4 py-2.5 text-[11px] text-amber-800"
+              >
                 <span>We couldn&apos;t load your saved profile details.</span>
-                <button type="button" onClick={() => profileQuery.refetch()} className="font-bold text-[#292D73] underline underline-offset-2">
+                <button
+                  type="button"
+                  onClick={() => profileQuery.refetch()}
+                  className="font-bold text-[#292D73] underline underline-offset-2"
+                >
                   Try again
                 </button>
               </div>
@@ -458,18 +476,29 @@ const CreateJobPostForm = () => {
 
             <form onSubmit={handleSubmit} noValidate>
               <div>
-                <p className="text-[11px] font-extrabold uppercase tracking-[0.13em] text-[#98A2B3]">Contact information</p>
-                <h2 className="mt-0.5 text-[18px] font-bold text-[#20244A]">How can providers reach you?</h2>
+                <p className="text-[11px] font-extrabold uppercase tracking-[0.13em] text-[#98A2B3]">
+                  Contact information
+                </p>
+                <h2 className="mt-0.5 text-[18px] font-bold text-[#20244A]">
+                  How can providers reach you?
+                </h2>
               </div>
 
               <div className="mt-4 grid gap-x-5 gap-y-3.5 sm:grid-cols-2">
-                <Field id="name" label="Your name" icon={UserRound} error={errors.name}>
+                <Field
+                  id="name"
+                  label="Your name"
+                  icon={UserRound}
+                  error={errors.name}
+                >
                   <input
                     id="name"
                     autoComplete="name"
                     maxLength={80}
                     value={values.name}
-                    onChange={(event) => updateValue("name", event.target.value)}
+                    onChange={(event) =>
+                      updateValue("name", event.target.value)
+                    }
                     onBlur={() => handleBlur("name")}
                     placeholder="Enter your name"
                     className={`${fieldClassName} ${errors.name ? "border-[#FDA29B]" : "border-[#D0D5DD]"}`}
@@ -477,13 +506,20 @@ const CreateJobPostForm = () => {
                   />
                 </Field>
 
-                <Field id="email" label="Email address" icon={Mail} error={errors.email}>
+                <Field
+                  id="email"
+                  label="Email address"
+                  icon={Mail}
+                  error={errors.email}
+                >
                   <input
                     id="email"
                     type="email"
                     autoComplete="email"
                     value={values.email}
-                    onChange={(event) => updateValue("email", event.target.value)}
+                    onChange={(event) =>
+                      updateValue("email", event.target.value)
+                    }
                     onBlur={() => handleBlur("email")}
                     placeholder="you@example.com"
                     className={`${fieldClassName} ${errors.email ? "border-[#FDA29B]" : "border-[#D0D5DD]"}`}
@@ -491,14 +527,21 @@ const CreateJobPostForm = () => {
                   />
                 </Field>
 
-                <Field id="phone" label="Phone number" icon={Phone} error={errors.phone}>
+                <Field
+                  id="phone"
+                  label="Phone number"
+                  icon={Phone}
+                  error={errors.phone}
+                >
                   <input
                     id="phone"
                     type="tel"
                     autoComplete="tel"
                     maxLength={25}
                     value={values.phone}
-                    onChange={(event) => updateValue("phone", event.target.value)}
+                    onChange={(event) =>
+                      updateValue("phone", event.target.value)
+                    }
                     onBlur={() => handleBlur("phone")}
                     placeholder="+1 (555) 000-0000"
                     className={`${fieldClassName} ${errors.phone ? "border-[#FDA29B]" : "border-[#D0D5DD]"}`}
@@ -506,13 +549,20 @@ const CreateJobPostForm = () => {
                   />
                 </Field>
 
-                <Field id="zipCode" label="Zip / postal code" icon={MapPin} error={errors.zipCode}>
+                <Field
+                  id="zipCode"
+                  label="Zip / postal code"
+                  icon={MapPin}
+                  error={errors.zipCode}
+                >
                   <input
                     id="zipCode"
                     autoComplete="postal-code"
                     maxLength={12}
                     value={values.zipCode}
-                    onChange={(event) => updateValue("zipCode", event.target.value)}
+                    onChange={(event) =>
+                      updateValue("zipCode", event.target.value)
+                    }
                     onBlur={() => handleBlur("zipCode")}
                     placeholder="Enter your zip code"
                     className={`${fieldClassName} ${errors.zipCode ? "border-[#FDA29B]" : "border-[#D0D5DD]"}`}
@@ -524,8 +574,12 @@ const CreateJobPostForm = () => {
               <div className="my-5 h-px bg-[#EAECF0]" />
 
               <div>
-                <p className="text-[11px] font-extrabold uppercase tracking-[0.13em] text-[#98A2B3]">Service details</p>
-                <h2 className="mt-0.5 text-[18px] font-bold text-[#20244A]">What kind of help do you need?</h2>
+                <p className="text-[11px] font-extrabold uppercase tracking-[0.13em] text-[#98A2B3]">
+                  Service details
+                </p>
+                <h2 className="mt-0.5 text-[18px] font-bold text-[#20244A]">
+                  What kind of help do you need?
+                </h2>
               </div>
 
               <div className="mt-4">
@@ -534,12 +588,18 @@ const CreateJobPostForm = () => {
                   label="Service category"
                   icon={Wrench}
                   error={errors.category}
-                  hint={categoriesQuery.isPending ? "Loading available services..." : "Choose the closest match for your request."}
+                  hint={
+                    categoriesQuery.isPending
+                      ? "Loading available services..."
+                      : "Choose the closest match for your request."
+                  }
                 >
                   <select
                     id="category"
                     value={values.category}
-                    onChange={(event) => updateValue("category", event.target.value)}
+                    onChange={(event) =>
+                      updateValue("category", event.target.value)
+                    }
                     onBlur={() => handleBlur("category")}
                     className={`${fieldClassName} appearance-none pr-11 ${errors.category ? "border-[#FDA29B]" : "border-[#D0D5DD]"}`}
                     {...errorProps("category")}
@@ -558,14 +618,21 @@ const CreateJobPostForm = () => {
                     ))}
                     <option value={OTHER_CATEGORY}>Others</option>
                   </select>
-                  <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" aria-hidden="true" />
+                  <ChevronDown
+                    className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]"
+                    aria-hidden="true"
+                  />
                 </Field>
 
                 {categoriesQuery.isError && (
                   <div className="mt-2 flex items-center gap-2 text-[12px] text-amber-700">
                     <AlertCircle className="h-3.5 w-3.5" />
                     <span>Service list is unavailable.</span>
-                    <button type="button" onClick={() => categoriesQuery.refetch()} className="font-bold text-[#292D73] underline underline-offset-2">
+                    <button
+                      type="button"
+                      onClick={() => categoriesQuery.refetch()}
+                      className="font-bold text-[#292D73] underline underline-offset-2"
+                    >
                       Retry
                     </button>
                   </div>
@@ -586,7 +653,9 @@ const CreateJobPostForm = () => {
                       maxLength={80}
                       autoFocus
                       value={values.customCategory}
-                      onChange={(event) => updateValue("customCategory", event.target.value)}
+                      onChange={(event) =>
+                        updateValue("customCategory", event.target.value)
+                      }
                       onBlur={() => handleBlur("customCategory")}
                       placeholder="e.g. Solar panel maintenance"
                       className={`${fieldClassName} ${errors.customCategory ? "border-[#FDA29B]" : "border-[#D0D5DD]"}`}
@@ -597,17 +666,26 @@ const CreateJobPostForm = () => {
               )}
 
               <div className="mt-3.5">
-                <label htmlFor="message" className="text-[13px] font-bold text-[#344054]">
-                  Describe your request <span className="text-[#D92D20]">*</span>
+                <label
+                  htmlFor="message"
+                  className="text-[13px] font-bold text-[#344054]"
+                >
+                  Describe your request{" "}
+                  <span className="text-[#D92D20]">*</span>
                 </label>
                 <div className="relative mt-2">
-                  <MessageSquareText className="pointer-events-none absolute left-4 top-4 h-[17px] w-[17px] text-[#667085]" aria-hidden="true" />
+                  <MessageSquareText
+                    className="pointer-events-none absolute left-4 top-4 h-[17px] w-[17px] text-[#667085]"
+                    aria-hidden="true"
+                  />
                   <textarea
                     id="message"
                     rows={4}
                     maxLength={MESSAGE_LIMIT}
                     value={values.message}
-                    onChange={(event) => updateValue("message", event.target.value)}
+                    onChange={(event) =>
+                      updateValue("message", event.target.value)
+                    }
                     onBlur={() => handleBlur("message")}
                     placeholder="Describe the service, preferred timeline, location details, and anything else a provider should know..."
                     className={`min-h-[108px] w-full resize-y rounded-[10px] border bg-white py-3 pl-11 pr-4 text-[14px] leading-5 text-[#20244A] outline-none transition placeholder:text-[#98A2B3] focus:border-[#292D73] focus:ring-4 focus:ring-[#292D73]/10 ${errors.message ? "border-[#FDA29B]" : "border-[#D0D5DD]"}`}
@@ -616,9 +694,17 @@ const CreateJobPostForm = () => {
                 </div>
                 <div className="mt-1.5 flex items-start justify-between gap-3">
                   {errors.message ? (
-                    <p id="message-error" role="alert" className="text-[12px] font-medium text-[#D92D20]">{errors.message}</p>
+                    <p
+                      id="message-error"
+                      role="alert"
+                      className="text-[12px] font-medium text-[#D92D20]"
+                    >
+                      {errors.message}
+                    </p>
                   ) : (
-                    <p className="text-[11px] text-[#98A2B3]">Include enough detail to receive a relevant response.</p>
+                    <p className="text-[11px] text-[#98A2B3]">
+                      Include enough detail to receive a relevant response.
+                    </p>
                   )}
                   <span className="shrink-0 text-[11px] tabular-nums text-[#98A2B3]">
                     {values.message.length}/{MESSAGE_LIMIT}
@@ -627,18 +713,22 @@ const CreateJobPostForm = () => {
               </div>
 
               {formMessage && (
-                <p role="status" className="mt-4 rounded-[8px] bg-[#F2F4F7] px-4 py-3 text-center text-[13px] font-medium text-[#292E78]">
+                <p
+                  role="status"
+                  className="mt-4 rounded-[8px] bg-[#F2F4F7] px-4 py-3 text-center text-[13px] font-medium text-[#292E78]"
+                >
                   {formMessage}
                 </p>
               )}
 
               <div className="mt-5 flex flex-col-reverse gap-3 border-t border-[#EAECF0] pt-4 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-[11px] leading-5 text-[#98A2B3]">
-                  Fields marked with <span className="text-[#D92D20]">*</span> are required.
+                  Fields marked with <span className="text-[#D92D20]">*</span>{" "}
+                  are required.
                 </p>
                 <button
                   type="submit"
-                  disabled={isPending || sessionStatus === "loading"}
+                  disabled={isPending}
                   className="inline-flex h-11 items-center justify-center gap-2 rounded-[9px] bg-[#292D73] px-7 text-[14px] font-extrabold text-white shadow-[0_8px_18px_rgba(41,45,115,0.24)] transition hover:bg-[#20245F] hover:shadow-[0_10px_24px_rgba(41,45,115,0.30)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#292D73]/20 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isPending ? "Publishing..." : "Publish Help Post"}

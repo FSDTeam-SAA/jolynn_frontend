@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -34,6 +34,7 @@ const formSchema = z.object({
 
 const LoginForm = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const inputClassName =
@@ -63,7 +64,12 @@ const LoginForm = () => {
       }
 
       toast.success("Login successful!");
-      router.push("/");
+      const callbackUrl = searchParams.get("callbackUrl");
+      const destination =
+        callbackUrl?.startsWith("/") && !callbackUrl.startsWith("//")
+          ? callbackUrl
+          : "/";
+      router.replace(destination);
     } catch (error) {
       console.error("Login failed:", error);
       toast.error((error as Error).message);

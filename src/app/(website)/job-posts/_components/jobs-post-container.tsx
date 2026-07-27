@@ -14,6 +14,7 @@ import {
   Flag,
   LayoutGrid,
   List,
+  LogIn,
   Mail,
   MapPin,
   PlusCircle,
@@ -24,6 +25,7 @@ import {
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { toast } from "sonner";
 
@@ -84,8 +86,9 @@ type DeleteHelpWantedResponse = {
   data: HelpWantedPost;
 };
 
-const PAGE_LIMIT = 10;
+const PAGE_LIMIT = 9;
 type ViewMode = "grid" | "list";
+type SignInIntent = "report" | "create" | "business";
 
 const getPostUserId = (post: HelpWantedPost) =>
   typeof post.userId === "string" ? post.userId : post.userId?._id;
@@ -134,6 +137,7 @@ const JobPostsSkeleton = () => (
 );
 
 const JobPostsContainer = () => {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const { data: session } = useSession();
   const sessionUser = session?.user as
@@ -176,6 +180,7 @@ const JobPostsContainer = () => {
   const [postToView, setPostToView] = useState<HelpWantedPost | null>(null);
   const [postToDelete, setPostToDelete] = useState<HelpWantedPost | null>(null);
   const [reportMessage, setReportMessage] = useState("");
+  const [signInIntent, setSignInIntent] = useState<SignInIntent | null>(null);
   const jobPostsQuery = useQuery<HelpWantedResponse>({
     queryKey: ["help-wanted", page, PAGE_LIMIT],
     queryFn: () => fetchJobPosts(page),
@@ -282,11 +287,29 @@ const JobPostsContainer = () => {
 
   const openReportForm = (helpWantedId: string) => {
     if (!token) {
-      toast.error("Please sign in to report this post.");
+      setSignInIntent("report");
       return;
     }
     setSelectedPostId(helpWantedId);
     setReportMessage("");
+  };
+
+  const openCreatePost = () => {
+    if (!token) {
+      setSignInIntent("create");
+      return;
+    }
+
+    router.push("/job-posts/create");
+  };
+
+  const openAddBusiness = () => {
+    if (!token) {
+      setSignInIntent("business");
+      return;
+    }
+
+    router.push("/add-your-business");
   };
 
   const submitReport = (event: FormEvent<HTMLFormElement>) => {
@@ -344,20 +367,22 @@ const JobPostsContainer = () => {
               <div className="flex flex-wrap items-center gap-2">
                 {sessionUser?.role !== "businessOwner" && (
                   <>
-                    <Link
-                      href="/job-posts/create"
+                    <button
+                      type="button"
+                      onClick={openCreatePost}
                       className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#292D73] px-4 text-xs font-bold text-white shadow-[0_7px_16px_rgba(41,45,115,0.18)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#1F2464] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4365D0] focus-visible:ring-offset-2"
                     >
                       <PlusCircle className="h-4 w-4" />
                       Add Job Post
-                    </Link>
-                    <Link
-                      href="/add-your-business"
+                    </button>
+                    <button
+                      type="button"
+                      onClick={openAddBusiness}
                       className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-[#292D73] bg-white px-4 text-xs font-bold text-[#292D73] transition duration-300 hover:-translate-y-0.5 hover:bg-[#EEF2FF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4365D0] focus-visible:ring-offset-2"
                     >
                       <BriefcaseBusiness className="h-4 w-4" />
                       Add your business
-                    </Link>
+                    </button>
                   </>
                 )}
                 <div
@@ -837,6 +862,78 @@ const JobPostsContainer = () => {
           </form>
         </div>
       )}
+
+      {signInIntent && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[#101828]/55 px-4 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="job-post-sign-in-title"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setSignInIntent(null);
+            }
+          }}
+        >
+          <div className="relative w-full max-w-[430px] rounded-[14px] bg-white p-6 text-center shadow-2xl">
+            <button
+              type="button"
+              onClick={() => setSignInIntent(null)}
+              className="absolute right-4 top-4 rounded p-1 text-[#667085] transition hover:bg-[#F2F4F7]"
+              aria-label="Close sign in prompt"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#EEF0FF] text-primary">
+              <LogIn className="h-6 w-6" aria-hidden="true" />
+            </div>
+            <h2
+              id="job-post-sign-in-title"
+              className="mt-4 text-xl font-extrabold text-primary"
+            >
+              {signInIntent === "create"
+                ? "Sign in to add a job post"
+                : signInIntent === "business"
+                  ? "Sign in to add your business"
+                : "Sign in to report this post"}
+            </h2>
+            <p className="mt-2 text-[13px] leading-5 text-[#667085]">
+              {signInIntent === "create"
+                ? "You need to sign in before you can create a help wanted post."
+                : signInIntent === "business"
+                  ? "You need to sign in before you can add your business."
+                : "You need to sign in before you can submit a report."}
+            </p>
+            <div className="mt-6 grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setSignInIntent(null)}
+                className="h-10 rounded-[6px] border border-[#B8C0CC] bg-white px-4 text-[13px] font-semibold text-[#344054] transition hover:bg-[#F8FAFC]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  router.push(
+                    `/login?callbackUrl=${encodeURIComponent(
+                      signInIntent === "create"
+                        ? "/job-posts/create"
+                        : signInIntent === "business"
+                          ? "/add-your-business"
+                        : "/job-posts",
+                    )}`,
+                  )
+                }
+                className="h-10 rounded-[6px] bg-primary px-4 text-[13px] font-bold text-white transition hover:bg-[#20255F]"
+              >
+                Sign In
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <DeleteModal
         isOpen={Boolean(postToDelete)}
         onClose={() => {
