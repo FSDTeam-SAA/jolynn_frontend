@@ -25,6 +25,7 @@ import {
   accountNavItems,
   type AccountSection,
 } from "./account-data";
+import ReportBusinessModal from "../../services/businesses/_components/report-business-modal";
 
 const navIcons = {
   profile: User,
@@ -161,9 +162,9 @@ export const ProfileSummaryCard = () => {
     .filter(Boolean)
     .join(" ");
   const location = [
-    profile?.address,
-    profile?.city,
-    profile?.state,
+    // profile?.address,
+    // profile?.city,
+    // profile?.state,
     profile?.country,
     profile?.postcode,
   ]
@@ -241,27 +242,27 @@ export const ProfileSummaryCard = () => {
         <h2 className="mt-4 text-[18px] font-extrabold leading-tight text-[#292D73]">
           {isLoading ? "Loading..." : name || "User"}
         </h2>
-        <p className="mt-1 text-[11px] font-medium text-[#667085]">
+        {/* <p className="mt-1 text-[11px] font-medium text-[#667085]">
           {profile?.email ?? "—"}
-        </p>
+        </p> */}
       </div>
 
       <dl className="mt-7 space-y-4 text-[12px] leading-relaxed text-[#1F2937]">
         <div>
           <dt className="inline font-extrabold">Name: </dt>
-          <dd className="inline text-[#667085]">{name || "—"}</dd>
+          <dd className="inline text-[#667085]">{name || "N/A"}</dd>
         </div>
         <div>
           <dt className="inline font-extrabold">Email: </dt>
-          <dd className="inline break-all text-[#667085]">{profile?.email ?? "—"}</dd>
+          <dd className="inline break-all text-[#667085]">{profile?.email ?? "N/A"}</dd>
         </div>
         <div>
           <dt className="inline font-extrabold">Phone: </dt>
-          <dd className="inline text-[#667085]">{profile?.phoneNumber || "—"}</dd>
+          <dd className="inline text-[#667085]">{profile?.phoneNumber || "N/A"}</dd>
         </div>
         <div>
           <dt className="inline font-extrabold">Location: </dt>
-          <dd className="inline text-[#667085]">{location || "—"}</dd>
+          <dd className="inline text-[#667085]">{location || "N/A"}</dd>
         </div>
         <div>
           <dt className="inline font-extrabold">Since: </dt>
@@ -273,13 +274,19 @@ export const ProfileSummaryCard = () => {
 };
 
 export const SavedBusinessGrid = ({ businesses }: { businesses: SavedBusiness[] }) => {
+  const [selectedBusiness, setSelectedBusiness] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+
   return (
-    <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
-      {businesses.map(({ id, businessOwner: business }) => (
-        <article
-          key={id}
-          className="rounded-[8px] bg-white p-4 shadow-[0_8px_24px_rgba(30,45,75,0.14)] ring-1 ring-[#E8ECF2]"
-        >
+    <>
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+        {businesses.map(({ id, businessOwner: business }) => (
+          <article
+            key={id}
+            className="rounded-[8px] bg-white p-4 shadow-[0_8px_24px_rgba(30,45,75,0.14)] ring-1 ring-[#E8ECF2]"
+          >
           <div className="flex items-start justify-between gap-3">
             <div className="flex min-w-0 items-start gap-3">
               <div className="relative h-[48px] w-[48px] shrink-0 overflow-hidden rounded-full bg-[#F2F4F7]">
@@ -335,12 +342,18 @@ export const SavedBusinessGrid = ({ businesses }: { businesses: SavedBusiness[] 
             >
               View Profile
             </Link>
-            <Link
-              href={`/report?serviceId=${encodeURIComponent(business.service.id)}`}
+            <button
+              type="button"
+              onClick={() =>
+                setSelectedBusiness({
+                  id: business.businessOwnerId,
+                  name: business.businessName,
+                })
+              }
               className="inline-flex h-[36px] items-center justify-center rounded-[5px] bg-[#A7A7A7] px-3 text-[11px] font-bold text-white transition hover:bg-[#8E8E8E]"
             >
               Report
-            </Link>
+            </button>
             <Link
               href={business.businessWebsiteUrl || `/services/businesses/${business.businessOwnerId}`}
               className="inline-flex h-[36px] items-center justify-center rounded-[5px] border border-[#292E78] bg-white text-[#292E78] transition hover:bg-[#292E78] hover:text-white"
@@ -349,9 +362,19 @@ export const SavedBusinessGrid = ({ businesses }: { businesses: SavedBusiness[] 
               <MessageCircle className="h-[17px] w-[17px]" />
             </Link>
           </div>
-        </article>
-      ))}
-    </div>
+          </article>
+        ))}
+      </div>
+
+      <ReportBusinessModal
+        ownerId={selectedBusiness?.id ?? ""}
+        businessName={selectedBusiness?.name ?? ""}
+        open={Boolean(selectedBusiness)}
+        onOpenChange={(open) => {
+          if (!open) setSelectedBusiness(null);
+        }}
+      />
+    </>
   );
 };
 

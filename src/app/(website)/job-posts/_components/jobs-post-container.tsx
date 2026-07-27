@@ -304,10 +304,10 @@ const JobPostsContainer = () => {
   };
 
   const openAddBusiness = () => {
-    if (!token) {
-      setSignInIntent("business");
-      return;
-    }
+    // if (!token) {
+    //   setSignInIntent("business");
+    //   return;
+    // }
 
     router.push("/add-your-business");
   };
