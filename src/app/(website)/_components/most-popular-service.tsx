@@ -90,8 +90,8 @@ const MostPopularService = () => {
 
                 <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl border border-[#4365D0]/10 bg-[#F2F5FF] p-2.5 shadow-[0_6px_16px_rgba(67,101,208,0.10)] transition duration-500 ease-out group-hover:-translate-y-0.5 group-hover:scale-105 group-hover:border-[#4365D0]/20 group-hover:bg-[#E9EEFF]">
                   <Image
-                    src={service.logo.url}
-                    alt={`${service.title} service`}
+                    src={service?.logo?.url}
+                    alt={`${service?.title} service`}
                     width={56}
                     height={56}
                     className="h-full w-full object-contain"

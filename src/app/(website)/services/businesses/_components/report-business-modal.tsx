@@ -56,8 +56,13 @@ const ReportBusinessModal = ({
     if (!open) {
       setMessage("");
       setShowSignInPrompt(false);
+      return;
     }
-  }, [open]);
+
+    if (status !== "loading" && !token) {
+      setShowSignInPrompt(true);
+    }
+  }, [open, status, token]);
 
   const reportMutation = useMutation<ReportResponse, Error, ReportPayload>({
     mutationKey: ["submit-business-report"],
@@ -134,7 +139,7 @@ const ReportBusinessModal = ({
             <DialogFooter className="mt-5 gap-2 sm:space-x-0">
               <button
                 type="button"
-                onClick={() => setShowSignInPrompt(false)}
+                onClick={() => onOpenChange(false)}
                 className="h-10 rounded-md border border-[#D0D5DD] px-5 text-xs font-semibold text-[#475467] transition hover:bg-[#F5F7FA]"
               >
                 Back

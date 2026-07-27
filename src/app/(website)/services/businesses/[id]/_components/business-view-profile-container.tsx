@@ -21,6 +21,7 @@ import { useSavedBusinesses } from "@/hooks/use-saved-businesses";
 import BusinessReviews from "./business-reviews";
 import BusinessServices from "./business-services";
 import RequestAQuoteModal from "./request-a-quote-modal";
+import ReportBusinessModal from "../../_components/report-business-modal";
 import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -118,12 +119,14 @@ const BusinessProfileSkeleton = () => (
 
 const ContactCard = ({
   onOpenQuoteModal,
+  onOpenReportModal,
   onToggleSave,
   isSaving,
   isSaved,
   business,
 }: {
   onOpenQuoteModal: () => void;
+  onOpenReportModal: () => void;
   onToggleSave: () => void;
   isSaving: boolean;
   isSaved: boolean;
@@ -161,12 +164,13 @@ const ContactCard = ({
         Email
       </Link>
 
-      <Link
-        href={`/report?businessId=${encodeURIComponent(business?.ownerId)}`}
-        className="flex h-10 items-center justify-center rounded-[6px] border border-[#F1C7C7] bg-[#FFF8F8] px-4 text-[12px] font-bold text-[#B42318] transition hover:border-[#E7AAAA] hover:bg-[#FFF0EF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D92D20]/25 focus-visible:ring-offset-2"
+      <button
+        type="button"
+        onClick={onOpenReportModal}
+        className="flex h-10 w-full items-center justify-center rounded-[6px] border border-[#F1C7C7] bg-[#FFF8F8] px-4 text-[12px] font-bold text-[#B42318] transition hover:border-[#E7AAAA] hover:bg-[#FFF0EF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D92D20]/25 focus-visible:ring-offset-2"
       >
         Report
-      </Link>
+      </button>
         <div className="flex flex-col gap-2">
               <button
                 type="button"
@@ -198,10 +202,10 @@ const ContactCard = ({
             </div>
     </div>
 
-    <div className="mt-6 h-px bg-[#EAECF0]" />
+    {/* <div className="mt-6 h-px bg-[#EAECF0]" />
     <p className="mt-4 text-center text-xs font-medium text-[#98A2B3]">
       Typically responds within 2 hours
-    </p>
+    </p> */}
   </aside>
 );
 
@@ -215,6 +219,8 @@ const BusinessViewProfileContainer = ({ businessId }: { businessId: string }) =>
     requestedTab === "reviews" ? "reviews" : "overview",
   );
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [isSaveSignInModalOpen, setIsSaveSignInModalOpen] = useState(false);
   const [isQuoteSignInModalOpen, setIsQuoteSignInModalOpen] = useState(false);
   const [savedOverride, setSavedOverride] = useState<boolean | null>(null);
   const { data: business, isPending, isError, refetch } = usePublicBusinessProfile(businessId);
@@ -238,12 +244,25 @@ const BusinessViewProfileContainer = ({ businessId }: { businessId: string }) =>
     setIsQuoteModalOpen(true);
   };
 
-  const signInForQuote = () => {
+  const redirectToLogin = () => {
     const currentQuery = searchParams.toString();
     const callbackUrl = `/services/businesses/${businessId}${
       currentQuery ? `?${currentQuery}` : ""
     }`;
     router.push(`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+  };
+
+  const openReportFlow = () => {
+    setIsReportModalOpen(true);
+  };
+
+  const toggleSaveFlow = () => {
+    if (!token) {
+      setIsSaveSignInModalOpen(true);
+      return;
+    }
+
+    toggleSaveMutation.mutate(isSaved);
   };
 
   const toggleSaveMutation = useMutation({
@@ -398,7 +417,8 @@ const BusinessViewProfileContainer = ({ businessId }: { businessId: string }) =>
           <ContactCard
             business={business}
             onOpenQuoteModal={openQuoteFlow}
-            onToggleSave={() => toggleSaveMutation.mutate(isSaved)}
+            onOpenReportModal={openReportFlow}
+            onToggleSave={toggleSaveFlow}
             isSaving={toggleSaveMutation.isPending}
             isSaved={isSaved}
           />
@@ -411,6 +431,55 @@ const BusinessViewProfileContainer = ({ businessId }: { businessId: string }) =>
         businessName={business.businessName}
         onClose={() => setIsQuoteModalOpen(false)}
       />
+      <ReportBusinessModal
+        ownerId={business.ownerId}
+        businessName={business.businessName}
+        open={isReportModalOpen}
+        onOpenChange={setIsReportModalOpen}
+      />
+      <Dialog
+        open={isSaveSignInModalOpen}
+        onOpenChange={setIsSaveSignInModalOpen}
+      >
+        <DialogContent className="max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-lg overflow-y-auto rounded-xl border-0 p-0 shadow-2xl sm:w-full">
+          <div className="border-b border-[#E8ECF2] bg-[#F7FAFC] px-5 py-5 pr-12 sm:px-6">
+            <DialogHeader>
+              <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-[#EEF0FF] text-[#292D73]">
+                <Bookmark className="h-5 w-5" aria-hidden="true" />
+              </div>
+              <DialogTitle className="text-xl font-extrabold text-[#292D73] sm:text-2xl">
+                Save business
+              </DialogTitle>
+              <DialogDescription className="pt-1 text-xs leading-5 text-[#667085] sm:text-sm">
+                Sign in to save {business.businessName} to your saved
+                businesses.
+              </DialogDescription>
+            </DialogHeader>
+          </div>
+
+          <div className="px-5 py-6 sm:px-6">
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
+              You need to sign in before saving this business.
+            </div>
+            <DialogFooter className="mt-5 gap-2 sm:space-x-0">
+              <button
+                type="button"
+                onClick={() => setIsSaveSignInModalOpen(false)}
+                className="h-10 rounded-md border border-[#D0D5DD] px-5 text-xs font-semibold text-[#475467] transition hover:bg-[#F5F7FA]"
+              >
+                Back
+              </button>
+              <button
+                type="button"
+                onClick={redirectToLogin}
+                className="h-10 rounded-md bg-[#292D73] px-5 text-xs font-bold text-white transition hover:bg-[#20255F]"
+              >
+                Sign in
+              </button>
+            </DialogFooter>
+          </div>
+        </DialogContent>
+      </Dialog>
       <Dialog
         open={isQuoteSignInModalOpen}
         onOpenChange={setIsQuoteSignInModalOpen}
@@ -437,7 +506,7 @@ const BusinessViewProfileContainer = ({ businessId }: { businessId: string }) =>
             </button>
             <button
               type="button"
-              onClick={signInForQuote}
+              onClick={redirectToLogin}
               className="h-10 rounded-[6px] bg-[#292D73] px-4 text-[13px] font-bold text-white transition hover:bg-[#20255F]"
             >
               Sign In
