@@ -1,14 +1,14 @@
 "use client";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import { useServices } from "@/hooks/use-services";
+import { useServiceCategories } from "@/hooks/use-service-categories";
 import { AlertCircle, ArrowUpRight, Layers3 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
 const MostPopularService = () => {
   const { data, isPending, isError, error, refetch, isFetching } =
-    useServices();
+    useServiceCategories();
   const services = data?.data ?? [];
 
   return (
@@ -89,22 +89,29 @@ const MostPopularService = () => {
                 <div className="pointer-events-none absolute -right-10 -top-12 -z-10 h-28 w-28 rounded-full bg-[#4365D0]/[0.06] blur-2xl transition-transform duration-700 group-hover:scale-150" />
 
                 <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl border border-[#4365D0]/10 bg-[#F2F5FF] p-2.5 shadow-[0_6px_16px_rgba(67,101,208,0.10)] transition duration-500 ease-out group-hover:-translate-y-0.5 group-hover:scale-105 group-hover:border-[#4365D0]/20 group-hover:bg-[#E9EEFF]">
-                  <Image
-                    src={service?.logo?.url}
-                    alt={`${service?.title} service`}
-                    width={56}
-                    height={56}
-                    className="h-full w-full object-contain"
-                  />
+                  {service.logo?.url ? (
+                    <Image
+                      src={service.logo.url}
+                      alt={`${service.name} service`}
+                      width={56}
+                      height={56}
+                      className="h-full w-full object-contain"
+                    />
+                  ) : (
+                    <Layers3
+                      className="h-7 w-7 text-[#4365D0]"
+                      aria-hidden="true"
+                    />
+                  )}
                 </div>
                 <h3 className="mt-4 text-[15px] font-extrabold leading-tight text-[#292E78] transition-colors duration-300 group-hover:text-[#4365D0] lg:text-base">
-                  {service.title}
+                  {service.name}
                 </h3>
                 <p className="mt-2 line-clamp-3 min-h-[45px] text-[11px] font-medium leading-[1.45] text-[#667085] md:text-xs">
-                  {service.description}
+                  {service.description ?? "Explore available local services."}
                 </p>
                 <Link
-                  href={`/services/businesses?service=${encodeURIComponent(service.title)}`}
+                  href={`/services/businesses?service=${encodeURIComponent(service.name)}`}
                   className="mt-4 flex h-10 w-full items-center justify-center gap-1.5 rounded-lg border border-[#292E78]/10 bg-[#F6F7FA] text-[11px] font-bold text-[#292E78] transition duration-300 hover:border-[#292E78] hover:bg-[#292E78] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292E78] focus-visible:ring-offset-2"
                 >
                   Get Started

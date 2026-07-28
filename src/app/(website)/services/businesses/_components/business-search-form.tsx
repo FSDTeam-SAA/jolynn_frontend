@@ -31,6 +31,7 @@ type LocationDropdownProps = {
   placeholder: string;
   searchPlaceholder: string;
   emptyMessage: string;
+  clearLabel?: string;
   disabled?: boolean;
   loading?: boolean;
   onChange: (value: string) => void;
@@ -42,6 +43,7 @@ const LocationDropdown = ({
   placeholder,
   searchPlaceholder,
   emptyMessage,
+  clearLabel = "None",
   disabled = false,
   loading = false,
   onChange,
@@ -89,7 +91,24 @@ const LocationDropdown = ({
           />
         </div>
         <div className="max-h-52 overflow-y-auto p-1.5">
-          {filteredOptions.length === 0 ? (
+          <button
+            type="button"
+            onClick={() => {
+              onChange("");
+              setOpen(false);
+              setSearchTerm("");
+            }}
+            className="flex w-full items-start rounded-md px-2.5 py-2 text-left text-xs font-medium leading-5 text-[#344054] transition hover:bg-[#F2F4F7] focus:bg-[#EEF2FF] focus:outline-none"
+          >
+            <Check
+              className={`mr-2 mt-[3px] h-3.5 w-3.5 shrink-0 text-[#4365D0] ${
+                value === "" ? "opacity-100" : "opacity-0"
+              }`}
+            />
+            <span>{clearLabel}</span>
+          </button>
+
+          {filteredOptions.length === 0 && searchTerm.trim() ? (
             <p className="px-3 py-5 text-center text-xs text-[#667085]">
               {emptyMessage}
             </p>
@@ -195,6 +214,7 @@ const BusinessSearchForm = ({
           placeholder={statesQuery.isError ? "States unavailable" : "Select state"}
           searchPlaceholder="Search states..."
           emptyMessage="No state found."
+          clearLabel="None"
           loading={statesQuery.isPending}
           disabled={statesQuery.isError || states.length === 0}
           onChange={(nextState) => {
@@ -217,6 +237,7 @@ const BusinessSearchForm = ({
           }
           searchPlaceholder="Search cities..."
           emptyMessage="No city found."
+          clearLabel="None"
           loading={Boolean(selectedState) && citiesQuery.isPending}
           disabled={
             !selectedState ||

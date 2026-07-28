@@ -10,6 +10,7 @@ import {
   type BusinessOwnerFilters,
   useBusinessOwners,
 } from "@/hooks/use-business-owners";
+import { useServiceCategories } from "@/hooks/use-service-categories";
 import { useServices } from "@/hooks/use-services";
 import {
   useLocationCities,
@@ -43,11 +44,11 @@ type ServicesSearchContainerProps = {
 };
 
 type DraftFilters = {
-  serviceId: string;
+  service: string;
+  category: string;
   minimumRating: string;
   state: string;
   city: string;
-  searchTerm: string;
 };
 
 type ViewMode = "list" | "grid";
@@ -63,6 +64,7 @@ type FilterLocationDropdownProps = {
   placeholder: string;
   searchPlaceholder: string;
   emptyMessage: string;
+  clearLabel?: string;
   disabled?: boolean;
   loading?: boolean;
   onChange: (value: string) => void;
@@ -74,6 +76,7 @@ const FilterLocationDropdown = ({
   placeholder,
   searchPlaceholder,
   emptyMessage,
+  clearLabel = "None",
   disabled = false,
   loading = false,
   onChange,
@@ -121,7 +124,24 @@ const FilterLocationDropdown = ({
           />
         </div>
         <div className="max-h-52 overflow-y-auto p-1.5">
-          {filteredOptions.length === 0 ? (
+          <button
+            type="button"
+            onClick={() => {
+              onChange("");
+              setOpen(false);
+              setSearchTerm("");
+            }}
+            className="flex w-full items-center rounded-md px-2.5 py-2 text-left text-xs font-medium text-[#344054] transition hover:bg-[#F2F4F7] focus:bg-[#EEF2FF] focus:outline-none"
+          >
+            <Check
+              className={`mr-2 h-3.5 w-3.5 shrink-0 text-[#4365D0] ${
+                value === "" ? "opacity-100" : "opacity-0"
+              }`}
+            />
+            {clearLabel}
+          </button>
+
+          {filteredOptions.length === 0 && searchTerm.trim() ? (
             <p className="px-3 py-5 text-center text-xs text-[#667085]">
               {emptyMessage}
             </p>
@@ -191,29 +211,31 @@ const ServicesSearchContainer = ({
 }: ServicesSearchContainerProps) => {
   const servicesQuery = useServices();
   const services = servicesQuery.data?.data ?? [];
+  const categoriesQuery = useServiceCategories();
+  const categories = categoriesQuery.data?.data ?? [];
   const statesQuery = useLocationStates();
   const states = statesQuery.data?.data ?? [];
 
-  const initialServiceId =
+  const initialServiceTitle =
     services.find(
       (service) =>
         service._id === initialService ||
         service.title.toLowerCase() === initialService.toLowerCase(),
-    )?._id || (!initialService ? services[0]?._id || "" : "");
+    )?.title || initialService;
 
   const [draftFilters, setDraftFilters] = useState<DraftFilters>({
-    serviceId: "",
+    service: initialService,
+    category: "",
     minimumRating: "",
     state: initialState,
     city: initialCity,
-    searchTerm: "",
   });
   const [appliedFilters, setAppliedFilters] = useState<DraftFilters>({
-    serviceId: "",
+    service: initialService,
+    category: "",
     minimumRating: "",
     state: initialState,
     city: initialCity,
-    searchTerm: "",
   });
   const [page, setPage] = useState(1);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
@@ -229,11 +251,11 @@ const ServicesSearchContainer = ({
     if (servicesQuery.isPending) return;
 
     const syncedFilters: DraftFilters = {
-      serviceId: initialServiceId,
+      service: initialServiceTitle,
+      category: "",
       minimumRating: "",
       state: initialState,
       city: initialCity,
-      searchTerm: "",
     };
     setDraftFilters(syncedFilters);
     setAppliedFilters(syncedFilters);
@@ -241,22 +263,19 @@ const ServicesSearchContainer = ({
   }, [
     initialCity,
     initialService,
-    initialServiceId,
+    initialServiceTitle,
     initialState,
     servicesQuery.isPending,
   ]);
 
-  const selectedServiceId = appliedFilters.serviceId || initialServiceId;
   const queryFilters: BusinessOwnerFilters = {
-    serviceId: selectedServiceId,
+    service: appliedFilters.service,
     page,
     limit: 10,
-    sortBy: "createdAt",
-    sortOrder: "desc",
+    category: appliedFilters.category,
     minimumRating: appliedFilters.minimumRating,
     state: appliedFilters.state,
     city: appliedFilters.city,
-    searchTerm: appliedFilters.searchTerm,
   };
   const businessQuery = useBusinessOwners(queryFilters);
   const businesses = useMemo(
@@ -272,38 +291,22 @@ const ServicesSearchContainer = ({
 
   const applyFilters = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setAppliedFilters({
-      ...draftFilters,
-      serviceId: draftFilters.serviceId || selectedServiceId,
-    });
+    setAppliedFilters(draftFilters);
     setPage(1);
   };
 
   const resetFilters = () => {
     const reset: DraftFilters = {
-      serviceId: initialServiceId,
+      service: initialServiceTitle,
+      category: "",
       minimumRating: "",
       state: "",
       city: "",
-      searchTerm: "",
     };
     setDraftFilters(reset);
     setAppliedFilters(reset);
     setPage(1);
   };
-
-  const serviceWasNotFound =
-    servicesQuery.isSuccess && Boolean(initialService) && !selectedServiceId;
-  const businessesWereNotFound =
-    businessQuery.isSuccess && businesses.length === 0;
-
-  if (serviceWasNotFound || businessesWereNotFound) {
-    return (
-      <main className="mt-20 min-h-[420px] bg-white md:mt-24">
-        <NoBusinessResults />
-      </main>
-    );
-  }
 
   return (
     <div className="mt-10 md:mt-14 lg:mt-16">
@@ -328,44 +331,48 @@ const ServicesSearchContainer = ({
 
                 <form onSubmit={applyFilters} className="mt-5 space-y-3">
                   <label className="relative block">
-                    <span className="sr-only">Search businesses</span>
+                    <span className="sr-only">Search by service</span>
                     <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8A8F99]" />
                     <input
                       type="search"
-                      value={draftFilters.searchTerm}
+                      value={draftFilters.service}
                       onChange={(event) =>
-                        updateFilter("searchTerm", event.target.value)
+                        updateFilter("service", event.target.value)
                       }
-                      placeholder="Search businesses..."
-                      className="h-11 w-full rounded-[6px] border border-[#A7A7A7] bg-white pl-10 pr-3 text-[12px] font-medium text-[#344054] outline-none placeholder:text-[#8A8F99] focus:ring-2 focus:ring-[#292D73]/20"
+                      placeholder="Search by Keyword..."
+                      autoComplete="off"
+                      className="h-11 w-full rounded-[6px] border border-[#A7A7A7] bg-white pl-10 pr-3 text-[12px] font-medium text-[#344054] outline-none placeholder:text-[#8A8F99] focus:border-[#292D73] focus:ring-2 focus:ring-[#292D73]/15"
                     />
                   </label>
 
-                  {servicesQuery.isPending ? (
+                  {categoriesQuery.isPending ? (
                     <Skeleton className="h-10 w-full" />
-                  ) : servicesQuery.isError ? (
+                  ) : categoriesQuery.isError ? (
                     <button
                       type="button"
-                      onClick={() => servicesQuery.refetch()}
+                      onClick={() => categoriesQuery.refetch()}
                       className="h-10 w-full rounded-[5px] border border-red-200 bg-red-50 px-3 text-left text-[11px] font-semibold text-red-700"
                     >
-                      Services unavailable — retry
+                      Categories unavailable — retry
                     </button>
                   ) : (
                     <label className="relative block">
-                      <span className="sr-only">Service</span>
+                      <span className="sr-only">Category</span>
                       <select
-                        value={draftFilters.serviceId || initialServiceId}
+                        value={draftFilters.category}
                         onChange={(event) =>
-                          updateFilter("serviceId", event.target.value)
+                          updateFilter("category", event.target.value)
                         }
                         className="h-11 w-full appearance-none rounded-[6px] border border-[#A7A7A7] bg-white px-3 pr-9 text-[12px] font-medium text-[#8A8F99] focus:outline-none focus:ring-2 focus:ring-[#292D73]/20"
                       >
-                        {services.map((service) => (
-                          <option key={service._id} value={service._id}>
-                            {service.title}
-                          </option>
-                        ))}
+                        <option value="">Select Category</option>
+                        {categories
+                          .filter((category) => category.isActive)
+                          .map((category) => (
+                            <option key={category._id} value={category.name}>
+                              {category.name}
+                            </option>
+                          ))}
                       </select>
                       <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8A8F99]" />
                     </label>
@@ -378,7 +385,7 @@ const ServicesSearchContainer = ({
                       onChange={(event) =>
                         updateFilter("minimumRating", event.target.value)
                       }
-                    className="h-11 w-full appearance-none rounded-[6px] border border-[#A7A7A7] bg-white px-3 pr-9 text-[12px] font-medium text-[#8A8F99] focus:outline-none focus:ring-2 focus:ring-[#292D73]/20"
+                      className="h-11 w-full appearance-none rounded-[6px] border border-[#A7A7A7] bg-white px-3 pr-9 text-[12px] font-medium text-[#8A8F99] focus:outline-none focus:ring-2 focus:ring-[#292D73]/20"
                     >
                       <option value="">Minimum Rating</option>
                       {[5, 4, 3, 2, 1].map((rating) => (
@@ -387,7 +394,7 @@ const ServicesSearchContainer = ({
                         </option>
                       ))}
                     </select>
-                    <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8A8F99]" />
+                    <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8A8F99]" />
                   </label>
 
                   <FilterLocationDropdown
@@ -398,6 +405,7 @@ const ServicesSearchContainer = ({
                     }
                     searchPlaceholder="Search states..."
                     emptyMessage="No state found."
+                    clearLabel="None"
                     loading={statesQuery.isPending}
                     disabled={statesQuery.isError || states.length === 0}
                     onChange={(nextState) => {
@@ -418,6 +426,7 @@ const ServicesSearchContainer = ({
                     }
                     searchPlaceholder="Search cities..."
                     emptyMessage="No city found."
+                    clearLabel="None"
                     loading={Boolean(selectedDraftState) && citiesQuery.isPending}
                     disabled={
                       !selectedDraftState ||
@@ -429,10 +438,10 @@ const ServicesSearchContainer = ({
 
                   <button
                     type="submit"
-                    disabled={!initialServiceId || servicesQuery.isPending}
-                    className="h-11 w-full rounded-[6px] bg-[#292D73] text-[12px] font-extrabold text-white transition hover:bg-[#20255F] disabled:cursor-not-allowed disabled:opacity-60"
+                    disabled={businessQuery.isFetching}
+                    className="h-11 w-full rounded-[6px] bg-[#292D73] text-[12px] font-extrabold text-white transition hover:bg-[#20255F] disabled:cursor-wait disabled:opacity-60"
                   >
-                    Apply Filters
+                    {businessQuery.isFetching ? "Applying..." : "Apply Filters"}
                   </button>
                   <button
                     type="button"
@@ -528,6 +537,10 @@ const ServicesSearchContainer = ({
                     >
                       Try again
                     </button>
+                  </div>
+                ) : businesses.length === 0 ? (
+                  <div className="rounded-xl border border-[#E3E8EF] bg-white shadow-[0_6px_18px_rgba(30,45,75,0.08)]">
+                    <NoBusinessResults />
                   </div>
                 ) : (
                   <div
