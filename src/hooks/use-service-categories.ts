@@ -5,6 +5,10 @@ export type ServiceCategory = {
   name: string;
   slug: string;
   description?: string;
+  logo?: {
+    url: string;
+    publicId: string;
+  };
   status: "approved";
   isActive: boolean;
   sortOrder: number;
@@ -30,10 +34,9 @@ const fetchServiceCategories = async (): Promise<ServiceCategoriesResponse> => {
   if (!apiUrl) throw new Error("The service category API is not configured.");
 
   const params = new URLSearchParams({
-    limit: "100",
-    page: "1",
     sortBy: "sortOrder",
-    sortOrder: "asc",
+    limit: "50",
+    page: "1",
   });
   const response = await fetch(`${apiUrl}/service-categories/public?${params}`, {
     headers: { Accept: "*/*" },
@@ -49,7 +52,10 @@ const fetchServiceCategories = async (): Promise<ServiceCategoriesResponse> => {
 
 export const useServiceCategories = () =>
   useQuery<ServiceCategoriesResponse>({
-    queryKey: ["public-service-categories"],
+    queryKey: [
+      "public-service-categories",
+      { sortBy: "sortOrder", limit: 50, page: 1 },
+    ],
     queryFn: fetchServiceCategories,
     staleTime: 5 * 60 * 1000,
     retry: 1,

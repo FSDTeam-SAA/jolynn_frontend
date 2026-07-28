@@ -6,9 +6,13 @@ export type BusinessOwner = {
   category: string;
   city: string;
   state: string;
+  country?: string;
   address: string;
   serviceArea: string;
+  profilePicture?: string;
+  bio?: string;
   businessWebsiteUrl: string;
+  phoneNumber?: string;
   rating: number;
   totalReviews: number;
   createdAt: string;
@@ -36,18 +40,13 @@ type BusinessOwnersResponse = {
 };
 
 export type BusinessOwnerFilters = {
-  serviceId: string;
+  service: string;
   page: number;
   limit?: number;
-  sortBy?: string;
-  sortOrder?: "asc" | "desc";
+  category?: string;
   minimumRating?: string;
-  location?: string;
   state?: string;
   city?: string;
-  category?: string;
-  businessName?: string;
-  searchTerm?: string;
 };
 
 const fetchBusinessOwners = async (
@@ -58,20 +57,16 @@ const fetchBusinessOwners = async (
   if (!apiUrl) throw new Error("The business service is not configured.");
 
   const params = new URLSearchParams({
-    sortBy: filters.sortBy || "createdAt",
-    sortOrder: filters.sortOrder || "desc",
     limit: String(filters.limit || 10),
     page: String(filters.page),
   });
 
   const optionalFilters = {
+    service: filters.service,
+    category: filters.category,
     minimumRating: filters.minimumRating,
-    location: filters.location,
     state: filters.state,
     city: filters.city,
-    category: filters.category,
-    businessName: filters.businessName,
-    searchTerm: filters.searchTerm,
   };
 
   Object.entries(optionalFilters).forEach(([key, value]) => {
@@ -79,7 +74,7 @@ const fetchBusinessOwners = async (
   });
 
   const response = await fetch(
-    `${apiUrl}/service/${encodeURIComponent(filters.serviceId)}/business-owners?${params}`,
+    `${apiUrl}/service/search/business-owners?${params}`,
     { headers: { Accept: "*/*" } },
   );
 
@@ -99,7 +94,7 @@ export const useBusinessOwners = (filters: BusinessOwnerFilters) =>
   useQuery<BusinessOwnersResponse>({
     queryKey: ["business-owners", filters],
     queryFn: () => fetchBusinessOwners(filters),
-    enabled: Boolean(filters.serviceId),
+    enabled: Boolean(filters.service.trim()),
     staleTime: 2 * 60 * 1000,
     retry: 1,
   });
