@@ -18,6 +18,7 @@ import {
 } from "@/hooks/use-location-options";
 import {
   AlertCircle,
+  BriefcaseBusiness,
   Check,
   ChevronDown,
   ChevronLeft,
@@ -454,68 +455,54 @@ const ServicesSearchContainer = ({
               </aside>
 
               <div>
-                {!servicesQuery.isPending && !servicesQuery.isError && (
-                  <div className="mb-4 flex min-h-10 flex-wrap items-center justify-between gap-3">
-                    <p className="text-[12px] font-semibold text-[#515E6E] sm:text-[13px]">
-                      {total} business{total === 1 ? "" : "es"} found
-                    </p>
-
-                    <div
-                      className="inline-flex items-center rounded-[7px] border border-[#D8DEE8] bg-[#F5F7FA] p-1"
-                      role="group"
-                      aria-label="Choose results view"
-                    >
-                      <button
-                        type="button"
-                        onClick={() => setViewMode("list")}
-                        aria-pressed={viewMode === "list"}
-                        title="List view"
-                        className={`inline-flex h-8 items-center justify-center gap-1.5 rounded-[5px] px-2.5 text-[11px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73]/40 sm:px-3 ${
-                          viewMode === "list"
-                            ? "bg-[#292D73] text-white shadow-sm"
-                            : "text-[#667085] hover:bg-white hover:text-[#292D73]"
-                        }`}
-                      >
-                        <List className="h-4 w-4" aria-hidden="true" />
-                        <span className="hidden sm:inline">List</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setViewMode("grid")}
-                        aria-pressed={viewMode === "grid"}
-                        title="Grid view"
-                        className={`inline-flex h-8 items-center justify-center gap-1.5 rounded-[5px] px-2.5 text-[11px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73]/40 sm:px-3 ${
-                          viewMode === "grid"
-                            ? "bg-[#292D73] text-white shadow-sm"
-                            : "text-[#667085] hover:bg-white hover:text-[#292D73]"
-                        }`}
-                      >
-                        <LayoutGrid className="h-4 w-4" aria-hidden="true" />
-                        <span className="hidden sm:inline">Grid</span>
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {servicesQuery.isPending || businessQuery.isPending ? (
-                  <BusinessCardsSkeleton />
-                ) : servicesQuery.isError ? (
-                  <div
-                    role="alert"
-                    className="flex flex-col items-center rounded-[8px] border border-red-200 bg-red-50 px-6 py-12 text-center"
+                <div className="mb-4 flex min-h-10 flex-wrap items-center justify-between gap-3">
+                  <p
+                    className="text-[12px] font-semibold text-[#515E6E] sm:text-[13px]"
+                    aria-live="polite"
                   >
-                    <AlertCircle className="h-9 w-9 text-red-500" />
-                    <h2 className="mt-3 font-bold text-red-900">
-                      Unable to load services
-                    </h2>
+                    {businessQuery.isPending
+                      ? "Finding businesses..."
+                      : `${total} business${total === 1 ? "" : "es"} found`}
+                  </p>
+
+                  <div
+                    className="inline-flex items-center rounded-[7px] border border-[#D8DEE8] bg-[#F5F7FA] p-1"
+                    role="group"
+                    aria-label="Choose results view"
+                  >
                     <button
                       type="button"
-                      onClick={() => servicesQuery.refetch()}
-                      className="mt-4 rounded-[5px] bg-[#292D73] px-5 py-2.5 text-xs font-bold text-white"
+                      onClick={() => setViewMode("list")}
+                      aria-pressed={viewMode === "list"}
+                      title="List view"
+                      className={`inline-flex h-8 items-center justify-center gap-1.5 rounded-[5px] px-2.5 text-[11px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73]/40 sm:px-3 ${
+                        viewMode === "list"
+                          ? "bg-[#292D73] text-white shadow-sm"
+                          : "text-[#667085] hover:bg-white hover:text-[#292D73]"
+                      }`}
                     >
-                      Try again
+                      <List className="h-4 w-4" aria-hidden="true" />
+                      <span className="hidden sm:inline">List</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setViewMode("grid")}
+                      aria-pressed={viewMode === "grid"}
+                      title="Grid view"
+                      className={`inline-flex h-8 items-center justify-center gap-1.5 rounded-[5px] px-2.5 text-[11px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73]/40 sm:px-3 ${
+                        viewMode === "grid"
+                          ? "bg-[#292D73] text-white shadow-sm"
+                          : "text-[#667085] hover:bg-white hover:text-[#292D73]"
+                      }`}
+                    >
+                      <LayoutGrid className="h-4 w-4" aria-hidden="true" />
+                      <span className="hidden sm:inline">Grid</span>
                     </button>
                   </div>
+                </div>
+
+                {businessQuery.isPending ? (
+                  <BusinessCardsSkeleton />
                 ) : businessQuery.isError ? (
                   <div
                     role="alert"
@@ -549,6 +536,21 @@ const ServicesSearchContainer = ({
                     }`}
                   >
                     {businesses.map((business) => {
+                      const serviceTitle =
+                        business.service?.title ||
+                        business.category ||
+                        "Local service";
+                      const serviceLogoUrl = business.service?.logo?.url;
+                      const rating =
+                        typeof business.rating === "number"
+                          ? business.rating
+                          : 0;
+                      const totalReviews = business.totalReviews ?? 0;
+                      const serviceDescription =
+                        business.service?.description ||
+                        business.bio ||
+                        "Contact this business to learn more about its services.";
+
                       if (viewMode === "list") {
                         return (
                           <article
@@ -560,13 +562,17 @@ const ServicesSearchContainer = ({
                             <div className="flex flex-col gap-4 p-4 pl-5 sm:pl-6 lg:flex-row lg:items-center lg:gap-5">
                               <div className="flex min-w-0 flex-1 items-center gap-3.5 sm:gap-4">
                                 <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-white bg-[linear-gradient(145deg,#F7F9FF_0%,#E9F2F4_100%)] shadow-[0_7px_18px_rgba(41,46,120,0.13)] ring-1 ring-[#DDE5F0] transition duration-300 group-hover:-translate-y-0.5 group-hover:shadow-[0_10px_24px_rgba(41,46,120,0.18)] sm:h-[72px] sm:w-[72px]">
-                                  <Image
-                                    src={business.service.logo.url}
-                                    alt={`${business.service.title} logo`}
-                                    fill
-                                    sizes="(min-width: 640px) 72px, 56px"
-                                    className="object-contain p-2 transition duration-500 ease-out group-hover:scale-105 sm:p-2.5"
-                                  />
+                                  {serviceLogoUrl ? (
+                                    <Image
+                                      src={serviceLogoUrl}
+                                      alt={`${serviceTitle} logo`}
+                                      fill
+                                      sizes="(min-width: 640px) 72px, 56px"
+                                      className="object-contain p-2 transition duration-500 ease-out group-hover:scale-105 sm:p-2.5"
+                                    />
+                                  ) : (
+                                    <BriefcaseBusiness className="absolute inset-0 m-auto h-6 w-6 text-[#98A2B3]" />
+                                  )}
                                 </div>
 
                                 <div className="min-w-0 flex-1">
@@ -575,18 +581,18 @@ const ServicesSearchContainer = ({
                                   </h3>
                                   <div className="mt-1.5 flex flex-wrap items-center gap-2">
                                     <span className="inline-flex rounded-full bg-[#E6F3F2] px-2.5 py-1 text-[10px] font-semibold leading-none text-[#426078]">
-                                      {business.category || business.service.title}
+                                      {business.category || serviceTitle}
                                     </span>
                                     <div
                                       className="flex items-center gap-1"
-                                      aria-label={`${business.rating} out of 5 stars`}
+                                      aria-label={`${rating} out of 5 stars`}
                                     >
                                       <Star className="h-3.5 w-3.5 fill-[#FFB800] text-[#FFB800]" />
                                       <span className="text-[11px] font-bold text-[#292E78]">
-                                        {business.rating.toFixed(1)}
+                                        {rating.toFixed(1)}
                                       </span>
                                       <span className="text-[10px] text-[#667085]">
-                                        ({business.totalReviews})
+                                        ({totalReviews})
                                       </span>
                                     </div>
                                   </div>
@@ -641,20 +647,24 @@ const ServicesSearchContainer = ({
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex min-w-0 items-start gap-3">
                             <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl border border-white bg-[linear-gradient(145deg,#F7F9FF_0%,#E9F2F4_100%)] shadow-[0_6px_16px_rgba(41,46,120,0.12)] ring-1 ring-[#DDE5F0] transition duration-300 group-hover:-translate-y-0.5 group-hover:shadow-[0_9px_22px_rgba(41,46,120,0.17)]">
-                              <Image
-                                src={business.service.logo.url}
-                                alt={`${business.service.title} logo`}
-                                fill
-                                sizes="48px"
-                                className="object-contain p-1.5 transition duration-500 ease-out group-hover:scale-105"
-                              />
+                              {serviceLogoUrl ? (
+                                <Image
+                                  src={serviceLogoUrl}
+                                  alt={`${serviceTitle} logo`}
+                                  fill
+                                  sizes="48px"
+                                  className="object-contain p-1.5 transition duration-500 ease-out group-hover:scale-105"
+                                />
+                              ) : (
+                                <BriefcaseBusiness className="absolute inset-0 m-auto h-5 w-5 text-[#98A2B3]" />
+                              )}
                             </div>
                             <div className="min-w-0">
                               <h3 className="line-clamp-1 text-[15px] font-extrabold leading-tight text-[#292D73]">
                                 {business.businessName}
                               </h3>
                               <span className="mt-1 inline-flex rounded-[3px] bg-[#DFEEEE] px-2 py-0.5 text-[11px] font-semibold leading-none text-[#426078]">
-                                {business.category || business.service.title}
+                                {business.category || serviceTitle}
                               </span>
                             </div>
                           </div>
@@ -670,13 +680,13 @@ const ServicesSearchContainer = ({
                           <div className="mt-3 flex flex-wrap items-center gap-1.5">
                             <div
                               className="flex gap-px"
-                              aria-label={`${business.rating} out of 5 stars`}
+                              aria-label={`${rating} out of 5 stars`}
                             >
                               {Array.from({ length: 5 }).map((_, index) => (
                                 <Star
                                   key={index}
                                   className={`h-[12px] w-[12px] ${
-                                    index < Math.round(business.rating)
+                                    index < Math.round(rating)
                                       ? "fill-[#FFB800] text-[#FFB800]"
                                       : "text-[#D9DEE7]"
                                   }`}
@@ -684,10 +694,10 @@ const ServicesSearchContainer = ({
                               ))}
                             </div>
                             <span className="text-xs font-bold text-[#292E78]">
-                              {business.rating.toFixed(1)}
+                              {rating.toFixed(1)}
                             </span>
                             <span className="text-xs text-[#667085]">
-                              ({business.totalReviews} reviews)
+                              ({totalReviews} reviews)
                             </span>
                           </div>
 
@@ -700,7 +710,7 @@ const ServicesSearchContainer = ({
                             </span>
                           </div>
                           <p className="mt-1.5 line-clamp-2 min-h-[32px] text-xs leading-[1.4] text-[#667085]">
-                            {business.service.description}
+                            {serviceDescription}
                           </p>
                         </div>
 

@@ -3,18 +3,10 @@ export type AccountSection =
   | "change-password"
   | "save-services"
   | "request-quote"
-  | "help-wanted";
+  | "help-wanted"
+  | "my-reviews";
 
-export const accountUser = {
-  name: "Olivia Rhye",
-  email: "bessieedwards@gmail.com",
-  avatar: "/assets/images/review1.png",
-  phone: "+1 (555) 123-4567",
-  location: "1234 Oak Avenue, San Francisco, CA 94102A",
-  since: "14 August, 2025",
-};
-
-export const accountNavItems = [
+  export const accountNavItems = [
   {
     id: "profile",
     label: "Profile",
@@ -32,7 +24,7 @@ export const accountNavItems = [
   },
   {
     id: "request-quote",
-    label: "Request Quote",
+    label: "My Quotes",
     href: "/account/request-quote",
   },
   {
@@ -40,100 +32,120 @@ export const accountNavItems = [
     label: "Help Wanted",
     href: "/account/help-wanted",
   },
+   {
+    id: "my-reviews",
+    label: "My Reviews",
+    href: "/account/my-reviews",
+  },
 ] as const;
 
-export const savedBusinesses = [
-  {
-    id: 1,
-    name: "Anderson Electric Co.",
-    category: "Electricians",
-    rating: 4.9,
-    reviews: 127,
-    location: "Austin, TX",
-    description:
-      "Licensed master electricians serving the Austin metro area for over 15 years. We handle residential and commercial projects...",
-    accentColor: "#4D2077",
-    profileUrl: "/services/businesses/1",
-    reportUrl: "/report",
-    whatsappUrl: "#",
-    reviewUrl: "#",
-  },
-  {
-    id: 2,
-    name: "Rivera Plumbing & Drain",
-    category: "Plumbers",
-    rating: 4.8,
-    reviews: 127,
-    location: "Denver, CO",
-    description:
-      "Family-owned plumbing company serving Denver since 2009. We specialize in drain cleaning, water heater installation...",
-    accentColor: "#176F39",
-    profileUrl: "/services/businesses/2",
-    reportUrl: "/report",
-    whatsappUrl: "#",
-    reviewUrl: "#",
-  },
-  {
-    id: 3,
-    name: "Anderson Electric Co.",
-    category: "Electricians",
-    rating: 4.9,
-    reviews: 127,
-    location: "Austin, TX",
-    description:
-      "Licensed master electricians serving the Austin metro area for over 15 years. We handle residential and commercial projects...",
-    accentColor: "#4D2077",
-    profileUrl: "/services/businesses/3",
-    reportUrl: "/report",
-    whatsappUrl: "#",
-    reviewUrl: "#",
-  },
-  {
-    id: 4,
-    name: "Rivera Plumbing & Drain",
-    category: "Plumbers",
-    rating: 4.8,
-    reviews: 127,
-    location: "Denver, CO",
-    description:
-      "Family-owned plumbing company serving Denver since 2009. We specialize in drain cleaning, water heater installation...",
-    accentColor: "#176F39",
-    profileUrl: "/services/businesses/4",
-    reportUrl: "/report",
-    whatsappUrl: "#",
-    reviewUrl: "#",
-  },
-  {
-    id: 5,
-    name: "Anderson Electric Co.",
-    category: "Electricians",
-    rating: 4.9,
-    reviews: 127,
-    location: "Austin, TX",
-    description:
-      "Licensed master electricians serving the Austin metro area for over 15 years. We handle residential and commercial projects...",
-    accentColor: "#4D2077",
-    profileUrl: "/services/businesses/5",
-    reportUrl: "/report",
-    whatsappUrl: "#",
-    reviewUrl: "#",
-  },
-  {
-    id: 6,
-    name: "Rivera Plumbing & Drain",
-    category: "Plumbers",
-    rating: 4.8,
-    reviews: 127,
-    location: "Denver, CO",
-    description:
-      "Family-owned plumbing company serving Denver since 2009. We specialize in drain cleaning, water heater installation...",
-    accentColor: "#176F39",
-    profileUrl: "/services/businesses/6",
-    reportUrl: "/report",
-    whatsappUrl: "#",
-    reviewUrl: "#",
-  },
-];
+
+
+
+
+// export const accountUser = {
+//   name: "Olivia Rhye",
+//   email: "bessieedwards@gmail.com",
+//   avatar: "/assets/images/review1.png",
+//   phone: "+1 (555) 123-4567",
+//   location: "1234 Oak Avenue, San Francisco, CA 94102A",
+//   since: "14 August, 2025",
+// };
+
+
+
+// export const savedBusinesses = [
+//   {
+//     id: 1,
+//     name: "Anderson Electric Co.",
+//     category: "Electricians",
+//     rating: 4.9,
+//     reviews: 127,
+//     location: "Austin, TX",
+//     description:
+//       "Licensed master electricians serving the Austin metro area for over 15 years. We handle residential and commercial projects...",
+//     accentColor: "#4D2077",
+//     profileUrl: "/services/businesses/1",
+//     reportUrl: "/report",
+//     whatsappUrl: "#",
+//     reviewUrl: "#",
+//   },
+//   {
+//     id: 2,
+//     name: "Rivera Plumbing & Drain",
+//     category: "Plumbers",
+//     rating: 4.8,
+//     reviews: 127,
+//     location: "Denver, CO",
+//     description:
+//       "Family-owned plumbing company serving Denver since 2009. We specialize in drain cleaning, water heater installation...",
+//     accentColor: "#176F39",
+//     profileUrl: "/services/businesses/2",
+//     reportUrl: "/report",
+//     whatsappUrl: "#",
+//     reviewUrl: "#",
+//   },
+//   {
+//     id: 3,
+//     name: "Anderson Electric Co.",
+//     category: "Electricians",
+//     rating: 4.9,
+//     reviews: 127,
+//     location: "Austin, TX",
+//     description:
+//       "Licensed master electricians serving the Austin metro area for over 15 years. We handle residential and commercial projects...",
+//     accentColor: "#4D2077",
+//     profileUrl: "/services/businesses/3",
+//     reportUrl: "/report",
+//     whatsappUrl: "#",
+//     reviewUrl: "#",
+//   },
+//   {
+//     id: 4,
+//     name: "Rivera Plumbing & Drain",
+//     category: "Plumbers",
+//     rating: 4.8,
+//     reviews: 127,
+//     location: "Denver, CO",
+//     description:
+//       "Family-owned plumbing company serving Denver since 2009. We specialize in drain cleaning, water heater installation...",
+//     accentColor: "#176F39",
+//     profileUrl: "/services/businesses/4",
+//     reportUrl: "/report",
+//     whatsappUrl: "#",
+//     reviewUrl: "#",
+//   },
+//   {
+//     id: 5,
+//     name: "Anderson Electric Co.",
+//     category: "Electricians",
+//     rating: 4.9,
+//     reviews: 127,
+//     location: "Austin, TX",
+//     description:
+//       "Licensed master electricians serving the Austin metro area for over 15 years. We handle residential and commercial projects...",
+//     accentColor: "#4D2077",
+//     profileUrl: "/services/businesses/5",
+//     reportUrl: "/report",
+//     whatsappUrl: "#",
+//     reviewUrl: "#",
+//   },
+//   {
+//     id: 6,
+//     name: "Rivera Plumbing & Drain",
+//     category: "Plumbers",
+//     rating: 4.8,
+//     reviews: 127,
+//     location: "Denver, CO",
+//     description:
+//       "Family-owned plumbing company serving Denver since 2009. We specialize in drain cleaning, water heater installation...",
+//     accentColor: "#176F39",
+//     profileUrl: "/services/businesses/6",
+//     reportUrl: "/report",
+//     whatsappUrl: "#",
+//     reviewUrl: "#",
+//   },
+// ];
 
 
 

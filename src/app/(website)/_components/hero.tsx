@@ -7,7 +7,13 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronsUpDown,
+  Clock3,
+  Flag,
+  Mail,
+  MapPin,
+  MessageCircle,
   Search,
+  Star,
   UsersRound,
 } from "lucide-react";
 import {
@@ -36,6 +42,8 @@ type HeroSlide = {
   description: string;
   image: string;
   imageAlt: string;
+  backgroundClass: string;
+  overlayClass: string;
   action?: {
     href: string;
     label: string;
@@ -55,6 +63,9 @@ const heroSlides: HeroSlide[] = [
       "Search by service and location, discover nearby businesses, and start your next home project without the guesswork.",
     image: "/assets/images/caro_1.png",
     imageAlt: "A trusted local home-service professional outside a modern home",
+    backgroundClass: "bg-[#E8EEF4]",
+    overlayClass:
+      "bg-[linear-gradient(90deg,rgba(245,248,251,0.98)_0%,rgba(245,248,251,0.94)_34%,rgba(232,238,244,0.62)_57%,rgba(232,238,244,0.12)_78%,transparent_100%)]",
   },
   {
     id: 2,
@@ -67,6 +78,9 @@ const heroSlides: HeroSlide[] = [
       "Compare trusted local professionals, check the right services, and connect with the team that fits your project needs.",
     image: "/assets/images/caro_2.png",
     imageAlt: "Local business owners talking on a neighborhood main street",
+    backgroundClass: "bg-[#F4EEE5]",
+    overlayClass:
+      "bg-[linear-gradient(90deg,rgba(255,250,242,0.98)_0%,rgba(255,248,238,0.94)_35%,rgba(244,238,229,0.66)_58%,rgba(244,238,229,0.15)_79%,transparent_100%)]",
     action: {
       href: "/add-your-business",
       label: "Grow your business with SideQuote",
@@ -84,6 +98,9 @@ const heroSlides: HeroSlide[] = [
       "Explore help-wanted posts from local businesses and connect with opportunities that match your skills and experience.",
     image: "/assets/images/caro_3.png",
     imageAlt: "A local employer welcoming a skilled job candidate",
+    backgroundClass: "bg-[#E4F1EF]",
+    overlayClass:
+      "bg-[linear-gradient(90deg,rgba(244,251,250,0.98)_0%,rgba(239,249,247,0.94)_35%,rgba(228,241,239,0.68)_58%,rgba(228,241,239,0.16)_79%,transparent_100%)]",
     action: {
       href: "/job-posts",
       label: "View Help Wanted",
@@ -91,6 +108,143 @@ const heroSlides: HeroSlide[] = [
     },
   },
 ];
+
+const featuredBusinesses = [
+  { name: "Yelo Het", category: "Pet Services", rating: "5.0", location: "Austin, TX" },
+  { name: "BrightFix Electric", category: "Electricians", rating: "4.9", location: "Dallas, TX" },
+  { name: "Green Leaf Lawn Care", category: "Landscaping", rating: "4.8", location: "Tampa, FL" },
+  { name: "ClearFlow Plumbing", category: "Plumbing", rating: "4.9", location: "Orlando, FL" },
+];
+
+const featuredJobs = [
+  { user: "@joyful", title: "Looking for kitchen service", location: "Austin, TX", time: "Today" },
+  { user: "@maria_home", title: "Need an experienced house painter", location: "Dallas, TX", time: "1 day ago" },
+  { user: "@northside", title: "Weekend landscaping help needed", location: "Tampa, FL", time: "2 days ago" },
+  { user: "@alexbuilds", title: "Licensed electrician for renovation", location: "Orlando, FL", time: "3 days ago" },
+];
+
+const SlidePreviewCarousel = ({ slideId }: { slideId: number }) => {
+  const [previewIndex, setPreviewIndex] = useState(0);
+  const items = slideId === 2 ? featuredBusinesses : featuredJobs;
+
+  useEffect(() => {
+    const previewTimer = window.setInterval(() => {
+      setPreviewIndex((current) => (current + 1) % items.length);
+    }, 1_400);
+
+    return () => window.clearInterval(previewTimer);
+  }, [items.length]);
+
+  if (slideId === 2) {
+    const business = featuredBusinesses[previewIndex];
+
+    return (
+      <div
+        className="relative mt-5 h-[78px] max-w-[760px] overflow-hidden"
+        aria-label="Featured local businesses"
+        aria-live="off"
+      >
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.article
+            key={business.name}
+            initial={{ opacity: 0, y: 55 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -55 }}
+            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+            className="absolute inset-x-0 top-0 flex min-h-[70px] items-center gap-3 rounded-xl border border-[#DCE3EC] border-l-[3px] border-l-[#0082D7] bg-white/95 p-3 shadow-[0_8px_24px_rgba(41,45,115,0.12)] backdrop-blur"
+          >
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[#EEF2FF] text-sm font-extrabold text-[#292D73] ring-1 ring-[#DCE3EC]">
+              {business.name.charAt(0)}
+            </div>
+            <div className="min-w-0 flex-1">
+              <h3 className="truncate text-xs font-extrabold text-[#292D73]">
+                {business.name}
+              </h3>
+              <div className="mt-1 flex flex-wrap items-center gap-2">
+                <span className="rounded-full bg-[#E6F3F2] px-2 py-0.5 text-[9px] font-semibold text-[#426078]">
+                  {business.category}
+                </span>
+                <span className="flex items-center gap-1 text-[9px] font-bold text-[#475467]">
+                  <Star className="h-3 w-3 fill-[#FFB800] text-[#FFB800]" />
+                  {business.rating}
+                </span>
+                <span className="hidden items-center gap-1 text-[9px] text-[#667085] sm:flex">
+                  <MapPin className="h-3 w-3" />
+                  {business.location}
+                </span>
+              </div>
+            </div>
+            <div className="hidden shrink-0 items-center gap-1.5 md:flex">
+              <span className="rounded-md bg-[#292D73] px-3 py-2 text-[9px] font-bold text-white">
+                View Profile
+              </span>
+              <span className="rounded-md border border-[#F2C36B] bg-[#FFF8E8] px-3 py-2 text-[9px] font-bold text-[#D97706]">
+                Review
+              </span>
+              <span className="rounded-md bg-[#A7A7A7] px-3 py-2 text-[9px] font-bold text-white">
+                Report
+              </span>
+              <span className="flex h-8 w-8 items-center justify-center rounded-md border border-[#292D73] text-[#292D73]">
+                <MessageCircle className="h-3.5 w-3.5" />
+              </span>
+            </div>
+          </motion.article>
+        </AnimatePresence>
+      </div>
+    );
+  }
+
+  const job = featuredJobs[previewIndex];
+
+  return (
+    <div
+      className="relative mt-5 h-[78px] max-w-[760px] overflow-hidden"
+      aria-label="Featured help wanted posts"
+      aria-live="off"
+    >
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.article
+          key={`${job.user}-${job.title}`}
+          initial={{ opacity: 0, y: 55 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -55 }}
+          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+          className="absolute inset-x-0 top-0 flex min-h-[70px] items-center gap-3 rounded-xl border border-[#DCE3EC] border-l-[3px] border-l-[#4365D0] bg-white/95 p-3 shadow-[0_8px_24px_rgba(41,45,115,0.12)] backdrop-blur"
+        >
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#292D73] text-[10px] font-extrabold uppercase text-white">
+            {job.user.charAt(1)}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[9px] font-bold text-[#4365D0]">{job.user}</p>
+            <h3 className="truncate text-[11px] font-extrabold text-[#292D73]">
+              {job.title}
+            </h3>
+            <div className="mt-1 hidden items-center gap-3 text-[9px] text-[#667085] sm:flex">
+              <span className="flex items-center gap-1">
+                <MapPin className="h-3 w-3" />
+                {job.location}
+              </span>
+              <span className="flex items-center gap-1">
+                <Clock3 className="h-3 w-3" />
+                {job.time}
+              </span>
+            </div>
+          </div>
+          <div className="hidden shrink-0 items-center gap-1.5 sm:flex">
+            <span className="flex items-center gap-1 rounded-md border border-[#D0D5DD] bg-white px-3 py-2 text-[9px] font-bold text-[#667085]">
+              <Flag className="h-3 w-3" />
+              Report
+            </span>
+            <span className="flex items-center gap-1 rounded-md bg-[#292D73] px-3 py-2 text-[9px] font-bold text-white">
+              <Mail className="h-3 w-3" />
+              Respond by email
+            </span>
+          </div>
+        </motion.article>
+      </AnimatePresence>
+    </div>
+  );
+};
 
 type HeroLocationDropdownProps = {
   value: string;
@@ -225,9 +379,11 @@ const Hero = () => {
   const [service, setService] = useState("");
   const [stateName, setStateName] = useState("");
   const [city, setCity] = useState("");
-  const [searchError, setSearchError] = useState("");
   const statesQuery = useLocationStates();
-  const states = statesQuery.data?.data ?? [];
+  const states = (statesQuery.data?.data ?? []).filter(
+    (state) =>
+      state.name.trim().toLowerCase() !== "armed forces europe",
+  );
   const selectedState = states.find((state) => state.name === stateName);
   const citiesQuery = useLocationCities(selectedState);
   const cities = citiesQuery.data?.data.cities ?? [];
@@ -276,17 +432,12 @@ const Hero = () => {
   const handleSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!service.trim()) {
-      setSearchError("Please enter the service you need.");
-      return;
-    }
-
     const params = new URLSearchParams();
-    params.set("service", service.trim());
+    if (service.trim()) params.set("service", service.trim());
     if (stateName) params.set("state", stateName);
     if (city) params.set("city", city);
-    setSearchError("");
-    router.push(`/services/businesses?${params}`);
+    const query = params.toString();
+    router.push(query ? `/services/businesses?${query}` : "/services/businesses");
   };
 
   const horizontalOffset = reduceMotion ? 0 : direction * -72;
@@ -294,7 +445,7 @@ const Hero = () => {
 
   return (
     <section
-      className="relative isolate min-h-[640px] overflow-hidden bg-[#e8eef4] sm:min-h-[680px] lg:min-h-[720px]"
+      className={`relative isolate min-h-[640px] overflow-hidden transition-colors duration-700 sm:min-h-[680px] lg:min-h-[720px] ${activeSlide.backgroundClass}`}
       aria-roledescription="carousel"
       aria-label="Sidequote services"
       onMouseEnter={() => setIsPaused(true)}
@@ -322,12 +473,14 @@ const Hero = () => {
             fill
             priority={activeIndex === 0}
             sizes="100vw"
-            className="object-cover object-[62%_28%] sm:object-[center_28%]"
+            className="object-cover object-[62%_28%] opacity-65 sm:object-[center_28%]"
           />
         </motion.div>
       </AnimatePresence>
 
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(245,248,251,0.98)_0%,rgba(245,248,251,0.94)_34%,rgba(245,248,251,0.55)_53%,rgba(245,248,251,0.08)_74%,transparent_100%)]" />
+      <div
+        className={`pointer-events-none absolute inset-0 transition-colors duration-700 ${activeSlide.overlayClass}`}
+      />
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#eef3f7]/50 via-transparent to-white/10" />
 
       <div className="container relative z-10 flex min-h-[640px] items-center px-5 py-16 sm:min-h-[680px] sm:px-10 lg:min-h-[720px] lg:px-16">
@@ -389,13 +542,8 @@ const Hero = () => {
                       <input
                         type="search"
                         value={service}
-                        onChange={(event) => {
-                          setService(event.target.value);
-                          if (searchError) setSearchError("");
-                        }}
+                        onChange={(event) => setService(event.target.value)}
                         placeholder="What service do you need?"
-                        aria-invalid={Boolean(searchError)}
-                        aria-describedby={searchError ? "hero-search-error" : undefined}
                         className="h-7 w-full bg-transparent text-[13px] font-medium text-[#292D73] outline-none placeholder:text-[11px] placeholder:text-[#667481]"
                       />
                     </label>
@@ -455,22 +603,20 @@ const Hero = () => {
                   </form>
                 ) : (
                   activeSlide.action && ActiveActionIcon && (
-                    <Link
-                      href={activeSlide.action.href}
-                      className="mt-7 inline-flex h-12 items-center justify-center gap-2.5 rounded-xl bg-[#292D73] px-6 text-sm font-bold text-white shadow-[0_12px_28px_rgba(41,45,115,0.24)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#1f2464] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4365D0] focus-visible:ring-offset-2"
-                    >
-                      <ActiveActionIcon className="h-5 w-5" />
-                      {activeSlide.action.label}
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
+                    <>
+                      <Link
+                        href={activeSlide.action.href}
+                        className="mt-7 inline-flex h-12 items-center justify-center gap-2.5 rounded-xl bg-[#292D73] px-6 text-sm font-bold text-white shadow-[0_12px_28px_rgba(41,45,115,0.24)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#1f2464] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4365D0] focus-visible:ring-offset-2"
+                      >
+                        <ActiveActionIcon className="h-5 w-5" />
+                        {activeSlide.action.label}
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
+                      <SlidePreviewCarousel slideId={activeSlide.id} />
+                    </>
                   )
                 )}
 
-                {searchError && activeSlide.id === 1 && (
-                  <p id="hero-search-error" role="alert" className="mt-2 text-xs font-semibold text-red-600">
-                    {searchError}
-                  </p>
-                )}
                 {activeSlide.id === 1 && statesQuery.isError && (
                   <button
                     type="button"

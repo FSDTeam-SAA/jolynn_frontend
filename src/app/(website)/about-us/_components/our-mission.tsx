@@ -10,19 +10,58 @@ const OurMission = () => {
               Our Mission
             </h2>
 
-            <div className="mt-5 space-y-4 text-sm md:text-base font-medium leading-[1.45] text-[#667481] lg:max-w-[520px]">
+            <div className="mt-5 text-sm font-medium leading-[1.45] text-[#667481] md:text-base lg:max-w-[540px]">
               <p>
-            To be the “Google” for blue collar postings and business directory for just about anything that people are looking for in terms of getting help in areas needing subject matter experts to amateur assistance such as errand running, to customer cabinets. The site is not intended for corporations or established businesses that already have marketing and advertising solutions and this platform will not advertise corporations or large scale enterprises that undercut wages and discriminate against the average worker. 
+                <strong className="font-extrabold text-[#292E78]">
+                  SideQuote is a decentralized B2B network designed to capture
+                  the underserved market of independent contractors,
+                  micro-enterprises, and micro-labor.
+                </strong>{" "}
+                We are positioning our platform to become the premier search
+                engine and service procurement directory for specialized
+                non-corporate labor. By explicitly excluding enterprise
+                competitors, we insulate and protect a highly loyal, agile
+                ecosystem of local subject matter experts and independent
+                workers.
               </p>
 
-              <p>
-                The site works on community outreach which means that donations, sweat equity and bartering are encouraged to keep the platform unbiased in labor from corporate undertaking. If you want to help SideQuote grow please email us at info@sidequote.com with the word Mission in the subject line.
-              </p>
+              <div className="my-6 h-px bg-[#D0D5DD]" aria-hidden="true" />
+
+              <h3 className="text-xl font-bold text-[#292E78]">
+                Investment Highlights
+              </h3>
+              <ul className="mt-4 list-disc space-y-2 pl-5 text-left marker:text-[#292E78]">
+                <li>
+                  <strong className="font-extrabold text-[#344054]">
+                    Unrivaled Market Capture:
+                  </strong>{" "}
+                  Captures the fragmented gig and micro-labor economy.
+                </li>
+                <li>
+                  <strong className="font-extrabold text-[#344054]">
+                    Defensible Competitive Moat:
+                  </strong>{" "}
+                  Excludes corporate advertising to eliminate wage
+                  undercutting.
+                </li>
+                <li>
+                  <strong className="font-extrabold text-[#344054]">
+                    High Ecosystem Retention:
+                  </strong>{" "}
+                  Fosters long-term loyalty via community-centric incentives.
+                </li>
+                <li>
+                  <strong className="font-extrabold text-[#344054]">
+                    Alternative Value Exchange:
+                  </strong>{" "}
+                  Integrates sweat equity and bartering protocols.
+                </li>
+              </ul>
             </div>
           </div>
 
           <div className="mx-auto w-full max-w-[700px]">
-            <div className="relative aspect-[7/5] overflow-hidden rounded-[16px]">
+            <div className="relative aspect-[4/3] overflow-hidden rounded-[16px] sm:aspect-[6/5] lg:aspect-auto lg:h-[560px]">
               <Image
                 src="/assets/images/our-mission.png"
                 alt="Home service professional helping a customer"

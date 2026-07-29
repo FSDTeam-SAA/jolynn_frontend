@@ -17,11 +17,17 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Info } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useMutation } from "@tanstack/react-query";
 
 const formSchema = z
@@ -57,7 +63,19 @@ const formSchema = z
     password: z
       .string()
       .min(1, { message: "Please create a password." })
-      .min(6, { message: "Your password must contain at least 6 characters." }),
+      .min(8, { message: "Your password must contain at least 8 characters." })
+      .regex(/[A-Z]/, {
+        message: "Your password must contain at least one uppercase letter.",
+      })
+      .regex(/[a-z]/, {
+        message: "Your password must contain at least one lowercase letter.",
+      })
+      .regex(/[0-9]/, {
+        message: "Your password must contain at least one number.",
+      })
+      .regex(/[^A-Za-z0-9]/, {
+        message: "Your password must contain at least one special character.",
+      }),
     confirmPassword: z
       .string()
       .min(1, { message: "Please enter your password again to confirm it." }),
@@ -71,6 +89,36 @@ const formSchema = z
   });
 
 type FormValues = z.infer<typeof formSchema>;
+
+const PasswordInfoTooltip = () => (
+  <TooltipProvider delayDuration={150}>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          type="button"
+          aria-label="Show password requirements"
+          className="inline-flex rounded-full text-[#4365D0] outline-none transition-colors hover:text-[#2949b2] focus-visible:ring-2 focus-visible:ring-[#4365D0] focus-visible:ring-offset-2"
+        >
+          <Info size={16} aria-hidden="true" />
+        </button>
+      </TooltipTrigger>
+      <TooltipContent
+        side="top"
+        align="start"
+        className="max-w-[280px] px-4 py-3 text-left text-sm"
+      >
+        <p className="mb-1.5 font-semibold">Password must include :</p>
+        <ul className="list-disc space-y-1 pl-4">
+          <li>At least 8 characters</li>
+          <li>One uppercase letter (A–Z)</li>
+          <li>One lowercase letter (a–z)</li>
+          <li>One number (0–9)</li>
+          <li>One special character (e.g. !, @, #, $)</li>
+        </ul>
+      </TooltipContent>
+    </Tooltip>
+  </TooltipProvider>
+);
 
 const SignupForm = () => {
   const router = useRouter();
@@ -174,11 +222,11 @@ const SignupForm = () => {
                 name="firstName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className={labelClassName}>First Name</FormLabel>
+                    <FormLabel className={labelClassName}>First Name *</FormLabel>
                     <FormControl>
                       <Input
                         className={inputClassName}
-                        placeholder="Type your name"
+                        placeholder="Type your first name"
                         {...field}
                       />
                     </FormControl>
@@ -192,11 +240,11 @@ const SignupForm = () => {
                 name="lastName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className={labelClassName}>Last Name</FormLabel>
+                    <FormLabel className={labelClassName}>Last Name *</FormLabel>
                     <FormControl>
                       <Input
                         className={inputClassName}
-                        placeholder="Type your name"
+                        placeholder="Type your last name"
                         {...field}
                       />
                     </FormControl>
@@ -276,13 +324,16 @@ const SignupForm = () => {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className={labelClassName}>Create Password</FormLabel>
+                  <FormLabel className={labelClassName}>
+                    Create Password
+                    <PasswordInfoTooltip />
+                  </FormLabel>
                   <FormControl>
                     <div className="relative">
                       <Input
                         type={showPassword ? "text" : "password"}
                         className={`${inputClassName} signup-password-input pr-12`}
-                        placeholder="********"
+                        // placeholder="********"
                         {...field}
                       />
                       <button
@@ -309,13 +360,16 @@ const SignupForm = () => {
               name="confirmPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className={labelClassName}>Confirm Password</FormLabel>
+                  <FormLabel className={labelClassName}>
+                    Confirm Password
+                    <PasswordInfoTooltip />
+                  </FormLabel>
                   <FormControl>
                     <div className="relative">
                       <Input
                         type={showConfirmPassword ? "text" : "password"}
                         className={`${inputClassName} signup-password-input pr-12`}
-                        placeholder="********"
+                        // placeholder="********"
                         {...field}
                       />
                       <button

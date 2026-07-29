@@ -114,7 +114,7 @@ const LoginForm = () => {
                     <Input
                       type="email"
                       className={inputClassName}
-                      placeholder="Type your email or username"
+                      placeholder="Type your email"
                       {...field}
                     />
                   </FormControl>
@@ -137,7 +137,7 @@ const LoginForm = () => {
                       <Input
                         type={showPassword ? "text" : "password"}
                         className={`${inputClassName} signup-password-input pr-12`}
-                        placeholder="************"
+                        // placeholder="************"
                         {...field}
                       />
                       <button

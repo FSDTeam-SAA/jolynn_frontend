@@ -12,6 +12,7 @@ import {
   LogOut,
   MapPin,
   MessageCircle,
+  MessageSquareCode,
   Pencil,
   Star,
   User,
@@ -33,6 +34,7 @@ const navIcons = {
   "save-services": Bookmark,
   "request-quote": FileText,
   "help-wanted": BriefcaseBusiness,
+  "my-reviews" : MessageSquareCode 
 };
 
 type AccountPageShellProps = {
@@ -156,6 +158,7 @@ export const ProfileSummaryCard = () => {
     sessionUser?.accessToken ?? sessionUser?.token,
   );
   const profile = profileResponse?.data;
+
   const { mutate: updateProfile, isPending: isPictureUpdating } =
     useProfileUpdate(sessionUser?.accessToken ?? sessionUser?.token);
   const name = [profile?.firstName, profile?.lastName]
@@ -240,7 +243,7 @@ export const ProfileSummaryCard = () => {
         </div>
 
         <h2 className="mt-4 text-[18px] font-extrabold leading-tight text-[#292D73]">
-          {isLoading ? "Loading..." : name || "User"}
+          {isLoading ? "Loading..." : profile?.username || "User"}
         </h2>
         {/* <p className="mt-1 text-[11px] font-medium text-[#667085]">
           {profile?.email ?? "—"}
@@ -249,23 +252,23 @@ export const ProfileSummaryCard = () => {
 
       <dl className="mt-7 space-y-4 text-[12px] leading-relaxed text-[#1F2937]">
         <div>
-          <dt className="inline font-extrabold">Name: </dt>
+          <dt className="inline font-extrabold">Name : </dt>
           <dd className="inline text-[#667085]">{name || "N/A"}</dd>
         </div>
         <div>
-          <dt className="inline font-extrabold">Email: </dt>
+          <dt className="inline font-extrabold">Email : </dt>
           <dd className="inline break-all text-[#667085]">{profile?.email ?? "N/A"}</dd>
         </div>
         <div>
-          <dt className="inline font-extrabold">Phone: </dt>
+          <dt className="inline font-extrabold">Phone : </dt>
           <dd className="inline text-[#667085]">{profile?.phoneNumber || "N/A"}</dd>
         </div>
         <div>
-          <dt className="inline font-extrabold">Location: </dt>
+          <dt className="inline font-extrabold">Location : </dt>
           <dd className="inline text-[#667085]">{location || "N/A"}</dd>
         </div>
         <div>
-          <dt className="inline font-extrabold">Since: </dt>
+          <dt className="inline font-extrabold">Since : </dt>
           <dd className="inline text-[#667085]">{memberSince}</dd>
         </div>
       </dl>
@@ -273,7 +276,13 @@ export const ProfileSummaryCard = () => {
   );
 };
 
-export const SavedBusinessGrid = ({ businesses }: { businesses: SavedBusiness[] }) => {
+export const SavedBusinessGrid = ({
+  businesses,
+  viewMode = "grid",
+}: {
+  businesses: SavedBusiness[];
+  viewMode?: "grid" | "list";
+}) => {
   const [selectedBusiness, setSelectedBusiness] = useState<{
     id: string;
     name: string;
@@ -281,7 +290,12 @@ export const SavedBusinessGrid = ({ businesses }: { businesses: SavedBusiness[] 
 
   return (
     <>
-      <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+      <div
+        className={cn(
+          "grid grid-cols-1 gap-5",
+          viewMode === "grid" && "xl:grid-cols-2",
+        )}
+      >
         {businesses.map(({ id, businessOwner: business }) => (
           <article
             key={id}

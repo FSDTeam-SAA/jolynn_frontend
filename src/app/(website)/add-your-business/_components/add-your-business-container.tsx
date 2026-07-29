@@ -8,6 +8,7 @@ import {
   ChevronsUpDown,
   Eye,
   EyeOff,
+  Info,
   LockKeyhole,
   MapPin,
   Search,
@@ -43,12 +44,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import AccountCreatedSuccessfulModal from "./account-created-successful-modal";
 import Image from "next/image";
 
@@ -59,7 +65,6 @@ type TextFieldConfig = {
     | "businessName"
     | "ownerName"
     | "username"
-    | "personalEmail"
     | "businessEmail"
     | "businessWebsiteUrl";
   label: string;
@@ -84,12 +89,6 @@ const textFields: TextFieldConfig[] = [
     placeholder: "Jamesnderson22",
   },
   {
-    name: "personalEmail",
-    label: "Personal Email Address*",
-    placeholder: "you@gmail.com",
-    type: "email",
-  },
-  {
     name: "businessEmail",
     label: "Business Email Address*",
     placeholder: "contact@mybusiness.com",
@@ -107,20 +106,26 @@ const formSchema = z.object({
     businessName: z.string().min(1, "Business name is required."),
     ownerName: z.string().min(1, "Owner name is required."),
     username: z.string().min(1, "User name is required."),
-    personalEmail: z.string().email("Please enter a valid email address."),
     businessEmail: z
       .string()
       .email("Please enter a valid business email address."),
     businessWebsiteUrl: z.string().url("Please enter a valid website URL."),
-    address: z.string().min(1, "Address is required."),
-    serviceArea: z.string().min(1, "Service area is required."),
+    address: z.string(),
+    serviceArea: z.string(),
     category: z.string().min(1, "Category is required."),
     requestedCategory: z.string().optional(),
     state: z.string().min(1, "State is required."),
     city: z.string().min(1, "City is required."),
     password: z
       .string()
-      .min(6, "Password must be at least 6 characters long."),
+      .min(8, "Password must be at least 8 characters long.")
+      .regex(/[A-Z]/, "Password must contain at least one uppercase letter.")
+      .regex(/[a-z]/, "Password must contain at least one lowercase letter.")
+      .regex(/[0-9]/, "Password must contain at least one number.")
+      .regex(
+        /[^A-Za-z0-9]/,
+        "Password must contain at least one special character.",
+      ),
     confirmPassword: z.string().min(1, "Confirm password is required."),
     agreementAccepted: z
       .boolean()
@@ -148,6 +153,36 @@ const formSchema = z.object({
   });
 
 type FormValues = z.infer<typeof formSchema>;
+
+const PasswordInfoTooltip = () => (
+  <TooltipProvider delayDuration={150}>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          type="button"
+          aria-label="Show password requirements"
+          className="inline-flex rounded-full text-[#292D73] outline-none transition-colors hover:text-[#4365D0] focus-visible:ring-2 focus-visible:ring-[#4365D0] focus-visible:ring-offset-2"
+        >
+          <Info className="h-4 w-4" aria-hidden="true" />
+        </button>
+      </TooltipTrigger>
+      <TooltipContent
+        side="top"
+        align="start"
+        className="max-w-[280px] px-4 py-3 text-left text-sm"
+      >
+        <p className="mb-1.5 font-semibold">Password must include:</p>
+        <ul className="list-disc space-y-1 pl-4">
+          <li>At least 8 characters</li>
+          <li>One uppercase letter (A–Z)</li>
+          <li>One lowercase letter (a–z)</li>
+          <li>One number (0–9)</li>
+          <li>One special character (e.g. !, @, #, $)</li>
+        </ul>
+      </TooltipContent>
+    </Tooltip>
+  </TooltipProvider>
+);
 
 type SearchableDropdownProps = {
   value: string;
@@ -282,7 +317,6 @@ const AddYourBusinessContainer = () => {
       businessName: "",
       ownerName: "",
       username: "",
-      personalEmail: "",
       businessEmail: "",
       businessWebsiteUrl: "",
       address: "",
@@ -341,7 +375,7 @@ const AddYourBusinessContainer = () => {
     },
     onSuccess: (data, values) => {
       toast.success(data?.message || "Business account created successfully");
-      setSuccessEmail(values.personalEmail);
+      setSuccessEmail(values.businessEmail);
       setShowSuccessModal(true);
       form.reset();
     },
@@ -440,12 +474,12 @@ const AddYourBusinessContainer = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className={labelClassName}>
-                        Address*
+                        Address
                       </FormLabel>
                       <FormControl>
-                        <Textarea
+                        <Input
                           placeholder="221B Baker Street"
-                          className="min-h-[96px] rounded-[9px] border border-[#D8DDE7] bg-white px-4 py-3 text-[13px] font-medium text-[#20244A] shadow-none placeholder:text-[#98A2B3] focus-visible:border-[#292D73] focus-visible:ring-4 focus-visible:ring-[#292D73]/10"
+                          className={inputClassName}
                           {...field}
                         />
                       </FormControl>
@@ -460,12 +494,12 @@ const AddYourBusinessContainer = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className={labelClassName}>
-                        Service Area*
+                        Service Area
                       </FormLabel>
                       <FormControl>
-                        <Textarea
+                        <Input
                           placeholder="15 miles around New York"
-                          className="min-h-[96px] rounded-[9px] border border-[#D8DDE7] bg-white px-4 py-3 text-[13px] font-medium text-[#20244A] shadow-none placeholder:text-[#98A2B3] focus-visible:border-[#292D73] focus-visible:ring-4 focus-visible:ring-[#292D73]/10"
+                          className={inputClassName}
                           {...field}
                         />
                       </FormControl>
@@ -671,7 +705,10 @@ const AddYourBusinessContainer = () => {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className={labelClassName}>Password</FormLabel>
+                      <FormLabel className={labelClassName}>
+                        Password
+                        <PasswordInfoTooltip />
+                      </FormLabel>
                       <FormControl>
                         <div className="relative">
                           <Input
@@ -706,6 +743,7 @@ const AddYourBusinessContainer = () => {
                     <FormItem>
                       <FormLabel className={labelClassName}>
                         Confirm Password
+                        <PasswordInfoTooltip />
                       </FormLabel>
                       <FormControl>
                         <div className="relative">

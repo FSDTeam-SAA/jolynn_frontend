@@ -24,7 +24,6 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { toast } from "sonner";
@@ -88,7 +87,7 @@ type DeleteHelpWantedResponse = {
 
 const PAGE_LIMIT = 9;
 type ViewMode = "grid" | "list";
-type SignInIntent = "report" | "create" | "business";
+type SignInIntent = "report" | "create" | "business" | "sidequote";
 
 const getPostUserId = (post: HelpWantedPost) =>
   typeof post.userId === "string" ? post.userId : post.userId?._id;
@@ -312,6 +311,15 @@ const JobPostsContainer = () => {
     router.push("/add-your-business");
   };
 
+  const openSideQuote = (email: string) => {
+    if (!token) {
+      setSignInIntent("sidequote");
+      return;
+    }
+
+    window.location.href = `mailto:${email}`;
+  };
+
   const submitReport = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!selectedPostId || !reportMessage.trim()) {
@@ -365,7 +373,7 @@ const JobPostsContainer = () => {
               </p>
 
               <div className="flex flex-wrap items-center gap-2">
-                {sessionUser?.role !== "businessOwner" && (
+                {/* {sessionUser?.role !== "businessOwner" && (
                   <>
                     <button
                       type="button"
@@ -384,7 +392,23 @@ const JobPostsContainer = () => {
                       Add your business
                     </button>
                   </>
-                )}
+                )} */}
+                 <button
+                      type="button"
+                      onClick={openCreatePost}
+                      className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#292D73] px-4 text-xs font-bold text-white shadow-[0_7px_16px_rgba(41,45,115,0.18)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#1F2464] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4365D0] focus-visible:ring-offset-2"
+                    >
+                      <PlusCircle className="h-4 w-4" />
+                      Add Job Post
+                    </button>
+                    <button
+                      type="button"
+                      onClick={openAddBusiness}
+                      className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-[#292D73] bg-white px-4 text-xs font-bold text-[#292D73] transition duration-300 hover:-translate-y-0.5 hover:bg-[#EEF2FF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4365D0] focus-visible:ring-offset-2"
+                    >
+                      <BriefcaseBusiness className="h-4 w-4" />
+                      Add your business
+                    </button>
                 <div
                   className="inline-flex items-center rounded-lg border border-[#D8DEE8] bg-white p-1 shadow-sm"
                   role="group"
@@ -490,13 +514,14 @@ const JobPostsContainer = () => {
                             <Flag className="h-3.5 w-3.5" />
                             Report
                           </button>
-                          <Link
-                            href={`mailto:${post.email}`}
+                          <button
+                            type="button"
+                            onClick={() => openSideQuote(post.email)}
                             className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-xs font-bold text-white shadow-sm transition hover:bg-[#1F2464]"
                           >
                             <Mail className="h-4 w-4" />
-                            Respond by email
-                          </Link>
+                            Get SideQuote
+                          </button>
                           {isOwnPost(post) && (
                             <button
                               type="button"
@@ -600,13 +625,14 @@ const JobPostsContainer = () => {
                     </p>
 
                     <div className="mt-auto pt-5">
-                      <Link
-                        href={`mailto:${post.email}`}
+                      <button
+                        type="button"
+                        onClick={() => openSideQuote(post.email)}
                         className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-primary px-3 text-xs font-bold text-white shadow-[0_5px_12px_rgba(41,45,115,0.18)] transition hover:bg-[#1F2464] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2"
                       >
                         <Mail className="h-4 w-4" />
-                        Respond by email
-                      </Link>
+                        Get SideQuote
+                      </button>
                     </div>
                   </div>
                 </article>
@@ -772,13 +798,14 @@ const JobPostsContainer = () => {
                 >
                   Close
                 </button>
-                <Link
-                  href={`mailto:${postToView.email}`}
+                <button
+                  type="button"
+                  onClick={() => openSideQuote(postToView.email)}
                   className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-primary px-6 text-xs font-extrabold text-white shadow-[0_8px_18px_rgba(41,45,115,0.18)] transition hover:-translate-y-0.5 hover:bg-[#1F2464]"
                 >
                   <Mail className="h-4 w-4" />
-                  Respond by email
-                </Link>
+                  Get SideQuote
+                </button>
               </div>
             </div>
           </div>
@@ -902,6 +929,8 @@ const JobPostsContainer = () => {
                 ? "You need to sign in before you can create a help wanted post."
                 : signInIntent === "business"
                   ? "You need to sign in before you can add your business."
+                  : signInIntent === "sidequote"
+                    ? "You need to sign in before you can get a SideQuote."
                 : "You need to sign in before you can submit a report."}
             </p>
             <div className="mt-6 grid grid-cols-2 gap-3">
@@ -921,7 +950,7 @@ const JobPostsContainer = () => {
                         ? "/job-posts/create"
                         : signInIntent === "business"
                           ? "/add-your-business"
-                        : "/job-posts",
+                          : "/job-posts",
                     )}`,
                   )
                 }
