@@ -41,7 +41,7 @@ type HelpWantedPayload = {
   zipcode: string;
   category: string;
   requestedCategory?: string;
-  phone: string;
+  phone?: string;
   message: string;
 };
 
@@ -104,7 +104,7 @@ const validateField = (
       if (value.length > 80) return "Category must be 80 characters or fewer.";
       return undefined;
     case "phone": {
-      if (!value) return "Please enter your phone number.";
+      if (!value) return undefined;
       const digits = value.replace(/\D/g, "");
       if (digits.length < 7 || digits.length > 15)
         return "Phone number must contain 7 to 15 digits.";
@@ -147,6 +147,7 @@ type FieldProps = {
   error?: string;
   children: React.ReactNode;
   hint?: string;
+  required?: boolean;
 };
 
 const Field = ({
@@ -156,10 +157,16 @@ const Field = ({
   error,
   children,
   hint,
+  required = true,
 }: FieldProps) => (
   <div>
     <label htmlFor={id} className="text-[13px] font-bold text-[#344054]">
-      {label} <span className="text-[#D92D20]">*</span>
+      {label}{" "}
+      {required ? (
+        <span className="text-[#D92D20]">*</span>
+      ) : (
+        <span className="font-normal text-[#667085]">(Optional)</span>
+      )}
     </label>
     <div className="relative mt-2">
       <Icon
@@ -364,7 +371,7 @@ const CreateJobPostForm = () => {
       ...(values.category === OTHER_CATEGORY
         ? { requestedCategory: values.customCategory.trim() }
         : {}),
-      phone: values.phone.trim(),
+      ...(values.phone.trim() ? { phone: values.phone.trim() } : {}),
       message: values.message.trim(),
     });
   };
@@ -532,6 +539,7 @@ const CreateJobPostForm = () => {
                   label="Phone number"
                   icon={Phone}
                   error={errors.phone}
+                  required={false}
                 >
                   <input
                     id="phone"

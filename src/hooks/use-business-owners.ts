@@ -13,18 +13,18 @@ export type BusinessOwner = {
   bio?: string;
   businessWebsiteUrl: string;
   phoneNumber?: string;
-  rating: number;
-  totalReviews: number;
+  rating: number | null;
+  totalReviews: number | null;
   createdAt: string;
   service: {
     id: string;
     title: string;
-    description: string;
-    logo: {
+    description?: string | null;
+    logo?: {
       url: string;
       publicId: string;
-    };
-  };
+    } | null;
+  } | null;
 };
 
 type BusinessOwnersResponse = {
@@ -94,7 +94,6 @@ export const useBusinessOwners = (filters: BusinessOwnerFilters) =>
   useQuery<BusinessOwnersResponse>({
     queryKey: ["business-owners", filters],
     queryFn: () => fetchBusinessOwners(filters),
-    enabled: Boolean(filters.service.trim()),
     staleTime: 2 * 60 * 1000,
     retry: 1,
   });

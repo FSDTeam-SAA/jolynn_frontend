@@ -23,6 +23,7 @@ type BusinessSearchFormProps = {
   initialService?: string;
   initialState?: string;
   initialCity?: string;
+  compact?: boolean;
 };
 
 type LocationDropdownProps = {
@@ -34,6 +35,7 @@ type LocationDropdownProps = {
   clearLabel?: string;
   disabled?: boolean;
   loading?: boolean;
+  compact?: boolean;
   onChange: (value: string) => void;
 };
 
@@ -46,6 +48,7 @@ const LocationDropdown = ({
   clearLabel = "None",
   disabled = false,
   loading = false,
+  compact = false,
   onChange,
 }: LocationDropdownProps) => {
   const [open, setOpen] = useState(false);
@@ -67,7 +70,9 @@ const LocationDropdown = ({
           type="button"
           disabled={disabled || loading}
           aria-expanded={open}
-          className="flex h-12 w-full min-w-0 items-center justify-between gap-2 bg-transparent px-4 text-left text-[13px] font-medium text-[#292E78] outline-none disabled:cursor-not-allowed disabled:text-[#98A2B3]"
+          className={`flex w-full min-w-0 items-center justify-between gap-2 bg-transparent px-4 text-left text-[13px] font-medium text-[#292E78] outline-none disabled:cursor-not-allowed disabled:text-[#98A2B3] ${
+            compact ? "h-12 xl:h-[43px]" : "h-12"
+          }`}
         >
           <span className="min-w-0 flex-1 truncate" title={value || placeholder}>
             {loading ? "Loading..." : value || placeholder}
@@ -145,6 +150,7 @@ const BusinessSearchForm = ({
   initialService = "",
   initialState = "",
   initialCity = "",
+  compact = false,
 }: BusinessSearchFormProps) => {
   const router = useRouter();
   const [service, setService] = useState(initialService);
@@ -152,7 +158,9 @@ const BusinessSearchForm = ({
   const [city, setCity] = useState(initialCity);
   const { data } = useServices();
   const statesQuery = useLocationStates();
-  const states = statesQuery.data?.data ?? [];
+  const states = (statesQuery.data?.data ?? []).filter(
+    (state) => state.name.trim().toLowerCase() !== "armed forces europe",
+  );
   const selectedState = states.find((state) => state.name === stateName);
   const citiesQuery = useLocationCities(selectedState);
   const cities = citiesQuery.data?.data.cities ?? [];
@@ -192,9 +200,15 @@ const BusinessSearchForm = ({
   return (
     <form
       onSubmit={handleSubmit}
-      className="mx-auto grid w-full max-w-[1160px] grid-cols-1 overflow-hidden rounded-xl border border-white/80 bg-white p-2 shadow-[0_10px_28px_rgba(32,42,70,0.12)] sm:grid-cols-2 lg:grid-cols-[1.35fr_1fr_1fr_auto]"
+      className={`mx-auto grid w-full max-w-[1160px] grid-cols-1 overflow-hidden rounded-xl border border-white/80 bg-white shadow-[0_10px_28px_rgba(32,42,70,0.12)] sm:grid-cols-2 lg:grid-cols-[1.35fr_1fr_1fr_auto] ${
+        compact ? "p-2 xl:h-[51px] xl:p-1" : "p-2"
+      }`}
     >
-      <label className="relative flex min-w-0 items-center gap-2 border-b border-[#ECEEF5] px-4 py-3 sm:border-r lg:border-b-0">
+      <label
+        className={`relative flex min-w-0 items-center gap-2 border-b border-[#ECEEF5] px-4 sm:border-r lg:border-b-0 ${
+          compact ? "py-3 xl:h-[43px] xl:py-0" : "py-3"
+        }`}
+      >
         <Search className="h-5 w-5 shrink-0 text-[#4365D0]" />
         <input
           type="search"
@@ -216,6 +230,7 @@ const BusinessSearchForm = ({
           emptyMessage="No state found."
           clearLabel="None"
           loading={statesQuery.isPending}
+          compact={compact}
           disabled={statesQuery.isError || states.length === 0}
           onChange={(nextState) => {
             setStateName(nextState);
@@ -239,6 +254,7 @@ const BusinessSearchForm = ({
           emptyMessage="No city found."
           clearLabel="None"
           loading={Boolean(selectedState) && citiesQuery.isPending}
+          compact={compact}
           disabled={
             !selectedState ||
             citiesQuery.isError ||
@@ -250,7 +266,9 @@ const BusinessSearchForm = ({
 
       <button
         type="submit"
-        className="flex h-12 items-center justify-center gap-2 rounded-lg bg-[#292D73] px-7 text-[13px] font-extrabold text-white transition duration-300 hover:-translate-y-0.5 hover:bg-[#1F2464] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4365D0] focus-visible:ring-offset-2 sm:col-span-2 lg:col-span-1"
+        className={`flex items-center justify-center gap-2 rounded-lg bg-[#292D73] px-7 text-[13px] font-extrabold text-white transition duration-300 hover:-translate-y-0.5 hover:bg-[#1F2464] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4365D0] focus-visible:ring-offset-2 sm:col-span-2 lg:col-span-1 ${
+          compact ? "h-12 xl:h-[43px]" : "h-12"
+        }`}
       >
         Search
         <ArrowRight className="h-4 w-4" />

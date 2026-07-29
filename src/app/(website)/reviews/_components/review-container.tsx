@@ -45,9 +45,9 @@ const fetchMyReviews = async (
   const params = new URLSearchParams({
     limit: String(PAGE_LIMIT),
     page: String(page),
-    rating: "5",
+    // rating: "5",
   });
-  const response = await fetch(`${apiUrl}/reviews/my-reviews?${params}`, {
+  const response = await fetch(`${apiUrl}/reviews?${params}`, {
     headers: {
       accept: "*/*",
       Authorization: `Bearer ${token}`,

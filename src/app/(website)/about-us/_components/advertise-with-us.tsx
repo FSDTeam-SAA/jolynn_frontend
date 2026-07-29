@@ -23,7 +23,7 @@ const AdvertiseWithUs = () => {
           <div className="mt-7 flex justify-center">
             <Link
               href="/contact"
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-[5px] bg-white px-6 text-sm md:text-base font-semiabold leading-normal text-primary shadow-[0_8px_18px_rgba(0,0,0,0.16)] transition hover:-translate-y-0.5 hover:bg-[#F2F5FF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#292D73]"
+              className="inline-flex h-10 md:h-12 items-center justify-center gap-2 rounded-[5px] bg-white px-6 text-sm md:text-base font-bold leading-normal text-primary shadow-[0_8px_18px_rgba(0,0,0,0.16)] transition hover:-translate-y-0.5 hover:bg-[#F2F5FF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#292D73]"
             >
               Contact Us
               <ArrowRight className="h-5 w-5" />
