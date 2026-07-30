@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, ImageIcon, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Eye, ImageIcon, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { ChangeEvent, FormEvent, useMemo, useRef, useState } from "react";
@@ -27,6 +27,7 @@ type Service = {
   description: string;
   logo?: { url: string; publicId: string };
   status: ServiceStatus;
+  viewCount: number;
   createdAt: string;
   updatedAt: string;
 };
@@ -299,6 +300,14 @@ function Services() {
                 </div>
 
                 <div className="flex shrink-0 items-center gap-2">
+                  <div
+                    className="flex h-8 items-center gap-1.5 rounded-full bg-[#F2F4F7] px-3 text-xs font-semibold text-[#667085]"
+                    aria-label={`${service.viewCount ?? 0} views`}
+                    title={`${service.viewCount ?? 0} views`}
+                  >
+                    <Eye className="h-4 w-4" aria-hidden="true" />
+                    <span>{service.viewCount ?? 0}</span>
+                  </div>
                   <button type="button" disabled={isMutating} aria-label={`Delete ${service.title}`} onClick={() => setServiceToDelete(service)} className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FFF0EF] text-[#FF4D4F] transition-colors hover:bg-[#FFD9D6] disabled:opacity-50"><Trash2 className="h-4 w-4" /></button>
                   <button type="button" disabled={isMutating || categoriesQuery.isPending} aria-label={`Edit ${service.title}`} onClick={() => openEditModal(service)} className="flex h-8 w-8 items-center justify-center rounded-full bg-[#EAF9F0] text-[#20BF6B] transition-colors hover:bg-[#D7F3E2] disabled:opacity-50"><Pencil className="h-4 w-4" /></button>
                 </div>

@@ -15,7 +15,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -55,8 +55,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import AccountCreatedSuccessfulModal from "./account-created-successful-modal";
+import AccountCreatedSuccessfulModal from "@/components/shared/account-created-successful-modal";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 
 const OTHER_CATEGORY = "__other__";
 
@@ -102,10 +103,22 @@ const textFields: TextFieldConfig[] = [
   },
 ] as const satisfies TextFieldConfig[];
 
-const formSchema = z.object({
+const passwordSchema = z
+  .string()
+  .min(8, "Password must be at least 8 characters long.")
+  .regex(/[A-Z]/, "Password must contain at least one uppercase letter.")
+  .regex(/[a-z]/, "Password must contain at least one lowercase letter.")
+  .regex(/[0-9]/, "Password must contain at least one number.")
+  .regex(
+    /[^A-Za-z0-9]/,
+    "Password must contain at least one special character.",
+  );
+
+const createFormSchema = (isExistingUser: boolean) =>
+  z.object({
     businessName: z.string().min(1, "Business name is required."),
     ownerName: z.string().min(1, "Owner name is required."),
-    username: z.string().min(1, "User name is required."),
+    username: z.string(),
     businessEmail: z
       .string()
       .email("Please enter a valid business email address."),
@@ -116,23 +129,42 @@ const formSchema = z.object({
     requestedCategory: z.string().optional(),
     state: z.string().min(1, "State is required."),
     city: z.string().min(1, "City is required."),
-    password: z
-      .string()
-      .min(8, "Password must be at least 8 characters long.")
-      .regex(/[A-Z]/, "Password must contain at least one uppercase letter.")
-      .regex(/[a-z]/, "Password must contain at least one lowercase letter.")
-      .regex(/[0-9]/, "Password must contain at least one number.")
-      .regex(
-        /[^A-Za-z0-9]/,
-        "Password must contain at least one special character.",
-      ),
-    confirmPassword: z.string().min(1, "Confirm password is required."),
+    password: z.string(),
+    confirmPassword: z.string(),
     agreementAccepted: z
       .boolean()
       .refine((value) => value, "Please accept the terms and conditions."),
   })
   .superRefine((data, context) => {
-    if (data.password !== data.confirmPassword) {
+    if (!isExistingUser && !data.username.trim()) {
+      context.addIssue({
+        code: "custom",
+        message: "User name is required.",
+        path: ["username"],
+      });
+    }
+
+    if (!isExistingUser) {
+      const passwordResult = passwordSchema.safeParse(data.password);
+      passwordResult.error?.issues.forEach((issue) => {
+        context.addIssue({
+          code: "custom",
+          message: issue.message,
+          path: ["password"],
+        });
+      });
+    }
+
+    if (!isExistingUser && !data.confirmPassword) {
+      context.addIssue({
+        code: "custom",
+        message: "Confirm password is required.",
+        path: ["confirmPassword"],
+      });
+    } else if (
+      !isExistingUser &&
+      data.password !== data.confirmPassword
+    ) {
       context.addIssue({
         code: "custom",
         message: "Passwords don't match.",
@@ -152,7 +184,7 @@ const formSchema = z.object({
     }
   });
 
-type FormValues = z.infer<typeof formSchema>;
+type FormValues = z.infer<ReturnType<typeof createFormSchema>>;
 
 const PasswordInfoTooltip = () => (
   <TooltipProvider delayDuration={150}>
@@ -280,26 +312,7 @@ type RegisterBusinessOwnerResponse = {
   statusCode: number;
   success: boolean;
   message: string;
-  data: {
-    _id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    username: string;
-    role: string;
-    businessName: string;
-    businessEmail: string;
-    businessWebsiteUrl: string;
-    serviceArea: string;
-    category: string;
-    city: string;
-    state: string;
-    address: string;
-    status: string;
-    agreementAccepted: boolean;
-    createdAt: string;
-    updatedAt: string;
-  };
+  data: Record<string, unknown>;
 };
 
 const AddYourBusinessContainer = () => {
@@ -310,6 +323,18 @@ const AddYourBusinessContainer = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [successEmail, setSuccessEmail] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  const { data: session } = useSession();
+  const sessionUser = session?.user as
+    | { role?: string; accessToken?: string; token?: string }
+    | undefined;
+  const userType = sessionUser?.role;
+  const token = sessionUser?.accessToken ?? sessionUser?.token;
+  const isExistingUser = userType === "user";
+  const formSchema = useMemo(
+    () => createFormSchema(isExistingUser),
+    [isExistingUser],
+  );
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -348,20 +373,46 @@ const AddYourBusinessContainer = () => {
     mutationFn: async (values: FormValues) => {
       const apiUrl =
         process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api/v1";
-      const payload = {
-        ...values,
-        category:
-          values.category === OTHER_CATEGORY ? "Other" : values.category,
-        requestedCategory:
-          values.category === OTHER_CATEGORY
-            ? values.requestedCategory?.trim()
-            : undefined,
-      };
-      const res = await fetch(`${apiUrl}/auth/register/business-owner`, {
+
+      if (isExistingUser && !token) {
+        throw new Error("Your session token is missing. Please sign in again.");
+      }
+
+      const category =
+        values.category === OTHER_CATEGORY ? "Other" : values.category;
+      const requestedCategory =
+        values.category === OTHER_CATEGORY
+          ? values.requestedCategory?.trim()
+          : undefined;
+      const payload = isExistingUser
+        ? {
+            businessName: values.businessName,
+            businessEmail: values.businessEmail,
+            businessWebsiteUrl: values.businessWebsiteUrl,
+            address: values.address,
+            serviceArea: values.serviceArea,
+            category,
+            requestedCategory,
+            state: values.state,
+            city: values.city,
+          }
+        : {
+            ...values,
+            category,
+            requestedCategory,
+          };
+      const endpoint = isExistingUser
+        ? "/auth/register/business-owner/existing-user"
+        : "/auth/register/business-owner";
+
+      const res = await fetch(`${apiUrl}${endpoint}`, {
         method: "POST",
         headers: {
           accept: "*/*",
           "Content-Type": "application/json",
+          ...(isExistingUser && token
+            ? { Authorization: `Bearer ${token}` }
+            : {}),
         },
         body: JSON.stringify(payload),
       });
@@ -442,7 +493,12 @@ const AddYourBusinessContainer = () => {
                 </div>
               </div>
               <div className="grid grid-cols-1 gap-x-4 gap-y-3 md:grid-cols-3">
-                {textFields.map((fieldConfig) => (
+                {textFields
+                  .filter(
+                    (fieldConfig) =>
+                      !isExistingUser || fieldConfig.name !== "username",
+                  )
+                  .map((fieldConfig) => (
                   <FormField
                     key={fieldConfig.name}
                     control={form.control}
@@ -464,7 +520,7 @@ const AddYourBusinessContainer = () => {
                       </FormItem>
                     )}
                   />
-                ))}
+                  ))}
               </div>
 
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -689,6 +745,8 @@ const AddYourBusinessContainer = () => {
                 />
               </div>
 
+              {!isExistingUser && (
+                <>
               <div className="flex items-center gap-3 border-b border-[#EAECF0] pb-3 pt-1">
                 <span className="flex h-9 w-9 items-center justify-center rounded-[9px] bg-[#FFF5E6] text-[#A56513]">
                   <LockKeyhole className="h-[18px] w-[18px]" />
@@ -774,6 +832,8 @@ const AddYourBusinessContainer = () => {
                   )}
                 />
               </div>
+                </>
+              )}
 
               <FormField
                 control={form.control}

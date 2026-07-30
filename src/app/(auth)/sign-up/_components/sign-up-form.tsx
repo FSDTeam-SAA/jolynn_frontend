@@ -14,10 +14,18 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  useLocationCities,
+  useLocationStates,
+} from "@/hooks/use-location-options";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Info } from "lucide-react";
+import { Check, ChevronsUpDown, Eye, EyeOff, Info, Search } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -29,6 +37,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useMutation } from "@tanstack/react-query";
+import AccountCreatedSuccessfulModal from "@/components/shared/account-created-successful-modal";
 
 const formSchema = z
   .object({
@@ -60,6 +69,8 @@ const formSchema = z
         (value) => !value || /^[+\d][\d\s()-]{7,19}$/.test(value),
         { message: "Enter a valid phone number or leave this field blank." },
       ),
+    state: z.string().min(1, { message: "Please select your state." }),
+    city: z.string().min(1, { message: "Please select your city." }),
     password: z
       .string()
       .min(1, { message: "Please create a password." })
@@ -120,10 +131,103 @@ const PasswordInfoTooltip = () => (
   </TooltipProvider>
 );
 
+type SearchableDropdownProps = {
+  value: string;
+  options: string[];
+  placeholder: string;
+  searchPlaceholder: string;
+  emptyMessage: string;
+  disabled?: boolean;
+  loading?: boolean;
+  onChange: (value: string) => void;
+};
+
+const SearchableDropdown = ({
+  value,
+  options,
+  placeholder,
+  searchPlaceholder,
+  emptyMessage,
+  disabled = false,
+  loading = false,
+  onChange,
+}: SearchableDropdownProps) => {
+  const [open, setOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const filteredOptions = options.filter((option) =>
+    option.toLowerCase().includes(searchTerm.trim().toLowerCase()),
+  );
+
+  return (
+    <Popover
+      open={open}
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen);
+        if (!nextOpen) setSearchTerm("");
+      }}
+    >
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          disabled={disabled || loading}
+          aria-expanded={open}
+          className="flex h-11 w-full items-center justify-between rounded-[8px] border border-[#F5F3FA] bg-white px-4 text-left text-base font-medium text-[#1A1A2E] shadow-[0px_0px_10px_0px_#00000026] outline-none focus:ring-2 focus:ring-[#4365D0]/20 disabled:cursor-not-allowed disabled:bg-[#F8FAFC] disabled:text-[#98A2B3] md:h-[48px]"
+        >
+          <span className="truncate">
+            {loading ? "Loading..." : value || placeholder}
+          </span>
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        className="w-[var(--radix-popover-trigger-width)] p-0"
+      >
+        <div className="flex items-center border-b px-3">
+          <Search className="h-4 w-4 shrink-0 text-[#98A2B3]" />
+          <input
+            autoFocus
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            placeholder={searchPlaceholder}
+            className="h-10 w-full bg-transparent px-2 text-sm text-primary outline-none placeholder:text-[#98A2B3]"
+          />
+        </div>
+        <div className="max-h-60 overflow-y-auto p-1">
+          {filteredOptions.length === 0 ? (
+            <p className="px-3 py-6 text-center text-sm text-[#667085]">
+              {emptyMessage}
+            </p>
+          ) : (
+            filteredOptions.map((option) => (
+              <button
+                key={option}
+                type="button"
+                onClick={() => {
+                  onChange(option);
+                  setOpen(false);
+                  setSearchTerm("");
+                }}
+                className="flex w-full items-center rounded px-3 py-2 text-left text-sm text-[#344054] hover:bg-[#F2F4F7] focus:bg-[#F2F4F7] focus:outline-none"
+              >
+                <Check
+                  className={`mr-2 h-4 w-4 ${value === option ? "opacity-100" : "opacity-0"}`}
+                />
+                {option}
+              </button>
+            ))
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+};
+
 const SignupForm = () => {
-  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [successEmail, setSuccessEmail] = useState("");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -133,11 +237,21 @@ const SignupForm = () => {
       username: "",
       email: "",
       phoneNumber: "",
+      state: "",
+      city: "",
       password: "",
       confirmPassword: "",
       agreementAccepted: false,
     },
   });
+  const statesQuery = useLocationStates();
+  const states = statesQuery.data?.data ?? [];
+  const selectedStateName = form.watch("state");
+  const selectedState = states.find(
+    (state) => state.name === selectedStateName,
+  );
+  const citiesQuery = useLocationCities(selectedState);
+  const cities = citiesQuery.data?.data.cities ?? [];
 
   const { mutate, isPending } = useMutation({
     mutationKey: ["register-user"],
@@ -171,9 +285,11 @@ const SignupForm = () => {
 
       return data;
     },
-    onSuccess: (data) => {
+    onSuccess: (data, values) => {
       toast.success(data?.message || "User registered successfully");
-      router.push("/login");
+      setSuccessEmail(values.email);
+      setShowSuccessModal(true);
+      form.reset();
     },
     onError: (error) => {
       toast.error(
@@ -319,6 +435,92 @@ const SignupForm = () => {
               )}
             />
 
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+              <FormField
+                control={form.control}
+                name="state"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className={labelClassName}>State *</FormLabel>
+                    <FormControl>
+                      <SearchableDropdown
+                        value={field.value}
+                        options={states.map((state) => state.name)}
+                        placeholder={
+                          statesQuery.isError
+                            ? "States unavailable"
+                            : "Select state"
+                        }
+                        searchPlaceholder="Search states..."
+                        emptyMessage="No state found."
+                        loading={statesQuery.isPending}
+                        disabled={statesQuery.isError || states.length === 0}
+                        onChange={(stateName) => {
+                          field.onChange(stateName);
+                          form.setValue("city", "", {
+                            shouldDirty: true,
+                            shouldValidate: false,
+                          });
+                        }}
+                      />
+                    </FormControl>
+                    {statesQuery.isError && (
+                      <button
+                        type="button"
+                        onClick={() => statesQuery.refetch()}
+                        className="text-xs font-medium text-red-600 hover:underline"
+                      >
+                        Unable to load states. Try again
+                      </button>
+                    )}
+                    <FormMessage className="text-red-500" />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="city"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className={labelClassName}>City *</FormLabel>
+                    <FormControl>
+                      <SearchableDropdown
+                        value={field.value}
+                        options={cities}
+                        placeholder={
+                          !selectedState
+                            ? "Select a state first"
+                            : citiesQuery.isError
+                              ? "Cities unavailable"
+                              : "Select city"
+                        }
+                        searchPlaceholder="Search cities..."
+                        emptyMessage="No city found."
+                        loading={Boolean(selectedState) && citiesQuery.isPending}
+                        disabled={
+                          !selectedState ||
+                          citiesQuery.isError ||
+                          (!citiesQuery.isPending && cities.length === 0)
+                        }
+                        onChange={field.onChange}
+                      />
+                    </FormControl>
+                    {selectedState && citiesQuery.isError && (
+                      <button
+                        type="button"
+                        onClick={() => citiesQuery.refetch()}
+                        className="text-xs font-medium text-red-600 hover:underline"
+                      >
+                        Unable to load cities. Try again
+                      </button>
+                    )}
+                    <FormMessage className="text-red-500" />
+                  </FormItem>
+                )}
+              />
+            </div>
+
             <FormField
               control={form.control}
               name="password"
@@ -433,6 +635,10 @@ const SignupForm = () => {
           </form>
         </Form>
       </div>
+      <AccountCreatedSuccessfulModal
+        open={showSuccessModal}
+        email={successEmail}
+      />
     </div>
   );
 };

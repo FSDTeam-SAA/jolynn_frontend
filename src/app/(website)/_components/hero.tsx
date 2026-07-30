@@ -63,9 +63,9 @@ const heroSlides: HeroSlide[] = [
       "Search by service and location, discover nearby businesses, and start your next home project without the guesswork.",
     image: "/assets/images/caro_1.png",
     imageAlt: "A trusted local home-service professional outside a modern home",
-    backgroundClass: "bg-[#E8EEF4]",
+    backgroundClass: "bg-[#FAFBFC]",
     overlayClass:
-      "bg-[linear-gradient(90deg,rgba(245,248,251,0.98)_0%,rgba(245,248,251,0.94)_34%,rgba(232,238,244,0.62)_57%,rgba(232,238,244,0.12)_78%,transparent_100%)]",
+      "bg-[linear-gradient(90deg,rgba(245,248,251,0.75)_0%,rgba(245,248,251,0.58)_34%,rgba(232,238,244,0.22)_57%,rgba(232,238,244,0.03)_78%,transparent_100%)]",
   },
   {
     id: 2,
@@ -78,9 +78,9 @@ const heroSlides: HeroSlide[] = [
       "Compare trusted local professionals, check the right services, and connect with the team that fits your project needs.",
     image: "/assets/images/caro_2.png",
     imageAlt: "Local business owners talking on a neighborhood main street",
-    backgroundClass: "bg-[#F4EEE5]",
+    backgroundClass: "bg-[#FDFBF8]",
     overlayClass:
-      "bg-[linear-gradient(90deg,rgba(255,250,242,0.98)_0%,rgba(255,248,238,0.94)_35%,rgba(244,238,229,0.66)_58%,rgba(244,238,229,0.15)_79%,transparent_100%)]",
+      "bg-[linear-gradient(90deg,rgba(255,250,242,0.75)_0%,rgba(255,248,238,0.58)_35%,rgba(244,238,229,0.23)_58%,rgba(244,238,229,0.03)_79%,transparent_100%)]",
     action: {
       href: "/add-your-business",
       label: "Grow your business with SideQuote",
@@ -98,9 +98,9 @@ const heroSlides: HeroSlide[] = [
       "Explore help-wanted posts from local businesses and connect with opportunities that match your skills and experience.",
     image: "/assets/images/caro_3.png",
     imageAlt: "A local employer welcoming a skilled job candidate",
-    backgroundClass: "bg-[#E4F1EF]",
+    backgroundClass: "bg-[#F8FCFB]",
     overlayClass:
-      "bg-[linear-gradient(90deg,rgba(244,251,250,0.98)_0%,rgba(239,249,247,0.94)_35%,rgba(228,241,239,0.68)_58%,rgba(228,241,239,0.16)_79%,transparent_100%)]",
+      "bg-[linear-gradient(90deg,rgba(244,251,250,0.75)_0%,rgba(239,249,247,0.58)_35%,rgba(228,241,239,0.23)_58%,rgba(228,241,239,0.03)_79%,transparent_100%)]",
     action: {
       href: "/job-posts",
       label: "View Help Wanted",
@@ -130,7 +130,7 @@ const SlidePreviewCarousel = ({ slideId }: { slideId: number }) => {
   useEffect(() => {
     const previewTimer = window.setInterval(() => {
       setPreviewIndex((current) => (current + 1) % items.length);
-    }, 1_400);
+    }, 4_000);
 
     return () => window.clearInterval(previewTimer);
   }, [items.length]);
@@ -151,7 +151,7 @@ const SlidePreviewCarousel = ({ slideId }: { slideId: number }) => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -55 }}
             transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute inset-x-0 top-0 flex min-h-[70px] items-center gap-3 rounded-xl border border-[#DCE3EC] border-l-[3px] border-l-[#0082D7] bg-white/95 p-3 shadow-[0_8px_24px_rgba(41,45,115,0.12)] backdrop-blur"
+            className="absolute inset-x-0 top-0 flex min-h-[70px] items-center gap-3 rounded-xl border border-[#DCE3EC] border-l-[3px] border-l-[#0082D7] bg-white/95 p-3 backdrop-blur"
           >
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[#EEF2FF] text-sm font-extrabold text-[#292D73] ring-1 ring-[#DCE3EC]">
               {business.name.charAt(0)}
@@ -209,7 +209,7 @@ const SlidePreviewCarousel = ({ slideId }: { slideId: number }) => {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -55 }}
           transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-          className="absolute inset-x-0 top-0 flex min-h-[70px] items-center gap-3 rounded-xl border border-[#DCE3EC] border-l-[3px] border-l-[#4365D0] bg-white/95 p-3 shadow-[0_8px_24px_rgba(41,45,115,0.12)] backdrop-blur"
+          className="absolute inset-x-0 top-0 flex min-h-[70px] items-center gap-3 rounded-xl border border-[#DCE3EC] border-l-[3px] border-l-[#4365D0] bg-white/95 p-3 backdrop-blur"
         >
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#292D73] text-[10px] font-extrabold uppercase text-white">
             {job.user.charAt(1)}
@@ -366,7 +366,8 @@ const HeroLocationDropdown = ({
   );
 };
 
-const slideDuration = 6_000;
+const defaultSlideDuration = 6_000;
+const previewSlideDuration = 16_000;
 
 const Hero = () => {
   const router = useRouter();
@@ -424,7 +425,7 @@ const Hero = () => {
         currentIndex === heroSlides.length - 1 ? 0 : currentIndex + 1,
       );
       setTimerKey((value) => value + 1);
-    }, slideDuration);
+    }, activeIndex === 0 ? defaultSlideDuration : previewSlideDuration);
 
     return () => window.clearTimeout(slideTimer);
   }, [activeIndex, hasSearchInteraction, isPaused, timerKey]);
