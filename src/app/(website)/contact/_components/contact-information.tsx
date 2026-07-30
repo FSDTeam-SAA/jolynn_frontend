@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   Dialog,
   DialogClose,
@@ -9,8 +9,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Check, Clock3 } from "lucide-react";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 const contactContent = {
@@ -59,17 +60,79 @@ const defaultFormValues: ContactFormValues = {
   message: "",
 };
 
+type ProfileResponse = {
+  statusCode: number;
+  success: boolean;
+  message: string;
+  data: {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    phoneNumber?: string;
+  };
+};
+
+const getApiUrl = () =>
+  (
+    process.env.NEXT_PUBLIC_API_URL ||
+    "http://localhost:5001/api/v1"
+  ).replace(/\/$/, "");
+
 const ContactInformation = () => {
+  const { data: session } = useSession();
+  const sessionUser = session?.user as
+    | { accessToken?: string; token?: string }
+    | undefined;
+  const token = sessionUser?.accessToken ?? sessionUser?.token;
+  const hasPrefilledProfile = useRef(false);
   const [formValues, setFormValues] =
     useState<ContactFormValues>(defaultFormValues);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
 
+  const profileQuery = useQuery<ProfileResponse>({
+    queryKey: ["contact-profile", token],
+    enabled: Boolean(token),
+    queryFn: async () => {
+      if (!token) throw new Error("Session token is missing.");
+
+      const response = await fetch(`${getApiUrl()}/user/profile`, {
+        headers: {
+          accept: "*/*",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = (await response.json().catch(() => null)) as
+        | ProfileResponse
+        | null;
+
+      if (!response.ok || !data?.success) {
+        throw new Error(data?.message || "Unable to load your profile.");
+      }
+
+      return data;
+    },
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
+  });
+
+  useEffect(() => {
+    const profile = profileQuery.data?.data;
+    if (!profile || hasPrefilledProfile.current) return;
+
+    setFormValues((current) => ({
+      ...current,
+      firstName: profile.firstName ?? "",
+      lastName: profile.lastName ?? "",
+      email: profile.email ?? "",
+      phone: profile.phoneNumber ?? "",
+    }));
+    hasPrefilledProfile.current = true;
+  }, [profileQuery.data]);
+
   const { mutate, isPending } = useMutation({
     mutationKey: ["submit-contact-message"],
     mutationFn: async (values: ContactFormValues) => {
-      const apiUrl =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api/v1";
-      const res = await fetch(`${apiUrl}/contact`, {
+      const res = await fetch(`${getApiUrl()}/contact`, {
         method: "POST",
         headers: {
           accept: "*/*",
@@ -86,7 +149,7 @@ const ContactInformation = () => {
       return data;
     },
     onSuccess: () => {
-      setFormValues(defaultFormValues);
+      setFormValues((current) => ({ ...current, message: "" }));
       setIsSuccessModalOpen(true);
     },
     onError: (error) => {

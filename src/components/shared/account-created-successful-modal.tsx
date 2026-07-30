@@ -37,15 +37,18 @@ const AccountCreatedSuccessfulModal = ({
         </div>
 
         <p className="mx-auto mt-4 md:mt-6 lg:mt-8 max-w-[470px] text-xs md:text-sm xl:text-base font-semibold leading-[1.25] text-[#4365D0]">
-          We&apos;ve sent a verification email to {email || "your email"}.
-          Click the link to activate your account.
+          Your account was created successfully. Please check{" "}
+          <span className="font-bold text-primary">
+            {email || "your email address"}
+          </span>
+          , verify your email using the link we sent, and then log in.
         </p>
 
         <Link
           href="/login"
           className="mx-auto mt-5 md:mt-7 lg:mt-10 flex h-12 w-full max-w-[560px] items-center justify-center rounded-[6px] bg-primary text-sm md:text-base font-semibold leading-normal text-white transition hover:bg-[#20255F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2"
         >
-          Go to Sign In
+          Go to Login
         </Link>
       </div>
     </div>
