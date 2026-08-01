@@ -12,6 +12,7 @@ export type BusinessOwner = {
   profilePicture?: string;
   bio?: string;
   businessWebsiteUrl: string;
+  businessEmail?: string;
   phoneNumber?: string;
   rating: number | null;
   totalReviews: number | null;

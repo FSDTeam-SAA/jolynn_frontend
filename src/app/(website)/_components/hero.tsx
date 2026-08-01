@@ -123,14 +123,19 @@ const featuredJobs = [
   { user: "@alexbuilds", title: "Licensed electrician for renovation", location: "Orlando, FL", time: "3 days ago" },
 ];
 
+const defaultSlideDuration = 6_000;
+const previewSlideDuration = 16_000;
+const previewCardDuration = 7_000;
+
 const SlidePreviewCarousel = ({ slideId }: { slideId: number }) => {
   const [previewIndex, setPreviewIndex] = useState(0);
+  const reduceMotion = useReducedMotion();
   const items = slideId === 2 ? featuredBusinesses : featuredJobs;
 
   useEffect(() => {
     const previewTimer = window.setInterval(() => {
       setPreviewIndex((current) => (current + 1) % items.length);
-    }, 4_000);
+    }, previewCardDuration);
 
     return () => window.clearInterval(previewTimer);
   }, [items.length]);
@@ -144,14 +149,14 @@ const SlidePreviewCarousel = ({ slideId }: { slideId: number }) => {
         aria-label="Featured local businesses"
         aria-live="off"
       >
-        <AnimatePresence mode="wait" initial={false}>
+        <AnimatePresence initial={false}>
           <motion.article
             key={business.name}
-            initial={{ opacity: 0, y: 55 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -55 }}
-            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute inset-x-0 top-0 flex min-h-[70px] items-center gap-3 rounded-xl border border-[#DCE3EC] border-l-[3px] border-l-[#0082D7] bg-white/95 p-3 backdrop-blur"
+            initial={{ opacity: 0, y: reduceMotion ? 0 : 18, scale: reduceMotion ? 1 : 0.99 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: reduceMotion ? 0 : -14, scale: reduceMotion ? 1 : 0.995 }}
+            transition={{ duration: reduceMotion ? 0 : 0.75, ease: [0.22, 1, 0.36, 1] }}
+            className="absolute inset-x-0 top-0 flex min-h-[70px] will-change-transform items-center gap-3 rounded-xl border border-[#DCE3EC] border-l-[3px] border-l-[#0082D7] bg-white/95 p-3 backdrop-blur"
           >
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[#EEF2FF] text-sm font-extrabold text-[#292D73] ring-1 ring-[#DCE3EC]">
               {business.name.charAt(0)}
@@ -202,14 +207,14 @@ const SlidePreviewCarousel = ({ slideId }: { slideId: number }) => {
       aria-label="Featured help wanted posts"
       aria-live="off"
     >
-      <AnimatePresence mode="wait" initial={false}>
+      <AnimatePresence initial={false}>
         <motion.article
           key={`${job.user}-${job.title}`}
-          initial={{ opacity: 0, y: 55 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -55 }}
-          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-          className="absolute inset-x-0 top-0 flex min-h-[70px] items-center gap-3 rounded-xl border border-[#DCE3EC] border-l-[3px] border-l-[#4365D0] bg-white/95 p-3 backdrop-blur"
+          initial={{ opacity: 0, y: reduceMotion ? 0 : 18, scale: reduceMotion ? 1 : 0.99 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: reduceMotion ? 0 : -14, scale: reduceMotion ? 1 : 0.995 }}
+          transition={{ duration: reduceMotion ? 0 : 0.75, ease: [0.22, 1, 0.36, 1] }}
+          className="absolute inset-x-0 top-0 flex min-h-[70px] will-change-transform items-center gap-3 rounded-xl border border-[#DCE3EC] border-l-[3px] border-l-[#4365D0] bg-white/95 p-3 backdrop-blur"
         >
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#292D73] text-[10px] font-extrabold uppercase text-white">
             {job.user.charAt(1)}
@@ -365,9 +370,6 @@ const HeroLocationDropdown = ({
     </Popover>
   );
 };
-
-const defaultSlideDuration = 6_000;
-const previewSlideDuration = 16_000;
 
 const Hero = () => {
   const router = useRouter();

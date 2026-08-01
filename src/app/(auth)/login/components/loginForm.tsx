@@ -24,8 +24,24 @@ import Image from "next/image";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 
+const emailSchema = z.string().email();
+const usernamePattern = /^[A-Za-z0-9_-]{3,30}$/;
+
 const formSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address." }),
+  email: z
+    .string()
+    .trim()
+    .min(1, { message: "Please enter your email or username." })
+    .refine(
+      (value) =>
+        value.includes("@")
+          ? emailSchema.safeParse(value).success
+          : usernamePattern.test(value),
+      {
+        message:
+          "Please enter a valid email address or username (3–30 characters).",
+      },
+    ),
   password: z
     .string()
     .min(6, { message: "Password must be at least 6 characters long." }),
@@ -101,20 +117,21 @@ const LoginForm = () => {
             onSubmit={form.handleSubmit(onSubmit)}
             className="space-y-4 pt-5 md:pt-6"
           >
-            {/* Email Field */}
+            {/* Email or username field */}
             <FormField
               control={form.control}
               name="email"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="flex items-center gap-1 text-base font-semibold leading-[120%] text-[#4365D0] pb-2">
-                    Email Address
+                    Email / Username
                   </FormLabel>
                   <FormControl>
                     <Input
-                      type="email"
+                      type="text"
+                      autoComplete="username"
                       className={inputClassName}
-                      placeholder="Type your email"
+                      placeholder="Enter your email or username"
                       {...field}
                     />
                   </FormControl>

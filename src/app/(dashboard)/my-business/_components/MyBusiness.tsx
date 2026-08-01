@@ -227,8 +227,15 @@ function MyBusiness() {
           </div>
 
           <div className="flex items-start justify-between gap-4 sm:ml-[154px] sm:min-h-[72px]">
-            <div>
-              <h2 className="text-[24px] font-semibold leading-tight text-[#111111]">{business.businessName || "Business name not added"}</h2>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="break-words text-[24px] font-semibold leading-tight text-[#111111]">
+                  {business.businessName || "Business name not added"}
+                </h2>
+                <span className="inline-flex shrink-0 rounded-full bg-[#EEF1FF] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[#30347F]">
+                  Owner
+                </span>
+              </div>
               <p className="mt-1 text-sm text-[#667085]">{business.category || "Category not added"}</p>
             </div>
             <button type="button" aria-label="Edit business details" onClick={openEditor} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#172B4D] transition-colors hover:bg-[#F3F4FA] hover:text-[#30347F]">

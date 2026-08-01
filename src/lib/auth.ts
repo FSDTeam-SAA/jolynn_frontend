@@ -88,7 +88,7 @@ export const authOptions: NextAuthOptions = {
 
   callbacks: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async jwt({ token, user }: { token: JWT; user?: any }) {
+    async jwt({ token, user, trigger, session }: { token: JWT; user?: any; trigger?: string; session?: any }) {
       if (user) {
         token.id = user.id ?? user._id;
         token.firstName = user.firstName;
@@ -102,6 +102,27 @@ export const authOptions: NextAuthOptions = {
         token.profileImage = user.profileImage;
         token.token = user.token ?? user.accessToken;
         token.accessToken = user.token ?? user.accessToken;
+      }
+
+      if (trigger === "update" && session) {
+        const updatedUser = session.user ?? session;
+
+        token.firstName = updatedUser.firstName ?? token.firstName;
+        token.lastName = updatedUser.lastName ?? token.lastName;
+        token.username = updatedUser.username ?? token.username;
+        token.email = updatedUser.email ?? token.email;
+        token.status = updatedUser.status ?? token.status;
+        token.tag = updatedUser.tag ?? token.tag;
+        token.phoneNumber = updatedUser.phoneNumber ?? token.phoneNumber;
+        token.role = updatedUser.role ?? token.role;
+        token.profileImage = updatedUser.profileImage ?? token.profileImage;
+
+        const updatedAccessToken =
+          updatedUser.accessToken ?? updatedUser.token;
+        if (updatedAccessToken) {
+          token.token = updatedAccessToken;
+          token.accessToken = updatedAccessToken;
+        }
       }
       return token;
     },

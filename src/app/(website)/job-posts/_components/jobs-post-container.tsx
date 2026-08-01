@@ -180,6 +180,8 @@ const JobPostsContainer = () => {
   const [postToDelete, setPostToDelete] = useState<HelpWantedPost | null>(null);
   const [reportMessage, setReportMessage] = useState("");
   const [signInIntent, setSignInIntent] = useState<SignInIntent | null>(null);
+  const [showExistingBusinessNotice, setShowExistingBusinessNotice] =
+    useState(false);
   const jobPostsQuery = useQuery<HelpWantedResponse>({
     queryKey: ["help-wanted", page, PAGE_LIMIT],
     queryFn: () => fetchJobPosts(page),
@@ -303,10 +305,12 @@ const JobPostsContainer = () => {
   };
 
   const openAddBusiness = () => {
-    // if (!token) {
-    //   setSignInIntent("business");
-    //   return;
-    // }
+    const currentRole = profile?.role ?? sessionUser?.role;
+
+    if (currentRole === "businessOwner") {
+      setShowExistingBusinessNotice(true);
+      return;
+    }
 
     router.push("/add-your-business");
   };
@@ -499,9 +503,20 @@ const JobPostsContainer = () => {
                             <p className="mt-1.5 text-xs font-bold text-[#344054]">
                               Looking for {post.category} service
                             </p>
-                            <p className="mt-1 line-clamp-2 text-xs leading-5 text-[#667085]">
-                              {post.message}
+                            <p className="mt-1 line-clamp-1 max-w-full break-words text-xs leading-5 text-[#667085] [overflow-wrap:anywhere]">
+                              {post.message.length > 55
+                                ? `${post.message.slice(0, 55).trim()}…`
+                                : post.message}
                             </p>
+                            <button
+                              type="button"
+                              onClick={() => setPostToView(post)}
+                              className="mt-2 inline-flex items-center gap-1 text-[11px] font-extrabold text-[#292D73] transition hover:text-[#0082D7] focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4365D0]/40"
+                              aria-label={`View full details for ${post.category} service post`}
+                            >
+                              View More
+                              <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+                            </button>
                           </div>
                         </div>
 
@@ -614,17 +629,38 @@ const JobPostsContainer = () => {
                       </p>
                     </div>
 
-                    <h3 className="mt-3 text-[12px] font-semibold leading-relaxed text-[#1F2937] sm:text-[13px]">
-                      Looking for {post.category} service
-                    </h3>
-                    <p className="mt-3 max-w-[980px] whitespace-pre-wrap text-xs font-medium leading-normal text-[#434343] md:text-sm sm:text-[12px]">
-                      {post.message}
-                    </p>
-                    <p className="mt-3 text-[10px] font-medium text-[#7A8793]">
-                      Posted {new Date(post.createdAt).toLocaleDateString()}
-                    </p>
+                    <div className="mt-3 min-w-0 px-0 py-1">
+                      <p className="text-[9px] font-extrabold uppercase tracking-[0.12em] text-[#7A8793]">
+                        Request details
+                      </p>
+                      <h3 className="mt-1.5 break-words text-[12px] font-bold leading-5 text-[#1F2937] [overflow-wrap:anywhere] sm:text-[13px]">
+                        Looking for {post.category} service
+                      </h3>
+                      <p className="mt-2 line-clamp-2 min-h-10 max-w-full whitespace-pre-wrap break-words text-xs font-normal leading-5 text-[#52606D] [overflow-wrap:anywhere] sm:text-[13px]">
+                        {post.message.length > 90
+                          ? `${post.message.slice(0, 90).trim()}…`
+                          : post.message}
+                      </p>
+                    </div>
+                    <div className="mt-2.5 flex items-center justify-between gap-3">
+                      <p className="text-[10px] font-medium text-[#7A8793]">
+                        Posted {new Date(post.createdAt).toLocaleDateString()}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setPostToView(post)}
+                        className="inline-flex shrink-0 items-center gap-0.5 rounded px-1 py-0.5 text-[11px] font-bold text-[#292D73] transition hover:text-[#0082D7] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4365D0]/40"
+                        aria-label={`View full details for ${post.category} service post`}
+                      >
+                        View More
+                        <ChevronRight
+                          className="h-3.5 w-3.5"
+                          aria-hidden="true"
+                        />
+                      </button>
+                    </div>
 
-                    <div className="mt-auto pt-5">
+                    <div className="mt-auto pt-4">
                       <button
                         type="button"
                         onClick={() => openSideQuote(post.email)}
@@ -686,7 +722,7 @@ const JobPostsContainer = () => {
 
       {postToView && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-[#101828]/70 px-4 py-6 backdrop-blur-[3px]"
+          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-[#101828]/60 px-3 py-5 backdrop-blur-sm sm:px-5"
           role="dialog"
           aria-modal="true"
           aria-labelledby="job-details-title"
@@ -694,27 +730,25 @@ const JobPostsContainer = () => {
             if (event.target === event.currentTarget) setPostToView(null);
           }}
         >
-          <div className="relative max-h-[calc(100vh-3rem)] w-full max-w-[680px] overflow-y-auto rounded-[20px] border border-white/70 bg-white shadow-[0_30px_90px_rgba(16,24,40,0.32)]">
-            <div className="relative overflow-hidden bg-gradient-to-br from-[#292D73] via-[#303C88] to-[#1683A4] px-5 pb-6 pt-5 text-white sm:px-7 sm:pb-7">
-              <div className="pointer-events-none absolute -right-16 -top-20 h-52 w-52 rounded-full bg-white/10 blur-2xl" />
-              <div className="pointer-events-none absolute -bottom-20 left-16 h-40 w-40 rounded-full bg-cyan-300/10 blur-2xl" />
+          <div className="relative max-h-[calc(100dvh-2.5rem)] w-full max-w-[640px] overflow-x-hidden overflow-y-auto rounded-2xl border border-[#E1E7EF] bg-white shadow-[0_24px_70px_rgba(16,24,40,0.28)]">
+            <div className="relative border-b border-[#E5EAF0] bg-white px-5 py-5 sm:px-6">
               <button
                 type="button"
                 onClick={() => setPostToView(null)}
-                className="absolute right-4 top-4 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/10 transition hover:rotate-90 hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
+                className="absolute right-4 top-4 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#DDE3EA] bg-[#F8FAFC] text-[#667085] transition hover:border-[#C7D0DB] hover:bg-[#EEF2F6] hover:text-[#292D73] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4365D0]/40"
                 aria-label="Close job details"
               >
                 <X className="h-4 w-4" />
               </button>
 
-              <div className="relative z-[1] flex items-center gap-4 pr-10">
-                <div className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-white/80 bg-white/15 text-xl font-extrabold uppercase text-white shadow-[0_10px_25px_rgba(0,0,0,0.18)] sm:h-[72px] sm:w-[72px]">
+              <div className="flex min-w-0 items-center gap-3.5 pr-11">
+                <div className="relative flex h-[52px] w-[52px] shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#292D73] text-lg font-extrabold uppercase text-white shadow-sm">
                   {viewedPostProfileImage ? (
                     <Image
                       src={viewedPostProfileImage}
                       alt={viewedPostUsername}
                       fill
-                      sizes="72px"
+                      sizes="52px"
                       className="object-cover"
                     />
                   ) : (
@@ -722,13 +756,13 @@ const JobPostsContainer = () => {
                   )}
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/70">
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8A94A6]">
                     Help Wanted
                   </p>
-                  <p className="mt-1 truncate text-base font-extrabold sm:text-lg">
+                  <p className="mt-1 truncate text-base font-extrabold text-[#292D73]">
                     @{viewedPostUsername}
                   </p>
-                  <span className="mt-2 inline-flex rounded-full border border-white/20 bg-white/15 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur">
+                  <span className="mt-1.5 inline-flex rounded-full bg-[#EEF1FF] px-2.5 py-1 text-[10px] font-bold text-[#4365D0]">
                     {postToView.category}
                   </span>
                 </div>
@@ -736,13 +770,13 @@ const JobPostsContainer = () => {
 
               <h2
                 id="job-details-title"
-                className="relative z-[1] mt-5 text-xl font-extrabold leading-tight sm:text-[26px]"
+                className="mt-4 break-words pr-10 text-xl font-extrabold leading-snug text-[#1D2939] [overflow-wrap:anywhere] sm:text-2xl"
               >
                 Looking for {postToView.category} service
               </h2>
             </div>
 
-            <div className="space-y-5 bg-[#F8FAFC] p-5 sm:p-7">
+            <div className="min-w-0 space-y-4 bg-[#F8FAFC] p-4 sm:p-6">
               <div className="grid gap-3 sm:grid-cols-3">
                 {[
                   {
@@ -759,16 +793,16 @@ const JobPostsContainer = () => {
                 ].map(({ label, value, icon: Icon }) => (
                   <div
                     key={label}
-                    className="flex min-w-0 items-start gap-3 rounded-xl border border-[#E3E8EF] bg-white p-3.5 shadow-[0_3px_10px_rgba(16,24,40,0.04)]"
+                    className="flex min-w-0 items-center gap-2.5 rounded-xl border border-[#E1E7EF] bg-white p-3"
                   >
-                    <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#EEF1FF] text-[#4365D0]">
+                    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#EEF1FF] text-[#4365D0]">
                       <Icon className="h-4 w-4" />
                     </span>
                     <div className="min-w-0">
                       <p className="text-[10px] font-bold uppercase tracking-wide text-[#98A2B3]">
                         {label}
                       </p>
-                      <p className="mt-1 break-words text-sm font-semibold text-[#344054]">
+                      <p className="mt-0.5 break-words text-[13px] font-bold text-[#344054] [overflow-wrap:anywhere]">
                         {value || "Not provided"}
                       </p>
                     </div>
@@ -776,7 +810,7 @@ const JobPostsContainer = () => {
                 ))}
               </div>
 
-              <div className="rounded-2xl border border-[#E1E7EF] bg-white p-5 shadow-[0_5px_16px_rgba(16,24,40,0.05)]">
+              <div className="min-w-0 overflow-hidden rounded-xl border border-[#E1E7EF] bg-white p-4 sm:p-5">
                 <div className="flex items-center gap-2">
                   <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[#E8F7F7] text-[#1683A4]">
                     <BriefcaseBusiness className="h-4 w-4" />
@@ -785,23 +819,23 @@ const JobPostsContainer = () => {
                   Job details
                   </p>
                 </div>
-                <p className="mt-4 whitespace-pre-wrap text-sm font-medium leading-6 text-[#475467]">
+                <p className="mt-3 max-w-full whitespace-pre-wrap break-words text-sm font-normal leading-6 text-[#475467] [overflow-wrap:anywhere]">
                   {postToView.message}
                 </p>
               </div>
 
-              <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <div className="flex flex-col-reverse gap-2.5 pt-1 sm:flex-row sm:justify-end">
                 <button
                   type="button"
                   onClick={() => setPostToView(null)}
-                  className="inline-flex h-11 items-center justify-center rounded-lg border border-[#D0D5DD] bg-white px-6 text-xs font-bold text-[#475467] transition hover:border-[#98A2B3] hover:bg-[#F2F4F7]"
+                  className="inline-flex h-10 items-center justify-center rounded-lg border border-[#D0D5DD] bg-white px-5 text-xs font-bold text-[#475467] transition hover:border-[#98A2B3] hover:bg-[#F2F4F7]"
                 >
                   Close
                 </button>
                 <button
                   type="button"
                   onClick={() => openSideQuote(postToView.email)}
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-primary px-6 text-xs font-extrabold text-white shadow-[0_8px_18px_rgba(41,45,115,0.18)] transition hover:-translate-y-0.5 hover:bg-[#1F2464]"
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-5 text-xs font-extrabold text-white shadow-[0_6px_14px_rgba(41,45,115,0.18)] transition hover:bg-[#1F2464]"
                 >
                   <Mail className="h-4 w-4" />
                   Get SideQuote
@@ -887,6 +921,65 @@ const JobPostsContainer = () => {
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {showExistingBusinessNotice && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[#101828]/60 px-4 py-6 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="existing-business-title"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setShowExistingBusinessNotice(false);
+            }
+          }}
+        >
+          <div className="relative w-full max-w-[440px] overflow-hidden rounded-2xl border border-white/70 bg-white shadow-[0_24px_70px_rgba(16,24,40,0.28)]">
+            <div className="h-1.5 bg-[linear-gradient(90deg,#292D73_0%,#5962B8_55%,#75B8AE_100%)]" />
+            <button
+              type="button"
+              onClick={() => setShowExistingBusinessNotice(false)}
+              className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#E1E7EF] bg-[#F8FAFC] text-[#667085] transition hover:bg-[#EEF2F6] hover:text-[#292D73] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4365D0]/40"
+              aria-label="Close business notice"
+            >
+              <X className="h-4 w-4" />
+            </button>
+
+            <div className="px-6 py-8 text-center sm:px-8">
+              <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-[#EEF1FF] text-[#292D73]">
+                <BriefcaseBusiness className="h-7 w-7" aria-hidden="true" />
+              </span>
+              <h2
+                id="existing-business-title"
+                className="mt-5 text-xl font-extrabold text-[#171A3A] sm:text-2xl"
+              >
+                Your business is already listed
+              </h2>
+              <p className="mx-auto mt-2 max-w-[340px] text-sm leading-6 text-[#667085]">
+                You already have a business in the SideQuote directory. You can
+                view and manage its information from your dashboard.
+              </p>
+
+              <div className="mt-6 grid gap-2.5 sm:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={() => setShowExistingBusinessNotice(false)}
+                  className="inline-flex h-11 items-center justify-center rounded-lg border border-[#D0D5DD] bg-white px-5 text-xs font-bold text-[#475467] transition hover:bg-[#F8FAFC]"
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  onClick={() => router.push("/overview")}
+                  className="inline-flex h-11 items-center justify-center rounded-lg bg-primary px-5 text-xs font-bold text-white shadow-[0_6px_14px_rgba(41,45,115,0.18)] transition hover:bg-[#20255F]"
+                >
+                  Go to Dashboard
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
