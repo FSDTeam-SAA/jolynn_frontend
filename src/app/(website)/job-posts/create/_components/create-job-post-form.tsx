@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   ChevronDown,
   CircleHelp,
+  DollarSign,
   Mail,
   MapPin,
   MessageSquareText,
@@ -40,6 +41,7 @@ type HelpWantedPayload = {
   email: string;
   zipcode: string;
   category: string;
+  budgetRange: string;
   requestedCategory?: string;
   phone?: string;
   message: string;
@@ -58,6 +60,81 @@ type HelpWantedResponse = {
 
 const OTHER_CATEGORY = "__other__";
 const MESSAGE_LIMIT = 1000;
+const MIN_BUDGET = 10;
+const MAX_BUDGET = 5_000;
+const BUDGET_STEP = 10;
+const INITIAL_BUDGET_RANGE: [number, number] = [500, 1_000];
+
+const formatBudget = (value: number) => `$${value.toLocaleString("en-US")}`;
+
+const BudgetRange = ({
+  value,
+  onChange,
+}: {
+  value: [number, number];
+  onChange: (value: [number, number]) => void;
+}) => {
+  const [minimum, maximum] = value;
+  const minimumPosition =
+    ((minimum - MIN_BUDGET) / (MAX_BUDGET - MIN_BUDGET)) * 100;
+  const maximumPosition =
+    ((maximum - MIN_BUDGET) / (MAX_BUDGET - MIN_BUDGET)) * 100;
+
+  return (
+    <div>
+      <div className="flex items-center gap-2 text-[13px] font-bold text-[#344054]">
+        <DollarSign className="h-4 w-4 text-[#667085]" aria-hidden="true" />
+        Budget range <span className="text-[#D92D20]">*</span>
+      </div>
+      <div className="mt-3 rounded-[10px] border border-[#D0D5DD] bg-white px-4 py-4">
+        <div className="relative h-5">
+          <div className="absolute left-0 right-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-[#E4E7EC]" />
+          <div
+            className="absolute top-1/2 h-1 -translate-y-1/2 rounded-full bg-[#292D73]"
+            style={{
+              left: `${minimumPosition}%`,
+              right: `${100 - maximumPosition}%`,
+            }}
+          />
+          <input
+            type="range"
+            min={MIN_BUDGET}
+            max={MAX_BUDGET}
+            step={BUDGET_STEP}
+            value={minimum}
+            aria-label="Minimum budget"
+            onChange={(event) =>
+              onChange([
+                Math.min(Number(event.target.value), maximum - BUDGET_STEP),
+                maximum,
+              ])
+            }
+            className="pointer-events-none absolute inset-0 h-5 w-full appearance-none bg-transparent [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-[#292D73] [&::-webkit-slider-runnable-track]:bg-transparent [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#292D73]"
+          />
+          <input
+            type="range"
+            min={MIN_BUDGET}
+            max={MAX_BUDGET}
+            step={BUDGET_STEP}
+            value={maximum}
+            aria-label="Maximum budget"
+            onChange={(event) =>
+              onChange([
+                minimum,
+                Math.max(Number(event.target.value), minimum + BUDGET_STEP),
+              ])
+            }
+            className="pointer-events-none absolute inset-0 h-5 w-full appearance-none bg-transparent [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-[#292D73] [&::-webkit-slider-runnable-track]:bg-transparent [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#292D73]"
+          />
+        </div>
+        <div className="mt-1 flex justify-between text-[11px] font-medium tabular-nums text-[#667085]">
+          <span>{formatBudget(minimum)}</span>
+          <span>{formatBudget(maximum)}</span>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const initialValues: FormValues = {
   name: "",
@@ -193,6 +270,9 @@ const CreateJobPostForm = () => {
   const router = useRouter();
   const { data: session } = useSession();
   const [values, setValues] = useState(initialValues);
+  const [budgetRange, setBudgetRange] = useState<[number, number]>(
+    INITIAL_BUDGET_RANGE,
+  );
   const [errors, setErrors] = useState<FormErrors>({});
   const [touched, setTouched] = useState<
     Partial<Record<keyof FormValues, boolean>>
@@ -273,9 +353,9 @@ const CreateJobPostForm = () => {
   >({
     mutationKey: ["create-help-wanted"],
     mutationFn: async (payload) => {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-      if (!apiUrl)
-        throw new Error("The help wanted service is not configured.");
+      const apiUrl =
+        process.env.NEXT_PUBLIC_API_URL ||
+        "https://api.sidequote.cloud/api/v1";
 
       const response = await fetch(`${apiUrl}/help-wanted`, {
         method: "POST",
@@ -295,6 +375,7 @@ const CreateJobPostForm = () => {
     },
     onSuccess: (result) => {
       setValues(initialValues);
+      setBudgetRange(INITIAL_BUDGET_RANGE);
       setErrors({});
       setTouched({});
       setFormMessage(result.message);
@@ -368,6 +449,7 @@ const CreateJobPostForm = () => {
       zipcode: values.zipCode.trim(),
       category:
         values.category === OTHER_CATEGORY ? "Other" : values.category.trim(),
+      budgetRange: `${formatBudget(budgetRange[0])} - ${formatBudget(budgetRange[1])}`,
       ...(values.category === OTHER_CATEGORY
         ? { requestedCategory: values.customCategory.trim() }
         : {}),
@@ -672,6 +754,10 @@ const CreateJobPostForm = () => {
                   </Field>
                 </div>
               )}
+
+              <div className="mt-3.5">
+                <BudgetRange value={budgetRange} onChange={setBudgetRange} />
+              </div>
 
               <div className="mt-3.5">
                 <label

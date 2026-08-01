@@ -62,6 +62,11 @@ import Image from "next/image";
 import { useSession } from "next-auth/react";
 
 const OTHER_CATEGORY = "__other__";
+const excludedStateNames = new Set([
+  "armed forces europe",
+  "armed forces pacific",
+  "armed forces of the americas",
+]);
 
 type TextFieldConfig = {
   name:
@@ -88,7 +93,7 @@ const textFields: TextFieldConfig[] = [
   },
   {
     name: "username",
-    label: "User Name",
+    label: "User Name*",
     placeholder: "Jamesnderson22",
   },
   {
@@ -404,11 +409,13 @@ const AddYourBusinessContainer = () => {
   });
   const selectedCategory = form.watch("category");
   const selectedStateName = form.watch("state");
-  const selectedState = statesQuery.data?.data.find(
+  const states = (statesQuery.data?.data ?? []).filter(
+    (state) => !excludedStateNames.has(state.name.trim().toLowerCase()),
+  );
+  const selectedState = states.find(
     (state) => state.name === selectedStateName,
   );
   const citiesQuery = useLocationCities(selectedState);
-  const states = statesQuery.data?.data ?? [];
   const cities = citiesQuery.data?.data.cities ?? [];
 
   const { mutate, isPending } = useMutation<
@@ -860,7 +867,7 @@ const AddYourBusinessContainer = () => {
                         <div className="relative">
                           <Input
                             type={showPassword ? "text" : "password"}
-                            placeholder="********"
+                            // placeholder="********"
                             className={`${inputClassName} pr-12`}
                             {...field}
                           />
@@ -896,7 +903,7 @@ const AddYourBusinessContainer = () => {
                         <div className="relative">
                           <Input
                             type={showConfirmPassword ? "text" : "password"}
-                            placeholder="********"
+                            // placeholder="********"
                             className={`${inputClassName} pr-12`}
                             {...field}
                           />
