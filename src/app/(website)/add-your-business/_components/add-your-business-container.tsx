@@ -1,11 +1,13 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
+  ArrowRight,
   BriefcaseBusiness,
   Check,
   ChevronsUpDown,
+  CircleCheck,
   Eye,
   EyeOff,
   Info,
@@ -81,7 +83,7 @@ const textFields: TextFieldConfig[] = [
   },
   {
     name: "ownerName",
-    label: "Owner Name",
+    label: "Owner Name*",
     placeholder: "James Anderson",
   },
   {
@@ -256,7 +258,7 @@ const SearchableDropdown = ({
           type="button"
           disabled={disabled || loading}
           aria-expanded={open}
-          className="flex h-10 w-full items-center justify-between rounded-[8px] border border-[#F5F3FA] bg-white px-4 text-left text-sm font-medium text-primary shadow-[2px_4px_5px_0px_#0000000A] outline-none focus:ring-1 focus:ring-[#292D73] disabled:cursor-not-allowed disabled:bg-[#F8FAFC] disabled:text-[#98A2B3]"
+          className="flex h-11 w-full items-center justify-between rounded-[9px] border border-[#D8DDE7] bg-white px-4 text-left text-sm font-medium text-[#20244A] shadow-none outline-none transition focus:border-[#292D73] focus:ring-4 focus:ring-[#292D73]/10 disabled:cursor-not-allowed disabled:bg-[#F8FAFC] disabled:text-[#98A2B3]"
         >
           <span className="truncate">
             {loading ? "Loading..." : value || placeholder}
@@ -315,7 +317,52 @@ type RegisterBusinessOwnerResponse = {
   data: Record<string, unknown>;
 };
 
+const BusinessListedSuccessModal = ({ open }: { open: boolean }) => {
+  if (!open) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[#101828]/60 px-4 py-6 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="business-listed-success-title"
+    >
+      <div className="w-full max-w-[500px] overflow-hidden rounded-2xl border border-white/70 bg-white shadow-[0_28px_80px_rgba(16,24,40,0.28)]">
+        <div className="h-1.5 bg-[linear-gradient(90deg,#292D73_0%,#5962B8_55%,#75B8AE_100%)]" />
+        <div className="px-6 py-8 text-center sm:px-10 sm:py-10">
+          <div className="relative mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[#ECFDF3] ring-8 ring-[#F3FBF6]">
+            <CircleCheck className="h-10 w-10 text-[#159455]" aria-hidden="true" />
+          </div>
+
+          <p className="mt-7 text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#667085]">
+            Listing published
+          </p>
+          <h2
+            id="business-listed-success-title"
+            className="mx-auto mt-2 max-w-[380px] text-2xl font-extrabold leading-tight text-[#171A3A] sm:text-[28px]"
+          >
+            Business Directory Listed Successfully!
+          </h2>
+          <p className="mx-auto mt-3 max-w-[390px] text-sm leading-6 text-[#667085]">
+            Your business has been added to the directory. You can now manage
+            your business information, services, and profile from your dashboard.
+          </p>
+
+          <Link
+            href="/overview"
+            className="mt-7 inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#292D73] px-6 text-sm font-bold text-white shadow-[0_8px_20px_rgba(41,45,115,0.22)] transition hover:bg-[#20255F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4365D0] focus-visible:ring-offset-2"
+          >
+            Go to Dashboard
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const AddYourBusinessContainer = () => {
+  const queryClient = useQueryClient();
   const categoriesQuery = useServiceCategories();
   const categories = categoriesQuery.data?.data ?? [];
   const statesQuery = useLocationStates();
@@ -323,14 +370,14 @@ const AddYourBusinessContainer = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [successEmail, setSuccessEmail] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showListingSuccessModal, setShowListingSuccessModal] = useState(false);
 
-  const { data: session } = useSession();
+  const { data: session, update: updateSession } = useSession();
   const sessionUser = session?.user as
     | { role?: string; accessToken?: string; token?: string }
     | undefined;
-  const userType = sessionUser?.role;
   const token = sessionUser?.accessToken ?? sessionUser?.token;
-  const isExistingUser = userType === "user";
+  const isExistingUser = Boolean(token);
   const formSchema = useMemo(
     () => createFormSchema(isExistingUser),
     [isExistingUser],
@@ -424,10 +471,52 @@ const AddYourBusinessContainer = () => {
 
       return data;
     },
-    onSuccess: (data, values) => {
-      toast.success(data?.message || "Business account created successfully");
-      setSuccessEmail(values.businessEmail);
-      setShowSuccessModal(true);
+    onSuccess: async (data, values) => {
+      if (isExistingUser) {
+        const authenticatedData = data.data as {
+          accessToken?: string;
+          token?: string;
+          user?: {
+            firstName?: string;
+            lastName?: string;
+            username?: string;
+            email?: string;
+            status?: string;
+            role?: string;
+            profileImage?: string;
+            profilePicture?: string;
+          };
+        };
+        const updatedAccessToken =
+          authenticatedData.accessToken ?? authenticatedData.token;
+        const updatedUser = authenticatedData.user;
+
+        await updateSession({
+          firstName: updatedUser?.firstName,
+          lastName: updatedUser?.lastName,
+          username: updatedUser?.username,
+          email: updatedUser?.email,
+          status: updatedUser?.status,
+          role: updatedUser?.role ?? "businessOwner",
+          profileImage:
+            updatedUser?.profileImage ?? updatedUser?.profilePicture,
+          token: updatedAccessToken,
+          accessToken: updatedAccessToken,
+        });
+        await queryClient.invalidateQueries({ queryKey: ["user-profile"] });
+      }
+
+      toast.success(
+        isExistingUser
+          ? "Business directory listed successfully!"
+          : data?.message || "Business account created successfully",
+      );
+      if (isExistingUser) {
+        setShowListingSuccessModal(true);
+      } else {
+        setSuccessEmail(values.businessEmail);
+        setShowSuccessModal(true);
+      }
       form.reset();
     },
     onError: (error) => {
@@ -874,15 +963,23 @@ const AddYourBusinessContainer = () => {
                 className="h-12 w-full rounded-[9px] bg-primary text-[14px] font-bold text-white shadow-[0_8px_18px_rgba(41,45,115,0.22)] transition hover:bg-[#20255F] hover:shadow-[0_10px_24px_rgba(41,45,115,0.28)]"
                 type="submit"
               >
-                {isPending ? "Creating account..." : "Create Account"}
+                {isPending
+                  ? isExistingUser
+                    ? "Saving..."
+                    : "Creating account..."
+                  : isExistingUser
+                    ? "Save Business Account"
+                    : "Create Account"}
               </Button>
 
-              <p className="text-center text-sm xl:text-base leading-normal font-medium text-[#1A1A2E]">
-                Already have an account?{" "}
-                <Link href="/login" className="font-extrabold text-primary">
-                  Log In
-                </Link>
-              </p>
+              {!isExistingUser && (
+                <p className="text-center text-sm font-medium leading-normal text-[#1A1A2E] xl:text-base">
+                  Already have an account?{" "}
+                  <Link href="/login" className="font-extrabold text-primary">
+                    Log In
+                  </Link>
+                </p>
+              )}
             </form>
           </Form>
           </div>
@@ -893,6 +990,7 @@ const AddYourBusinessContainer = () => {
         open={showSuccessModal}
         email={successEmail}
       />
+      <BusinessListedSuccessModal open={showListingSuccessModal} />
     </section>
   );
 };

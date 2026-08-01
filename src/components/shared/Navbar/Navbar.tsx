@@ -59,6 +59,7 @@ const Navbar = () => {
       .filter(Boolean)
       .join(" ") || sessionUser?.email || "Account";
   const isAuthenticated = status === "authenticated";
+  const effectiveRole = profile?.role ?? sessionUser?.role;
 
   const confirmLogout = async () => {
     setIsLogoutOpen(false);
@@ -128,7 +129,7 @@ const Navbar = () => {
                 className="w-44 bg-white p-1.5"
               >
                 <DropdownMenuItem asChild className="cursor-pointer py-2.5">
-                  <Link href={`${sessionUser?.role === "businessOwner" ? "/overview" : "/account/profile"}`}><LayoutDashboard className="h-4 w-4" />Profile</Link>
+                  <Link href={effectiveRole === "businessOwner" ? "/overview" : "/account/profile"}><LayoutDashboard className="h-4 w-4" />Profile</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem onSelect={() => setIsLogoutOpen(true)} className="cursor-pointer py-2.5 text-red-600 focus:text-red-600">
                   <LogOut className="h-4 w-4" />Logout
@@ -151,7 +152,7 @@ const Navbar = () => {
         </div>
 
         <div className="flex justify-end lg:hidden">
-          <MobileNavbar navItems={navItems} isAuthenticated={isAuthenticated} isAuthLoading={status === "loading"} profileImage={profileImage} displayName={displayName} onLogout={() => setIsLogoutOpen(true)} />
+          <MobileNavbar navItems={navItems} isAuthenticated={isAuthenticated} isAuthLoading={status === "loading"} profileImage={profileImage} displayName={displayName} role={effectiveRole} onLogout={() => setIsLogoutOpen(true)} />
         </div>
       </div>
     </header>

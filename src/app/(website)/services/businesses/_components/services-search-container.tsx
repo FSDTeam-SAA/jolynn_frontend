@@ -625,11 +625,10 @@ const ServicesSearchContainer = ({
                                   Report
                                 </button>
                                 <Link
-                                  href={business.businessWebsiteUrl || "#"}
-                                  target={business.businessWebsiteUrl ? "_blank" : undefined}
-                                  rel={business.businessWebsiteUrl ? "noreferrer" : undefined}
-                                  className="inline-flex h-9 min-w-9 items-center justify-center rounded-md border border-[#292E78] bg-white text-[#292E78] transition hover:bg-[#292E78] hover:text-white"
-                                  aria-label={`Visit ${business.businessName} website`}
+                                  href={business.businessEmail ? `mailto:${business.businessEmail}` : "#"}
+                                  className={`inline-flex h-9 min-w-9 items-center justify-center rounded-md border border-[#292E78] bg-white text-[#292E78] transition hover:bg-[#292E78] hover:text-white ${!business.businessEmail ? "pointer-events-none opacity-50" : ""}`}
+                                  aria-label={business.businessEmail ? `Email ${business.businessName}` : `Email unavailable for ${business.businessName}`}
+                                  aria-disabled={!business.businessEmail}
                                 >
                                   <MessageCircle className="h-4 w-4" />
                                 </Link>
@@ -734,11 +733,10 @@ const ServicesSearchContainer = ({
                             Report
                           </button>
                           <Link
-                            href={business.businessWebsiteUrl || "#"}
-                            target={business.businessWebsiteUrl ? "_blank" : undefined}
-                            rel={business.businessWebsiteUrl ? "noreferrer" : undefined}
-                            className="inline-flex h-8 items-center justify-center rounded-[4px] border border-[#292E78] bg-white text-[#292E78] transition hover:bg-[#292E78] hover:text-white"
-                            aria-label={`Visit ${business.businessName} website`}
+                            href={business.businessEmail ? `mailto:${business.businessEmail}` : "#"}
+                            className={`inline-flex h-8 items-center justify-center rounded-[4px] border border-[#292E78] bg-white text-[#292E78] transition hover:bg-[#292E78] hover:text-white ${!business.businessEmail ? "pointer-events-none opacity-50" : ""}`}
+                            aria-label={business.businessEmail ? `Email ${business.businessName}` : `Email unavailable for ${business.businessName}`}
+                            aria-disabled={!business.businessEmail}
                           >
                             <MessageCircle className="h-4 w-4" />
                           </Link>
