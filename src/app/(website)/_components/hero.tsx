@@ -126,6 +126,11 @@ const featuredJobs = [
 const defaultSlideDuration = 6_000;
 const previewSlideDuration = 16_000;
 const previewCardDuration = 7_000;
+const excludedStateNames = new Set([
+  "armed forces europe",
+  "armed forces pacific",
+  "armed forces of the americas",
+]);
 
 const SlidePreviewCarousel = ({ slideId }: { slideId: number }) => {
   const [previewIndex, setPreviewIndex] = useState(0);
@@ -384,8 +389,7 @@ const Hero = () => {
   const [city, setCity] = useState("");
   const statesQuery = useLocationStates();
   const states = (statesQuery.data?.data ?? []).filter(
-    (state) =>
-      state.name.trim().toLowerCase() !== "armed forces europe",
+    (state) => !excludedStateNames.has(state.name.trim().toLowerCase()),
   );
   const selectedState = states.find((state) => state.name === stateName);
   const citiesQuery = useLocationCities(selectedState);

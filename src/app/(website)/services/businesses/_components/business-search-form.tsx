@@ -26,6 +26,12 @@ type BusinessSearchFormProps = {
   compact?: boolean;
 };
 
+const excludedStateNames = new Set([
+  "armed forces europe",
+  "armed forces pacific",
+  "armed forces of the americas",
+]);
+
 type LocationDropdownProps = {
   value: string;
   options: string[];
@@ -159,7 +165,7 @@ const BusinessSearchForm = ({
   const { data } = useServices();
   const statesQuery = useLocationStates();
   const states = (statesQuery.data?.data ?? []).filter(
-    (state) => state.name.trim().toLowerCase() !== "armed forces europe",
+    (state) => !excludedStateNames.has(state.name.trim().toLowerCase()),
   );
   const selectedState = states.find((state) => state.name === stateName);
   const citiesQuery = useLocationCities(selectedState);

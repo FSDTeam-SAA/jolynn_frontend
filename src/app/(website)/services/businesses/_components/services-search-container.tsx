@@ -59,6 +59,11 @@ type SelectedBusiness = {
   name: string;
 };
 
+const excludedStateNames = new Set([
+  "armed forces pacific",
+  "armed forces of the americas",
+]);
+
 type FilterLocationDropdownProps = {
   value: string;
   options: string[];
@@ -215,7 +220,9 @@ const ServicesSearchContainer = ({
   const categoriesQuery = useServiceCategories();
   const categories = categoriesQuery.data?.data ?? [];
   const statesQuery = useLocationStates();
-  const states = statesQuery.data?.data ?? [];
+  const states = (statesQuery.data?.data ?? []).filter(
+    (state) => !excludedStateNames.has(state.name.trim().toLowerCase()),
+  );
 
   const initialServiceTitle =
     services.find(
