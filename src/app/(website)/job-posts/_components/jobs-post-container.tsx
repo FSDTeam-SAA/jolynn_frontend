@@ -28,19 +28,20 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { toast } from "sonner";
 
+type HelpWantedUser = {
+  _id: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  username?: string;
+  phoneNumber?: string;
+  profilePicture?: string;
+};
+
 type HelpWantedPost = {
   _id: string;
-  userId?:
-    | string
-    | {
-        _id: string;
-        firstName?: string;
-        lastName?: string;
-        email?: string;
-        username?: string;
-        phoneNumber?: string;
-        profilePicture?: string;
-      };
+  // Mongoose populate returns null when the referenced user no longer exists.
+  userId?: string | HelpWantedUser | null;
   username: string;
   email: string;
   zipcode: string;
@@ -89,8 +90,13 @@ const PAGE_LIMIT = 9;
 type ViewMode = "grid" | "list";
 type SignInIntent = "report" | "create" | "business" | "sidequote";
 
+const getPopulatedUser = (post: HelpWantedPost): HelpWantedUser | undefined =>
+  post.userId !== null && typeof post.userId === "object"
+    ? post.userId
+    : undefined;
+
 const getPostUserId = (post: HelpWantedPost) =>
-  typeof post.userId === "string" ? post.userId : post.userId?._id;
+  typeof post.userId === "string" ? post.userId : getPopulatedUser(post)?._id;
 
 const fetchJobPosts = async (page: number): Promise<HelpWantedResponse> => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -160,8 +166,7 @@ const JobPostsContainer = () => {
 
   const isOwnPost = (post: HelpWantedPost) => {
     const postUserId = getPostUserId(post);
-    const populatedUserEmail =
-      typeof post.userId === "object" ? post.userId.email : undefined;
+    const populatedUserEmail = getPopulatedUser(post)?.email;
     const postEmails = [post.email, populatedUserEmail]
       .filter(Boolean)
       .map((email) => email!.trim().toLowerCase());
@@ -197,14 +202,12 @@ const JobPostsContainer = () => {
     (post) => post._id === selectedPostId,
   );
   const selectedReportUsername = selectedReportPost
-    ? typeof selectedReportPost.userId === "object"
-      ? selectedReportPost.userId.username || selectedReportPost.username
-      : selectedReportPost.username
+    ? getPopulatedUser(selectedReportPost)?.username ||
+      selectedReportPost.username
     : "";
-  const viewedPostUser =
-    postToView && typeof postToView.userId === "object"
-      ? postToView.userId
-      : undefined;
+  const viewedPostUser = postToView
+    ? getPopulatedUser(postToView)
+    : undefined;
   const viewedPostUsername = postToView
     ? normalizePublicUsername(
         viewedPostUser?.username || postToView.username,
@@ -455,8 +458,7 @@ const JobPostsContainer = () => {
               }
             >
               {posts.map((post) => {
-                const populatedUser =
-                  typeof post.userId === "object" ? post.userId : undefined;
+                const populatedUser = getPopulatedUser(post);
                 const profileImage =
                   post.profilePicture || populatedUser?.profilePicture;
                 const publicUsername = normalizePublicUsername(
@@ -503,7 +505,7 @@ const JobPostsContainer = () => {
                             <p className="mt-1.5 text-xs font-bold text-[#344054]">
                               Looking for {post.category} service
                             </p>
-                            <p className="mt-1 line-clamp-1 max-w-full break-words text-xs leading-5 text-[#667085] [overflow-wrap:anywhere]">
+                            <p className="mt-1 line-clamp-1 max-w-full break-words text-xs leading-5 text-[#667085]">
                               {post.message.length > 55
                                 ? `${post.message.slice(0, 55).trim()}…`
                                 : post.message}
@@ -633,10 +635,10 @@ const JobPostsContainer = () => {
                       <p className="text-[9px] font-extrabold uppercase tracking-[0.12em] text-[#7A8793]">
                         Request details
                       </p>
-                      <h3 className="mt-1.5 break-words text-[12px] font-bold leading-5 text-[#1F2937] [overflow-wrap:anywhere] sm:text-[13px]">
+                      <h3 className="mt-1.5 break-words text-[12px] font-bold leading-5 text-[#1F2937] sm:text-[13px]">
                         Looking for {post.category} service
                       </h3>
-                      <p className="mt-2 line-clamp-2 min-h-10 max-w-full whitespace-pre-wrap break-words text-xs font-normal leading-5 text-[#52606D] [overflow-wrap:anywhere] sm:text-[13px]">
+                      <p className="mt-2 line-clamp-2 min-h-10 max-w-full whitespace-pre-wrap break-words text-xs font-normal leading-5 text-[#52606D] sm:text-[13px]">
                         {post.message.length > 90
                           ? `${post.message.slice(0, 90).trim()}…`
                           : post.message}
@@ -770,7 +772,7 @@ const JobPostsContainer = () => {
 
               <h2
                 id="job-details-title"
-                className="mt-4 break-words pr-10 text-xl font-extrabold leading-snug text-[#1D2939] [overflow-wrap:anywhere] sm:text-2xl"
+                className="mt-4 break-words pr-10 text-xl font-extrabold leading-snug text-[#1D2939] sm:text-2xl"
               >
                 Looking for {postToView.category} service
               </h2>
@@ -802,7 +804,7 @@ const JobPostsContainer = () => {
                       <p className="text-[10px] font-bold uppercase tracking-wide text-[#98A2B3]">
                         {label}
                       </p>
-                      <p className="mt-0.5 break-words text-[13px] font-bold text-[#344054] [overflow-wrap:anywhere]">
+                      <p className="mt-0.5 break-words text-[13px] font-bold text-[#344054]">
                         {value || "Not provided"}
                       </p>
                     </div>
@@ -819,7 +821,7 @@ const JobPostsContainer = () => {
                   Job details
                   </p>
                 </div>
-                <p className="mt-3 max-w-full whitespace-pre-wrap break-words text-sm font-normal leading-6 text-[#475467] [overflow-wrap:anywhere]">
+                <p className="mt-3 max-w-full whitespace-pre-wrap break-words text-sm font-normal leading-6 text-[#475467]">
                   {postToView.message}
                 </p>
               </div>

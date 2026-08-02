@@ -6,6 +6,7 @@ import { useState } from "react";
 import { LayoutGrid, List } from "lucide-react";
 import {
   AccountPageShell,
+  AccountSectionHeader,
   SavedBusinessGrid,
 } from "../../_components/account-ui";
 
@@ -27,6 +28,11 @@ const SaveServicesContainer = () => {
 
   return (
     <AccountPageShell active="save-services" showProfileCard={false}>
+      <AccountSectionHeader
+        title="Saved Services"
+        description="Quickly revisit the professionals and services you have saved."
+        count={!isLoading && data ? `${data.meta.total} saved` : undefined}
+      />
       {status === "loading" || isLoading ? (
         <div
           className={`grid grid-cols-1 gap-5 ${
@@ -49,12 +55,7 @@ const SaveServicesContainer = () => {
         </div>
       ) : (
         <>
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-            <p className="text-[13px] font-semibold text-[#515E6E]">
-              {data.meta.total} saved service
-              {data.meta.total === 1 ? "" : "s"}
-            </p>
-
+          <div className="mb-5 flex justify-end">
             <div
               className="inline-flex items-center rounded-[7px] border border-[#D8DEE8] bg-[#F5F7FA] p-1"
               role="group"

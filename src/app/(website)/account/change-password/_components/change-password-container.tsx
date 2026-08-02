@@ -96,8 +96,8 @@ const ChangePasswordContainer = () => {
   return (
     <AccountPageShell active="change-password">
       <AccountPanel
-        title="Changes Password"
-        description="Manage your account preferences, security settings, and privacy options."
+        title="Change Password"
+        description="Use a strong, unique password to keep your account secure."
       >
         <form className="space-y-5" onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 gap-x-5 gap-y-4 md:grid-cols-2">

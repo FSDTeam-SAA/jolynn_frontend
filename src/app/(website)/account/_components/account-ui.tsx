@@ -14,6 +14,7 @@ import {
   MessageCircle,
   MessageSquareCode,
   Pencil,
+  Plus,
   Star,
   User,
 } from "lucide-react";
@@ -49,18 +50,18 @@ export const AccountPageShell = ({
   showProfileCard = true,
 }: AccountPageShellProps) => {
   return (
-    <section className="bg-white px-4 py-10 sm:px-6 lg:px-8">
-      <div className="container">
-        <div className="grid gap-6 lg:grid-cols-[230px_minmax(0,1fr)]">
+    <section className="min-h-[calc(100vh-80px)] bg-[radial-gradient(circle_at_top_left,_#eef8f8_0,_transparent_32%),linear-gradient(180deg,#f8fafc_0%,#ffffff_38%)] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+      <div className="container max-w-[1440px]">
+        <div className="grid items-start gap-5 lg:grid-cols-[248px_minmax(0,1fr)] lg:gap-6">
           <AccountSidebar active={active} />
           <div
             className={cn(
-              "grid gap-5",
-              showProfileCard && "xl:grid-cols-[280px_minmax(0,1fr)]",
+              "grid min-w-0 gap-5",
+              showProfileCard && "xl:grid-cols-[292px_minmax(0,1fr)]",
             )}
           >
             {showProfileCard ? <ProfileSummaryCard /> : null}
-            <div>{children}</div>
+            <div className="min-w-0">{children}</div>
           </div>
         </div>
       </div>
@@ -79,7 +80,7 @@ const AccountSidebar = ({ active }: { active: AccountSection }) => {
   return (
     <>
       <aside
-        className="scrollbar-hide flex gap-2 overflow-x-auto pb-2 lg:h-full lg:flex-col lg:gap-1.5 lg:overflow-visible lg:rounded-[12px] lg:border lg:border-[#E4E7EC] lg:bg-white lg:p-3 lg:pb-3 lg:shadow-[0_8px_24px_rgba(30,45,75,0.08)]"
+        className="scrollbar-hide sticky top-2 z-20 flex gap-2 overflow-x-auto rounded-xl border border-[#e6eaf0] bg-white/95 p-2 shadow-[0_10px_35px_rgba(30,45,75,0.08)] backdrop-blur lg:top-24 lg:min-h-[620px] lg:flex-col lg:gap-1.5 lg:overflow-visible lg:rounded-2xl lg:p-3"
         aria-label="Account navigation"
       >
         <div className="hidden px-3 pb-2 pt-1 lg:block">
@@ -98,7 +99,7 @@ const AccountSidebar = ({ active }: { active: AccountSection }) => {
               href={item.href}
               aria-current={isActive ? "page" : undefined}
               className={cn(
-                "group flex h-11 shrink-0 items-center gap-2.5 rounded-[8px] px-3 text-[14px] font-semibold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2 lg:h-12 lg:w-full",
+                "group flex h-11 shrink-0 items-center gap-2.5 rounded-xl px-3 text-[13px] font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2 lg:h-12 lg:w-full lg:text-[14px]",
                 isActive
                   ? "bg-[#292D73] text-white shadow-[0_6px_14px_rgba(41,45,115,0.22)]"
                   : "text-[#667085] hover:bg-[#F2F5FF] hover:text-[#292D73]",
@@ -119,19 +120,20 @@ const AccountSidebar = ({ active }: { active: AccountSection }) => {
           );
         })}
 
-        <div className="border-y-[1px] border-primary py-4">
+        <div className="shrink-0 lg:border-y lg:border-[#e7e9f4] lg:py-4">
            <Link
             href="/add-your-business"
-            className="w-full inline-flex h-9 items-center justify-center rounded-[5px] bg-[#22245F] px-5 text-[13px] font-semibold text-white transition hover:bg-[#17194D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22245F] focus-visible:ring-offset-2 focus-visible:ring-offset-[#E6F2F2]"
+            className="inline-flex h-11 w-full items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-[#22245F] px-3 text-[13px] font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#17194D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22245F] focus-visible:ring-offset-2 lg:px-4"
           >
-            Add your business
+            <Plus className="h-4 w-4" />
+            <span>Add your business</span>
           </Link>
         </div>
 
         <button
           type="button"
           onClick={() => setIsLogoutOpen(true)}
-          className="group flex h-11 shrink-0 items-center gap-2.5 rounded-[8px] px-3 text-[14px] font-semibold text-[#EF4444] transition-all duration-300 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 lg:mt-auto lg:h-12 lg:w-full"
+          className="group flex h-11 shrink-0 items-center gap-2.5 rounded-xl px-3 text-[13px] font-semibold text-[#EF4444] transition-all duration-200 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 lg:mt-auto lg:h-12 lg:w-full lg:text-[14px]"
         >
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[7px] bg-red-50 transition-colors group-hover:bg-white">
             <LogOut className="h-[17px] w-[17px]" />
@@ -210,7 +212,7 @@ export const ProfileSummaryCard = () => {
   };
 
   return (
-    <article className="min-h-[470px] rounded-[6px] border border-[#E6E7E6] bg-[#F8F9FA] px-5 py-6 shadow-[0_6px_14px_rgba(32,42,70,0.10)]">
+    <article className="rounded-2xl border border-[#e4e8ef] bg-white px-5 py-6 shadow-[0_14px_35px_rgba(32,42,70,0.08)] xl:min-h-[540px]">
       <div className="text-center">
         <div className="relative mx-auto h-[112px] w-[112px]">
           <div className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-full border-4 border-[#E6E1D3] bg-[#F2F4F7]">
@@ -227,7 +229,7 @@ export const ProfileSummaryCard = () => {
             )}
           </div>
           <label
-            className="absolute bottom-2 right-0 z-10 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border-2 border-white bg-[#292D73] text-white shadow-md"
+            className="absolute bottom-1 right-0 z-10 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-2 border-white bg-[#292D73] text-white shadow-md transition hover:scale-105 hover:bg-[#1f225f]"
             aria-label="Edit profile photo"
             title="Change profile picture"
           >
@@ -250,7 +252,7 @@ export const ProfileSummaryCard = () => {
         </p> */}
       </div>
 
-      <dl className="mt-7 space-y-4 text-[12px] leading-relaxed text-[#1F2937]">
+      <dl className="mt-7 grid gap-3 text-[12px] leading-relaxed text-[#1F2937] sm:grid-cols-2 xl:grid-cols-1">
         <div>
           <dt className="inline font-extrabold">Name : </dt>
           <dd className="inline text-[#667085]">{name || "N/A"}</dd>
@@ -402,8 +404,8 @@ export const AccountPanel = ({
   children: ReactNode;
 }) => {
   return (
-    <article className="min-h-[470px] rounded-[6px] border border-[#E6E7E6] bg-[#F8F9FA] px-5 py-6 shadow-[0_6px_14px_rgba(32,42,70,0.10)]">
-      <h1 className="text-[28px] font-extrabold leading-none text-[#152033]">
+    <article className="min-h-[470px] rounded-2xl border border-[#e4e8ef] bg-white px-4 py-5 shadow-[0_14px_35px_rgba(32,42,70,0.08)] sm:px-6 sm:py-7">
+      <h1 className="text-[24px] font-extrabold leading-tight tracking-[-0.02em] text-[#152033] sm:text-[28px]">
         {title}
       </h1>
       {description ? (
@@ -411,10 +413,41 @@ export const AccountPanel = ({
           {description}
         </p>
       ) : null}
-      <div className="mt-8">{children}</div>
+      <div className="mt-6 sm:mt-8">{children}</div>
     </article>
   );
 };
+
+export const AccountSectionHeader = ({
+  title,
+  description,
+  count,
+  action,
+}: {
+  title: string;
+  description: string;
+  count?: string;
+  action?: ReactNode;
+}) => (
+  <header className="mb-5 flex flex-col gap-4 rounded-2xl border border-[#e4e8ef] bg-white p-5 shadow-[0_10px_30px_rgba(32,42,70,0.07)] sm:flex-row sm:items-center sm:justify-between sm:p-6">
+    <div className="min-w-0">
+      <div className="flex flex-wrap items-center gap-2">
+        <h1 className="text-[24px] font-extrabold tracking-[-0.02em] text-[#182230] sm:text-[28px]">
+          {title}
+        </h1>
+        {count ? (
+          <span className="rounded-full bg-[#eef0ff] px-2.5 py-1 text-[11px] font-bold text-[#292D73]">
+            {count}
+          </span>
+        ) : null}
+      </div>
+      <p className="mt-1 max-w-2xl text-[12px] leading-5 text-[#667085] sm:text-[13px]">
+        {description}
+      </p>
+    </div>
+    {action ? <div className="shrink-0">{action}</div> : null}
+  </header>
+);
 
 export const EmptyAccountHint = () => {
   return (

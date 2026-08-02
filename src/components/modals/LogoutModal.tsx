@@ -21,14 +21,14 @@ const LogoutModal = ({ isOpen, onClose, onConfirm }: logoutModalProps) => {
       <DialogContent className="max-w-[90%] md:max-w-[420px] bg-white !rounded-[12px]">
         <DialogHeader>
           <DialogTitle className="text-black text-xl md:text-2xl lg:text-3xl text-center font-bold leading-normal pt-1">Are you sure?</DialogTitle>
-          <DialogDescription className="text-black text-base font-normal leading-normal text-center pt-1">
+          <DialogDescription className="text-black text-base font-medium leading-normal text-center pt-1">
             Do you want to log out of your account?
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="w-full grid grid-cols-2 gap-5 mt-3">
           <div className="col-span-1">
             <button
-              className="w-full h-[44px] text-base font-medium bg-transparent hover:bg-primary text-primary hover:text-white border border-primary leading-normal py-[10px] px-5 rounded-[10px]"
+              className="w-full h-[44px] text-base font-medium bg-transparent hover:bg-primary text-primary hover:text-white border border-primary leading-normal py-[10px] px-4 md:px-5 rounded-[10px]"
               onClick={onClose}
             >
               Cancel
@@ -36,7 +36,7 @@ const LogoutModal = ({ isOpen, onClose, onConfirm }: logoutModalProps) => {
           </div>
           <div className="col-span-1">
             <button
-              className="w-full h-[44px] flex items-center justify-center gap-2 text-white bg-primary hover:bg-[#FF0000]/80 border border-primary hover:border-[#FF0000] py-[10px] px-6 text-base font-medium leading-[120%] rounded-[8px]"
+              className="w-full h-[44px] flex items-center justify-center gap-2 text-white bg-primary hover:bg-[#FF0000]/80 border border-primary hover:border-[#FF0000] py-[10px] px-4 md:px-6 text-base font-medium leading-[120%] rounded-[8px]"
               onClick={onConfirm}
             >
              <LogOut className="w-5 h-5 text-white"/> Log out
