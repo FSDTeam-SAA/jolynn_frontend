@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { AccountPageShell } from "../../_components/account-ui";
+import { AccountPageShell, AccountSectionHeader } from "../../_components/account-ui";
 
 type Review = {
   _id: string;
@@ -97,18 +97,11 @@ const MyReviewsContainer = () => {
 
   return (
     <AccountPageShell active="my-reviews" showProfileCard={false}>
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-extrabold text-[#292D73]">My Reviews</h1>
-          {!isLoading &&
-            status === "authenticated" &&
-            !reviewsQuery.isError && (
-            <p className="mt-1 text-[12px] font-medium text-[#667085]">
-              {total} review{total === 1 ? "" : "s"}
-            </p>
-            )}
-        </div>
-
+      <AccountSectionHeader
+        title="My Reviews"
+        description="See the feedback you have shared with local businesses."
+        count={!isLoading && status === "authenticated" ? `${total} total` : undefined}
+        action={
         <div
           className="inline-flex items-center rounded-[7px] border border-[#D8DEE8] bg-[#F5F7FA] p-1"
           role="group"
@@ -143,7 +136,8 @@ const MyReviewsContainer = () => {
             <span className="hidden sm:inline">Grid</span>
           </button>
         </div>
-      </div>
+        }
+      />
 
       {isLoading ? (
         <div

@@ -8,7 +8,7 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
-import { AccountPageShell } from "../../_components/account-ui";
+import { AccountPageShell, AccountSectionHeader } from "../../_components/account-ui";
 
 type HelpWantedPost = {
   _id: string;
@@ -157,6 +157,16 @@ const HelpWantedContainer = () => {
   return (
     <AccountPageShell active="help-wanted" showProfileCard={false}>
       <>
+        <AccountSectionHeader
+          title="Help Wanted"
+          description="Manage the help requests you have posted and review their details."
+          count={!isLoading && token ? `${total} posts` : undefined}
+          action={
+            <Link href="/job-posts/create" className="inline-flex h-10 items-center justify-center rounded-xl bg-[#292D73] px-4 text-[12px] font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#20255F]">
+              Post a request
+            </Link>
+          }
+        />
         {isLoading ? (
           <div className="overflow-x-auto">
             <HelpWantedTableSkeleton />
@@ -189,9 +199,9 @@ const HelpWantedContainer = () => {
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto rounded-[8px] border border-[#9BA3AF] bg-white">
-              <div className="min-w-[850px]">
-                <div className="grid grid-cols-[1fr_0.8fr_1.6fr_0.8fr_0.65fr] border-b border-[#9BA3AF] text-center text-[11px] font-medium text-[#667085]">
+            <div className="rounded-2xl border border-[#e2e7ef] bg-white p-3 shadow-[0_10px_30px_rgba(32,42,70,0.06)] sm:p-0">
+              <div>
+                <div className="hidden grid-cols-[1fr_0.8fr_1.6fr_0.8fr_0.65fr] border-b border-[#e2e7ef] bg-[#f8fafc] text-center text-[11px] font-semibold uppercase tracking-wide text-[#667085] sm:grid">
                   <div className="px-4 py-3">Name</div>
                   <div className="px-4 py-3">Category</div>
                   <div className="px-4 py-3">Message</div>
@@ -199,12 +209,12 @@ const HelpWantedContainer = () => {
                   <div className="px-4 py-3">Actions</div>
                 </div>
                 {posts.map((post) => (
-                  <div key={post._id} className="grid grid-cols-[1fr_0.8fr_1.6fr_0.8fr_0.65fr] items-center border-b border-[#9BA3AF] text-center text-[12px] font-medium text-[#667085] last:border-b-0">
-                    <div className="break-words px-4 py-5 font-semibold text-[#292D73]">{post.username}</div>
-                    <div className="break-words px-4 py-5">{post.category}</div>
-                    <div className="line-clamp-2 px-4 py-5 leading-relaxed">{post.message}</div>
-                    <div className="px-4 py-5">{new Date(post.createdAt).toLocaleDateString()}</div>
-                    <div className="flex items-center justify-center gap-2 px-3 py-5">
+                  <div key={post._id} className="mb-3 grid gap-3 rounded-xl border border-[#e6eaf0] p-4 text-left text-[12px] font-medium text-[#667085] last:mb-0 sm:mb-0 sm:grid-cols-[1fr_0.8fr_1.6fr_0.8fr_0.65fr] sm:items-center sm:rounded-none sm:border-0 sm:border-b sm:border-[#e6eaf0] sm:p-0 sm:text-center sm:last:border-b-0">
+                    <div className="break-words px-4 py-2 font-semibold text-[#292D73] sm:py-5"><span className="mb-1 block text-[10px] uppercase tracking-wide text-[#98A2B3] sm:hidden">Name</span>{post.username}</div>
+                    <div className="break-words px-4 py-2 sm:py-5"><span className="mb-1 block text-[10px] uppercase tracking-wide text-[#98A2B3] sm:hidden">Category</span>{post.category}</div>
+                    <div className="line-clamp-2 px-4 py-2 leading-relaxed sm:py-5"><span className="mb-1 block text-[10px] uppercase tracking-wide text-[#98A2B3] sm:hidden">Message</span>{post.message}</div>
+                    <div className="px-4 py-2 sm:py-5"><span className="mb-1 block text-[10px] uppercase tracking-wide text-[#98A2B3] sm:hidden">Posted</span>{new Date(post.createdAt).toLocaleDateString()}</div>
+                    <div className="flex items-center gap-2 px-4 py-2 sm:justify-center sm:px-3 sm:py-5">
                       <button type="button" onClick={() => setSelectedPost(post)} className="inline-flex h-8 w-8 items-center justify-center rounded-[4px] border border-[#292D73] text-[#292D73] transition hover:bg-[#292D73] hover:text-white" aria-label={`View ${post.username} post details`}>
                         <Eye className="h-4 w-4" />
                       </button>

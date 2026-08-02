@@ -104,13 +104,13 @@ const MobileNavbar = ({ navItems, isAuthenticated, isAuthLoading, profileImage, 
             ) : (
               <Link href="/login" onClick={closeSheet} className="flex h-12 items-center justify-center rounded-[5px] border border-[#22245F] px-4 text-base font-semibold text-[#22245F] transition hover:bg-white/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22245F]">Login</Link>
             )}
-            <Link
+            {/* <Link
               href="/contact"
               onClick={closeSheet}
               className="flex h-12 items-center justify-center rounded-[5px] bg-[#22245F] px-4 text-base font-semibold text-white transition hover:bg-[#17194D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22245F]"
             >
               Add your business
-            </Link>
+            </Link> */}
           </div>
         </div>
       </SheetContent>

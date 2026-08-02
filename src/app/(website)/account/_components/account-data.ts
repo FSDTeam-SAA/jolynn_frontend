@@ -14,12 +14,12 @@ export type AccountSection =
   },
   {
     id: "change-password",
-    label: "Changes Password",
+    label: "Change Password",
     href: "/account/change-password",
   },
   {
     id: "save-services",
-    label: "Save Services",
+    label: "Saved Services",
     href: "/account/save-services",
   },
   {

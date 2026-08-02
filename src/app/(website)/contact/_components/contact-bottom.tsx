@@ -3,7 +3,7 @@ import Link from "next/link";
 
 const contactBottomContent = {
   message: "Have a question or need additional assistance?",
-  email: "hello@sidequote.com",
+  email: "info@sidequote.com",
   note: "Send us a message using the form above or contact our support team directly.",
 };
 
