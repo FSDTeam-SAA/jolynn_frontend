@@ -345,7 +345,7 @@ const BusinessViewProfileContainer = ({ businessId }: { businessId: string }) =>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex items-center justify-start gap-2 md:gap-3 lg:gap-4">
               <div>
-              <Image src={business?.profilePicture || ""} alt={business?.businessName} width={200} height={200} className="w-14 h-14 rounded-[12px]"/>
+              <Image src={business?.profilePicture || "/assets/images/no-image.jpg"} alt={business?.businessName} width={200} height={200} className="w-14 h-14 rounded-[12px]"/>
             </div>
             <div>
               <h1 className="text-[28px] font-extrabold leading-tight text-[#111827] sm:text-[32px]">

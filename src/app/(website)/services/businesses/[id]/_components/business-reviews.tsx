@@ -36,7 +36,7 @@ const BusinessReviews = ({ businessId }: BusinessReviewsProps) => {
   const { data: session, status: sessionStatus } = useSession();
   const queryClient = useQueryClient();
   const { data, isPending, isError } = useBusinessReviews(businessId);
-  const [rating, setRating] = useState(5);
+  const [rating, setRating] = useState(0);
   const [message, setMessage] = useState("");
   const [isSignInModalOpen, setIsSignInModalOpen] = useState(false);
   const sessionUser = session?.user as
