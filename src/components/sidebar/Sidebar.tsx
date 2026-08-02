@@ -76,7 +76,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
   const token = user?.accessToken ?? user?.token;
   const { data: profileResponse } = useProfileQuery(token);
   const profile = profileResponse?.data;
-  const displayName = profile?.fullName || user?.name || "User";
+  const displayName = profile?.username || user?.name || "User";
   const displayEmail = profile?.email || user?.email || "";
   const initials =
     displayName
