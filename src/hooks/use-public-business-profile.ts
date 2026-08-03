@@ -7,6 +7,7 @@ export type BusinessOverviewData = {
   displayName?: string;
   businessName: string;
   category?: string;
+  serviceCategoryId?: string;
   serviceArea?: string;
   businessEmail?: string;
   email?: string;
@@ -25,6 +26,11 @@ export type BusinessOverviewData = {
     totalReviews: number;
     ratingBreakdown: RatingBreakdown;
   };
+  viewedService?: {
+    _id: string;
+    viewCount: number;
+    categoryViewCount: number;
+  };
 };
 
 type ApiResponse<T> = {
@@ -39,9 +45,18 @@ const getApiUrl = () => {
   return apiUrl;
 };
 
-const fetchBusinessOverview = async (businessId: string) => {
+const fetchBusinessOverview = async (
+  businessId: string,
+  serviceId?: string,
+) => {
+  const params = new URLSearchParams();
+  if (serviceId) params.set("serviceId", serviceId);
+  const queryString = params.toString();
+
   const response = await fetch(
-    `${getApiUrl()}/user/public-business/${encodeURIComponent(businessId)}`,
+    `${getApiUrl()}/user/public-business/${encodeURIComponent(businessId)}${
+      queryString ? `?${queryString}` : ""
+    }`,
     { headers: { accept: "*/*" } },
   );
   const result = (await response.json()) as ApiResponse<BusinessOverviewData>;
@@ -51,10 +66,13 @@ const fetchBusinessOverview = async (businessId: string) => {
   return result.data;
 };
 
-export const usePublicBusinessProfile = (businessId: string) =>
+export const usePublicBusinessProfile = (
+  businessId: string,
+  serviceId?: string,
+) =>
   useQuery({
-    queryKey: ["public-business", businessId],
-    queryFn: () => fetchBusinessOverview(businessId),
+    queryKey: ["public-business", businessId, serviceId],
+    queryFn: () => fetchBusinessOverview(businessId, serviceId),
     enabled: Boolean(businessId),
     staleTime: 5 * 60 * 1000,
     retry: 1,

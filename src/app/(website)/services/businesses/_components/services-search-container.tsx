@@ -290,6 +290,8 @@ const ServicesSearchContainer = ({
     () => businessQuery.data?.data ?? [],
     [businessQuery.data?.data],
   );
+
+  console.log("businessQuery", businesses);
   const total = businessQuery.data?.meta.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / 10));
 
@@ -542,7 +544,10 @@ const ServicesSearchContainer = ({
                       viewMode === "grid" ? "xl:grid-cols-2" : ""
                     }`}
                   >
-                    {businesses.map((business) => {
+                    {businesses?.map((business) => {
+                      const profileHref = business.service?.id
+                        ? `/services/businesses/${business.businessOwnerId}?serviceId=${encodeURIComponent(business.service.id)}`
+                        : `/services/businesses/${business.businessOwnerId}`;
                       const serviceTitle =
                         business.service?.title ||
                         business.category ||
@@ -608,7 +613,7 @@ const ServicesSearchContainer = ({
 
                               <div className="grid grid-cols-2 gap-2 border-t border-[#EDF0F4] pt-4 sm:flex sm:items-center lg:shrink-0 lg:border-l lg:border-t-0 lg:pl-5 lg:pt-0">
                                 <Link
-                                  href={`/services/businesses/${business.businessOwnerId}`}
+                                  href={profileHref}
                                   className="inline-flex h-9 items-center justify-center rounded-md bg-[#292E78] px-3.5 text-[11px] font-bold text-white transition hover:bg-[#1F2464]"
                                 >
                                   View Profile
@@ -632,7 +637,7 @@ const ServicesSearchContainer = ({
                                   Report
                                 </button>
                                 <Link
-                                  href={business.businessEmail ? `mailto:${business.businessEmail}` : "#"}
+                                  href={business?.businessEmail ? `mailto:${business?.businessEmail}` : "#"}
                                   className={`inline-flex h-9 min-w-9 items-center justify-center rounded-md border border-[#292E78] bg-white text-[#292E78] transition hover:bg-[#292E78] hover:text-white ${!business.businessEmail ? "pointer-events-none opacity-50" : ""}`}
                                   aria-label={business.businessEmail ? `Email ${business.businessName}` : `Email unavailable for ${business.businessName}`}
                                   aria-disabled={!business.businessEmail}
@@ -722,7 +727,7 @@ const ServicesSearchContainer = ({
 
                         <div className="mt-3 grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_34px] gap-1.5">
                           <Link
-                            href={`/services/businesses/${business?.businessOwnerId}`}
+                            href={profileHref}
                             className="inline-flex h-8 items-center justify-center rounded-[4px] bg-[#292E78] px-3 text-xs font-bold text-white transition hover:bg-[#1F2464]"
                           >
                             View Profile

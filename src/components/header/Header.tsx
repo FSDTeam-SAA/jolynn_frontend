@@ -25,12 +25,14 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
         email?: string;
         token?: string;
         accessToken?: string;
+        username?: string;
       }
     | undefined;
   const token = sessionUser?.accessToken ?? sessionUser?.token;
   const { data: profileResponse } = useProfileQuery(token);
   const profile = profileResponse?.data;
-  const displayName = profile?.fullName || sessionUser?.name || "User";
+  console.log("profileResponse", profile);
+  const displayName = profile?.username || sessionUser?.username || "User";
   const email = profile?.email || sessionUser?.email || "";
   const initials = displayName
     .split(/\s+/)

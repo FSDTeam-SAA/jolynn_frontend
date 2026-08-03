@@ -60,7 +60,7 @@ const heroSlides: HeroSlide[] = [
     titleMiddle: "Local Businesses",
     titleAccentTwo: "Near You",
     description:
-      "Search by service and location, discover nearby businesses, and start your next home project without the guesswork.",
+      "Search by service, state and city discover nearby businesses, and start your next home project without the guesswork.",
     image: "/assets/images/caro_1.png",
     imageAlt: "A trusted local home-service professional outside a modern home",
     backgroundClass: "bg-[#FAFBFC]",
