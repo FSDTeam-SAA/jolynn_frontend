@@ -215,6 +215,7 @@ const BusinessViewProfileContainer = ({ businessId }: { businessId: string }) =>
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const requestedTab = searchParams.get("tab");
+  const serviceId = searchParams.get("serviceId") || undefined;
   const [activeTab, setActiveTab] = useState<ProfileTab>(
     requestedTab === "reviews" ? "reviews" : "overview",
   );
@@ -223,7 +224,8 @@ const BusinessViewProfileContainer = ({ businessId }: { businessId: string }) =>
   const [isSaveSignInModalOpen, setIsSaveSignInModalOpen] = useState(false);
   const [isQuoteSignInModalOpen, setIsQuoteSignInModalOpen] = useState(false);
   const [savedOverride, setSavedOverride] = useState<boolean | null>(null);
-  const { data: business, isPending, isError, refetch } = usePublicBusinessProfile(businessId);
+  const { data: business, isPending, isError, refetch } =
+    usePublicBusinessProfile(businessId, serviceId);
   const sessionUser = session?.user as
     | { token?: string; accessToken?: string }
     | undefined;
