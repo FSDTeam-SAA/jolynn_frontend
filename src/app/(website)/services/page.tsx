@@ -4,7 +4,7 @@ import ServicesSearchContainer from './businesses/_components/services-search-co
 
 type ServicesPageProps = {
   searchParams?: {
-    service?: string;
+    searchTerm?: string;
     state?: string;
     city?: string;
   };
@@ -12,14 +12,14 @@ type ServicesPageProps = {
 
 const ServicesPage = ({ searchParams }: ServicesPageProps) => {
   const hasSearch = Boolean(
-    searchParams?.service || searchParams?.state || searchParams?.city,
+    searchParams?.searchTerm || searchParams?.state || searchParams?.city,
   );
 
   return (
     <div>
       {hasSearch ? (
         <ServicesSearchContainer
-          initialService={searchParams?.service}
+          initialSearchTerm={searchParams?.searchTerm}
           initialState={searchParams?.state}
           initialCity={searchParams?.city}
         />

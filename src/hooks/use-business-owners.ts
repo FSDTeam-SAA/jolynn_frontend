@@ -41,7 +41,7 @@ type BusinessOwnersResponse = {
 };
 
 export type BusinessOwnerFilters = {
-  service: string;
+  searchTerm: string;
   page: number;
   limit?: number;
   category?: string;
@@ -63,7 +63,7 @@ const fetchBusinessOwners = async (
   });
 
   const optionalFilters = {
-    service: filters.service,
+    searchTerm: filters.searchTerm,
     category: filters.category,
     minimumRating: filters.minimumRating,
     state: filters.state,

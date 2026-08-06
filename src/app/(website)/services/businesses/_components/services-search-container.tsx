@@ -11,7 +11,6 @@ import {
   useBusinessOwners,
 } from "@/hooks/use-business-owners";
 import { useServiceCategories } from "@/hooks/use-service-categories";
-import { useServices } from "@/hooks/use-services";
 import {
   useLocationCities,
   useLocationStates,
@@ -39,13 +38,13 @@ import NoBusinessResults from "./no-business-results";
 import ReportBusinessModal from "./report-business-modal";
 
 type ServicesSearchContainerProps = {
-  initialService?: string;
+  initialSearchTerm?: string;
   initialState?: string;
   initialCity?: string;
 };
 
 type DraftFilters = {
-  service: string;
+  searchTerm: string;
   category: string;
   minimumRating: string;
   state: string;
@@ -211,12 +210,10 @@ const BusinessCardsSkeleton = () => (
 );
 
 const ServicesSearchContainer = ({
-  initialService = "",
+  initialSearchTerm = "",
   initialState = "",
   initialCity = "",
 }: ServicesSearchContainerProps) => {
-  const servicesQuery = useServices();
-  const services = servicesQuery.data?.data ?? [];
   const categoriesQuery = useServiceCategories();
   const categories = categoriesQuery.data?.data ?? [];
   const statesQuery = useLocationStates();
@@ -224,22 +221,15 @@ const ServicesSearchContainer = ({
     (state) => !excludedStateNames.has(state.name.trim().toLowerCase()),
   );
 
-  const initialServiceTitle =
-    services.find(
-      (service) =>
-        service._id === initialService ||
-        service.title.toLowerCase() === initialService.toLowerCase(),
-    )?.title || initialService;
-
   const [draftFilters, setDraftFilters] = useState<DraftFilters>({
-    service: initialService,
+    searchTerm: initialSearchTerm,
     category: "",
     minimumRating: "",
     state: initialState,
     city: initialCity,
   });
   const [appliedFilters, setAppliedFilters] = useState<DraftFilters>({
-    service: initialService,
+    searchTerm: initialSearchTerm,
     category: "",
     minimumRating: "",
     state: initialState,
@@ -256,10 +246,8 @@ const ServicesSearchContainer = ({
   const cities = citiesQuery.data?.data.cities ?? [];
 
   useEffect(() => {
-    if (servicesQuery.isPending) return;
-
     const syncedFilters: DraftFilters = {
-      service: initialServiceTitle,
+      searchTerm: initialSearchTerm,
       category: "",
       minimumRating: "",
       state: initialState,
@@ -270,14 +258,12 @@ const ServicesSearchContainer = ({
     setPage(1);
   }, [
     initialCity,
-    initialService,
-    initialServiceTitle,
+    initialSearchTerm,
     initialState,
-    servicesQuery.isPending,
   ]);
 
   const queryFilters: BusinessOwnerFilters = {
-    service: appliedFilters.service,
+    searchTerm: appliedFilters.searchTerm,
     page,
     limit: 10,
     category: appliedFilters.category,
@@ -295,8 +281,14 @@ const ServicesSearchContainer = ({
   const total = businessQuery.data?.meta.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / 10));
 
+  const updateFilters = (changes: Partial<DraftFilters>) => {
+    setDraftFilters((current) => ({ ...current, ...changes }));
+    setAppliedFilters((current) => ({ ...current, ...changes }));
+    setPage(1);
+  };
+
   const updateFilter = (name: keyof DraftFilters, value: string) => {
-    setDraftFilters((current) => ({ ...current, [name]: value }));
+    updateFilters({ [name]: value });
   };
 
   const applyFilters = (event: FormEvent<HTMLFormElement>) => {
@@ -307,7 +299,7 @@ const ServicesSearchContainer = ({
 
   const resetFilters = () => {
     const reset: DraftFilters = {
-      service: initialServiceTitle,
+      searchTerm: initialSearchTerm,
       category: "",
       minimumRating: "",
       state: "",
@@ -324,7 +316,7 @@ const ServicesSearchContainer = ({
         <section className="bg-[#DFF0EE] px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
           <div className="container">
             <BusinessSearchForm
-              initialService={initialService}
+              initialSearchTerm={initialSearchTerm}
               initialState={initialState}
               initialCity={initialCity}
             />
@@ -345,9 +337,9 @@ const ServicesSearchContainer = ({
                     <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8A8F99]" />
                     <input
                       type="search"
-                      value={draftFilters.service}
+                      value={draftFilters.searchTerm}
                       onChange={(event) =>
-                        updateFilter("service", event.target.value)
+                        updateFilter("searchTerm", event.target.value)
                       }
                       placeholder="Search by Keyword..."
                       autoComplete="off"
@@ -419,8 +411,7 @@ const ServicesSearchContainer = ({
                     loading={statesQuery.isPending}
                     disabled={statesQuery.isError || states.length === 0}
                     onChange={(nextState) => {
-                      updateFilter("state", nextState);
-                      updateFilter("city", "");
+                      updateFilters({ state: nextState, city: "" });
                     }}
                   />
 

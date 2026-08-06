@@ -384,7 +384,7 @@ const Hero = () => {
   const [timerKey, setTimerKey] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [hasSearchInteraction, setHasSearchInteraction] = useState(false);
-  const [service, setService] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [stateName, setStateName] = useState("");
   const [city, setCity] = useState("");
   const statesQuery = useLocationStates();
@@ -440,7 +440,7 @@ const Hero = () => {
     event.preventDefault();
 
     const params = new URLSearchParams();
-    if (service.trim()) params.set("service", service.trim());
+    if (searchTerm.trim()) params.set("searchTerm", searchTerm.trim());
     if (stateName) params.set("state", stateName);
     if (city) params.set("city", city);
     const query = params.toString();
@@ -548,8 +548,8 @@ const Hero = () => {
                       <Search className="h-4 w-4 shrink-0 text-[#4365D0]" />
                       <input
                         type="search"
-                        value={service}
-                        onChange={(event) => setService(event.target.value)}
+                        value={searchTerm}
+                        onChange={(event) => setSearchTerm(event.target.value)}
                         placeholder="What service do you need?"
                         className="h-7 w-full bg-transparent text-[13px] font-medium text-[#292D73] outline-none placeholder:text-[11px] placeholder:text-[#667481]"
                       />

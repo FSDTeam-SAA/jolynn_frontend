@@ -4,12 +4,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 import DeleteModal from "@/components/modals/delete-modal";
 import { useProfileQuery } from "@/hooks/APicalling";
 import { normalizePublicUsername } from "@/lib/public-username";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  type InfiniteData,
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import {
   AlertCircle,
   BriefcaseBusiness,
   CalendarDays,
-  ChevronLeft,
+  ChevronDown,
   ChevronRight,
   Flag,
   LayoutGrid,
@@ -18,6 +23,7 @@ import {
   Mail,
   MapPin,
   PlusCircle,
+  Search,
   UserRound,
   Trash2,
   X,
@@ -25,7 +31,7 @@ import {
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 type HelpWantedUser = {
@@ -46,6 +52,7 @@ type HelpWantedPost = {
   email: string;
   zipcode: string;
   category: string;
+  budgetRange?: string;
   profilePicture: string;
   phone: string;
   message: string;
@@ -98,7 +105,11 @@ const getPopulatedUser = (post: HelpWantedPost): HelpWantedUser | undefined =>
 const getPostUserId = (post: HelpWantedPost) =>
   typeof post.userId === "string" ? post.userId : getPopulatedUser(post)?._id;
 
-const fetchJobPosts = async (page: number): Promise<HelpWantedResponse> => {
+const fetchJobPosts = async (
+  page: number,
+  searchTerm: string,
+  budgetRange: string,
+): Promise<HelpWantedResponse> => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   if (!apiUrl) throw new Error("The help wanted service is not configured.");
 
@@ -107,6 +118,8 @@ const fetchJobPosts = async (page: number): Promise<HelpWantedResponse> => {
     limit: String(PAGE_LIMIT),
     page: String(page),
   });
+  if (searchTerm.trim()) params.set("searchTerm", searchTerm.trim());
+  if (budgetRange.trim()) params.set("budgetRange", budgetRange.trim());
   const response = await fetch(`${apiUrl}/help-wanted?${params}`, {
     headers: { Accept: "*/*" },
   });
@@ -178,7 +191,8 @@ const JobPostsContainer = () => {
   };
 
 
-  const [page, setPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [budgetRange, setBudgetRange] = useState("");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [postToView, setPostToView] = useState<HelpWantedPost | null>(null);
@@ -187,17 +201,54 @@ const JobPostsContainer = () => {
   const [signInIntent, setSignInIntent] = useState<SignInIntent | null>(null);
   const [showExistingBusinessNotice, setShowExistingBusinessNotice] =
     useState(false);
-  const jobPostsQuery = useQuery<HelpWantedResponse>({
-    queryKey: ["help-wanted", page, PAGE_LIMIT],
-    queryFn: () => fetchJobPosts(page),
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+  const jobPostsQuery = useInfiniteQuery<
+    HelpWantedResponse,
+    Error,
+    InfiniteData<HelpWantedResponse>,
+    readonly ["help-wanted", number, string, string],
+    number
+  >({
+    queryKey: ["help-wanted", PAGE_LIMIT, searchTerm, budgetRange],
+    queryFn: ({ pageParam }) =>
+      fetchJobPosts(pageParam, searchTerm, budgetRange),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const { page: currentPage, limit, total } = lastPage.meta;
+      return currentPage * limit < total ? currentPage + 1 : undefined;
+    },
     placeholderData: (previousData) => previousData,
     staleTime: 60 * 1000,
     retry: 1,
   });
 
-  const posts = jobPostsQuery.data?.data ?? [];
-  const total = jobPostsQuery.data?.meta.total ?? 0;
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_LIMIT));
+  const posts = jobPostsQuery.data?.pages.flatMap((page) => page.data) ?? [];
+  const total = jobPostsQuery.data?.pages.at(-1)?.meta.total ?? 0;
+
+  useEffect(() => {
+    const loadMoreElement = loadMoreRef.current;
+    if (
+      !loadMoreElement ||
+      !jobPostsQuery.hasNextPage ||
+      jobPostsQuery.isFetchingNextPage
+    ) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) void jobPostsQuery.fetchNextPage();
+      },
+      { rootMargin: "320px 0px" },
+    );
+
+    observer.observe(loadMoreElement);
+    return () => observer.disconnect();
+  }, [
+    jobPostsQuery.fetchNextPage,
+    jobPostsQuery.hasNextPage,
+    jobPostsQuery.isFetchingNextPage,
+  ]);
   const selectedReportPost = posts.find(
     (post) => post._id === selectedPostId,
   );
@@ -282,7 +333,6 @@ const JobPostsContainer = () => {
     },
     onSuccess: async (result) => {
       setPostToDelete(null);
-      if (posts.length === 1 && page > 1) setPage((current) => current - 1);
       await queryClient.invalidateQueries({ queryKey: ["help-wanted"] });
       toast.success(result.message || "Help post deleted successfully.");
     },
@@ -339,9 +389,59 @@ const JobPostsContainer = () => {
     });
   };
 
+  const submitSearch = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    void jobPostsQuery.refetch();
+  };
+
   return (
     <section className="bg-[#F9FAFB] px-2 py-10 md:px-0 md:py-14 lg:px-8 lg:py-16">
       <div className="container">
+        <form
+          onSubmit={submitSearch}
+          className="mb-6 mr-auto grid w-full max-w-3xl grid-cols-1 gap-2 rounded-xl border border-[#D8DEE8] bg-white p-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]"
+        >
+          <label className="flex min-w-0 items-center gap-2 rounded-lg px-2 sm:border-r sm:border-[#EAECF0]">
+            <Search className="h-4 w-4 shrink-0 text-[#667085]" />
+            <span className="sr-only">Search job posts</span>
+            <input
+              type="search"
+              value={searchTerm}
+              onChange={(event) => {
+                setSearchTerm(event.target.value);
+              }}
+              placeholder="Search job posts..."
+              className="h-9 min-w-0 flex-1 bg-transparent text-sm font-medium text-[#344054] outline-none placeholder:text-[#98A2B3]"
+            />
+          </label>
+          <label className="relative flex min-w-0 items-center gap-2 rounded-lg px-2">
+            <BriefcaseBusiness className="h-4 w-4 shrink-0 text-[#667085]" />
+            <span className="sr-only">Filter by budget range</span>
+            <select
+              value={budgetRange}
+              onChange={(event) => setBudgetRange(event.target.value)}
+              className="h-9 min-w-0 flex-1 appearance-none bg-transparent pr-7 text-sm font-medium text-[#344054] outline-none"
+              aria-label="Filter by budget range"
+            >
+              <option value="">All budget ranges</option>
+              <option value="$0 - $500">$0 - $500</option>
+              <option value="$500 - $1,000">$500 - $1,000</option>
+              <option value="$1,000 - $2,500">$1,000 - $2,500</option>
+              <option value="$2,500 - $5,000">$2,500 - $5,000</option>
+              <option value="$5,000 - $10,000">$5,000 - $10,000</option>
+              <option value="$10,000 - $50,000">$10,000 - $50,000</option>
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-2 h-4 w-4 text-[#667085]" />
+          </label>
+          <button
+            type="submit"
+            disabled={jobPostsQuery.isFetching}
+            className="inline-flex h-9 items-center justify-center rounded-lg bg-primary px-5 text-xs font-bold text-white transition hover:bg-[#1F2464] disabled:cursor-wait disabled:opacity-60"
+          >
+            Search
+          </button>
+        </form>
+
         {jobPostsQuery.isPending ? (
           <JobPostsSkeleton />
         ) : jobPostsQuery.isError ? (
@@ -369,7 +469,9 @@ const JobPostsContainer = () => {
         ) : posts.length === 0 ? (
           <div className="flex min-h-[280px] items-center justify-center rounded-[8px] border border-[#D4F0F1] bg-[#F0FEFE] text-center">
             <p className="text-sm font-semibold text-[#667481]">
-              No job posts are available yet.
+              {searchTerm.trim() || budgetRange.trim()
+                ? "No job posts match your search or budget range."
+                : "No job posts are available yet."}
             </p>
           </div>
         ) : (
@@ -454,7 +556,7 @@ const JobPostsContainer = () => {
               className={
                 viewMode === "grid"
                   ? "grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3"
-                  : "space-y-4"
+                  : "space-y-2"
               }
             >
               {posts.map((post) => {
@@ -469,15 +571,14 @@ const JobPostsContainer = () => {
                   return (
                     <article
                       key={post._id}
-                      className="group relative overflow-hidden rounded-xl border border-[#E3E8EF] bg-white shadow-[0_4px_16px_rgba(30,45,75,0.07)] transition duration-300 hover:-translate-y-0.5 hover:border-[#B9C9DC] hover:shadow-[0_12px_28px_rgba(30,45,75,0.12)]"
+                      className="rounded-lg border border-[#E3E8EF] bg-white transition-colors hover:border-[#B9C9DC] hover:bg-[#FCFDFE]"
                     >
-                      <div className="absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-[#292D73] to-[#0082D7]" />
-                      <div className="flex flex-col gap-4 p-4 pl-5 sm:pl-6 lg:flex-row lg:items-center">
-                        <div className="flex min-w-0 flex-1 items-start gap-3.5">
+                      <div className="flex flex-col gap-2.5 p-3 sm:flex-row sm:items-center">
+                        <div className="flex min-w-0 flex-1 items-center gap-3">
                           <button
                             type="button"
                             onClick={() => setPostToView(post)}
-                            className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary text-lg font-extrabold uppercase text-white shadow-[0_6px_16px_rgba(41,45,115,0.18)] ring-2 ring-white transition hover:ring-[#4365D0]/30"
+                            className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary text-base font-extrabold uppercase text-white"
                             aria-label={`View ${publicUsername}'s job details`}
                           >
                             {profileImage ? (
@@ -485,7 +586,7 @@ const JobPostsContainer = () => {
                                 src={profileImage}
                                 alt={publicUsername}
                                 fill
-                                sizes="56px"
+                                sizes="44px"
                                 className="object-cover"
                               />
                             ) : (
@@ -493,66 +594,29 @@ const JobPostsContainer = () => {
                             )}
                           </button>
                           <div className="min-w-0 flex-1">
-                            <div className="flex min-h-8 items-center">
-                              <button
-                                type="button"
-                                onClick={() => setPostToView(post)}
-                                className="truncate text-base font-extrabold leading-8 text-primary transition hover:text-[#4365D0] hover:underline"
-                              >
-                                @{publicUsername}
-                              </button>
-                            </div>
-                            <p className="mt-1.5 text-xs font-bold text-[#344054]">
-                              Looking for {post.category} service
-                            </p>
-                            <p className="mt-1 line-clamp-1 max-w-full break-words text-xs leading-5 text-[#667085]">
-                              {post.message.length > 55
-                                ? `${post.message.slice(0, 55).trim()}…`
-                                : post.message}
-                            </p>
                             <button
                               type="button"
                               onClick={() => setPostToView(post)}
-                              className="mt-2 inline-flex items-center gap-1 text-[11px] font-extrabold text-[#292D73] transition hover:text-[#0082D7] focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4365D0]/40"
-                              aria-label={`View full details for ${post.category} service post`}
+                              className="truncate text-sm font-bold leading-6 text-primary transition hover:text-[#4365D0] hover:underline"
                             >
-                              View More
-                              <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+                              @{publicUsername}
                             </button>
+                            <p className="text-xs font-medium text-[#344054]">
+                              Looking for {post.category} service
+                            </p>
                           </div>
                         </div>
 
-                        <div className="flex flex-wrap items-center gap-2 lg:shrink-0">
+                        <div className="flex shrink-0 items-center">
                           <button
                             type="button"
-                            onClick={() => openReportForm(post._id)}
-                            className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-[#D0D5DD] bg-white px-3 text-[11px] font-bold text-[#667085] transition hover:border-[#98A2B3] hover:bg-[#F2F4F7]"
+                            onClick={() => setPostToView(post)}
+                            className="inline-flex h-9 items-center justify-center gap-1 rounded-md border border-[#292D73] bg-white px-3 text-[11px] font-bold text-[#292D73] transition hover:bg-[#EEF2FF]"
+                            aria-label={`View full details for ${post.category} service post`}
                           >
-                            <Flag className="h-3.5 w-3.5" />
-                            Report
+                            View More
+                            <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
                           </button>
-                          <button
-                            type="button"
-                            onClick={() => openSideQuote(post.email)}
-                            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-xs font-bold text-white shadow-sm transition hover:bg-[#1F2464]"
-                          >
-                            <Mail className="h-4 w-4" />
-                            Get SideQuote
-                          </button>
-                          {isOwnPost(post) && (
-                            <button
-                              type="button"
-                              onClick={() => setPostToDelete(post)}
-                              disabled={
-                                deletePostMutation.isPending &&
-                                deletePostMutation.variables?._id === post._id
-                              }
-                              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-600 transition hover:bg-red-600 hover:text-white disabled:opacity-50"
-                              aria-label="Delete your help post"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          )}
                         </div>
                       </div>
                     </article>
@@ -629,6 +693,9 @@ const JobPostsContainer = () => {
                       <p>
                         Zip code: <span className="text-primary">{post.zipcode}</span>
                       </p>
+                      <p>
+                        Budget: <span className="text-primary">{post.budgetRange || "Not provided"}</span>
+                      </p>
                     </div>
 
                     <div className="mt-3 min-w-0 px-0 py-1">
@@ -678,46 +745,26 @@ const JobPostsContainer = () => {
               })}
             </div>
 
-            {totalPages > 1 && (
-              <nav className="mt-10 flex items-center justify-center gap-2" aria-label="Job posts pagination">
-                <button
-                  type="button"
-                  onClick={() => setPage((current) => Math.max(1, current - 1))}
-                  disabled={page === 1 || jobPostsQuery.isFetching}
-                  className="flex h-8 w-8 items-center justify-center rounded border border-[#B8C0CC] text-[#667085] disabled:opacity-40"
-                  aria-label="Previous page"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </button>
-                {Array.from({ length: totalPages }).map((_, index) => {
-                  const pageNumber = index + 1;
-                  return (
-                    <button
-                      key={pageNumber}
-                      type="button"
-                      onClick={() => setPage(pageNumber)}
-                      disabled={jobPostsQuery.isFetching}
-                      className={`flex h-8 w-8 items-center justify-center rounded border text-xs font-bold ${
-                        page === pageNumber
-                          ? "border-primary bg-primary text-white"
-                          : "border-[#B8C0CC] text-[#475467]"
-                      }`}
-                    >
-                      {pageNumber}
-                    </button>
-                  );
-                })}
-                <button
-                  type="button"
-                  onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
-                  disabled={page === totalPages || jobPostsQuery.isFetching}
-                  className="flex h-8 w-8 items-center justify-center rounded border border-[#B8C0CC] text-[#667085] disabled:opacity-40"
-                  aria-label="Next page"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </button>
-              </nav>
-            )}
+            <div
+              ref={loadMoreRef}
+              className="flex min-h-16 items-center justify-center py-6"
+              aria-live="polite"
+            >
+              {jobPostsQuery.isFetchingNextPage ? (
+                <div className="flex items-center gap-2 text-xs font-semibold text-[#667085]">
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#D0D5DD] border-t-[#292D73]" />
+                  Loading more job posts...
+                </div>
+              ) : jobPostsQuery.hasNextPage ? (
+                <p className="text-xs font-medium text-[#98A2B3]">
+                  Scroll to load more job posts
+                </p>
+              ) : (
+                <p className="text-xs font-medium text-[#98A2B3]">
+                  You&apos;ve reached the end of the job posts.
+                </p>
+              )}
+            </div>
           </>
         )}
       </div>
@@ -779,7 +826,7 @@ const JobPostsContainer = () => {
             </div>
 
             <div className="min-w-0 space-y-4 bg-[#F8FAFC] p-4 sm:p-6">
-              <div className="grid gap-3 sm:grid-cols-3">
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {[
                   {
                     label: "Posted by",
@@ -787,6 +834,11 @@ const JobPostsContainer = () => {
                     icon: UserRound,
                   },
                   { label: "Zip code", value: postToView.zipcode, icon: MapPin },
+                  {
+                    label: "Budget",
+                    value: postToView.budgetRange || "Not provided",
+                    icon: BriefcaseBusiness,
+                  },
                   {
                     label: "Posted on",
                     value: new Date(postToView.createdAt).toLocaleDateString(),
@@ -836,12 +888,40 @@ const JobPostsContainer = () => {
                 </button>
                 <button
                   type="button"
+                  onClick={() => {
+                    setPostToView(null);
+                    openReportForm(postToView._id);
+                  }}
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-[#D0D5DD] bg-white px-5 text-xs font-bold text-[#667085] transition hover:border-[#98A2B3] hover:bg-[#F2F4F7]"
+                >
+                  <Flag className="h-4 w-4" />
+                  Report
+                </button>
+                <button
+                  type="button"
                   onClick={() => openSideQuote(postToView.email)}
                   className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-5 text-xs font-extrabold text-white shadow-[0_6px_14px_rgba(41,45,115,0.18)] transition hover:bg-[#1F2464]"
                 >
                   <Mail className="h-4 w-4" />
                   Get SideQuote
                 </button>
+                {isOwnPost(postToView) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPostToView(null);
+                      setPostToDelete(postToView);
+                    }}
+                    disabled={
+                      deletePostMutation.isPending &&
+                      deletePostMutation.variables?._id === postToView._id
+                    }
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-600 transition hover:bg-red-600 hover:text-white disabled:opacity-50"
+                    aria-label="Delete your help post"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                )}
               </div>
             </div>
           </div>

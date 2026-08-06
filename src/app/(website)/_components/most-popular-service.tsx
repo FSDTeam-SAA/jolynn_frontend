@@ -111,7 +111,7 @@ const MostPopularService = () => {
                   {service.description ?? "Explore available local services."}
                 </p>
                 <Link
-                  href={`/services/businesses?service=${encodeURIComponent(service.name)}`}
+                  href={`/services/businesses?searchTerm=${encodeURIComponent(service.name)}`}
                   className="mt-4 flex h-10 w-full items-center justify-center gap-1.5 rounded-lg border border-[#292E78]/10 bg-[#F6F7FA] text-[11px] font-bold text-[#292E78] transition duration-300 hover:border-[#292E78] hover:bg-[#292E78] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292E78] focus-visible:ring-offset-2"
                 >
                   Get Started

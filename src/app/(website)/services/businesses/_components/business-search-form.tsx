@@ -4,7 +4,6 @@ import {
   useLocationCities,
   useLocationStates,
 } from "@/hooks/use-location-options";
-import { useServices } from "@/hooks/use-services";
 import {
   Popover,
   PopoverContent,
@@ -17,10 +16,10 @@ import {
   Search,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 
 type BusinessSearchFormProps = {
-  initialService?: string;
+  initialSearchTerm?: string;
   initialState?: string;
   initialCity?: string;
   compact?: boolean;
@@ -153,16 +152,15 @@ const LocationDropdown = ({
 };
 
 const BusinessSearchForm = ({
-  initialService = "",
+  initialSearchTerm = "",
   initialState = "",
   initialCity = "",
   compact = false,
 }: BusinessSearchFormProps) => {
   const router = useRouter();
-  const [service, setService] = useState(initialService);
+  const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
   const [stateName, setStateName] = useState(initialState);
   const [city, setCity] = useState(initialCity);
-  const { data } = useServices();
   const statesQuery = useLocationStates();
   const states = (statesQuery.data?.data ?? []).filter(
     (state) => !excludedStateNames.has(state.name.trim().toLowerCase()),
@@ -171,19 +169,9 @@ const BusinessSearchForm = ({
   const citiesQuery = useLocationCities(selectedState);
   const cities = citiesQuery.data?.data.cities ?? [];
 
-  const canonicalInitialService = useMemo(
-    () =>
-      data?.data.find(
-        (item) =>
-          item._id === initialService ||
-          item.title.toLowerCase() === initialService.toLowerCase(),
-      )?.title || initialService,
-    [data?.data, initialService],
-  );
-
   useEffect(() => {
-    setService(canonicalInitialService);
-  }, [canonicalInitialService]);
+    setSearchTerm(initialSearchTerm);
+  }, [initialSearchTerm]);
 
   useEffect(() => {
     setStateName(initialState);
@@ -194,7 +182,7 @@ const BusinessSearchForm = ({
     event.preventDefault();
 
     const params = new URLSearchParams();
-    if (service.trim()) params.set("service", service.trim());
+    if (searchTerm.trim()) params.set("searchTerm", searchTerm.trim());
     if (stateName) params.set("state", stateName);
     if (city) params.set("city", city);
 
@@ -218,8 +206,8 @@ const BusinessSearchForm = ({
         <Search className="h-5 w-5 shrink-0 text-[#4365D0]" />
         <input
           type="search"
-          value={service}
-          onChange={(event) => setService(event.target.value)}
+          value={searchTerm}
+          onChange={(event) => setSearchTerm(event.target.value)}
           placeholder="What services do you need?"
           autoComplete="off"
           aria-label="Search for a service"
