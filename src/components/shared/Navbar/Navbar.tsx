@@ -21,7 +21,7 @@ const navItems = [
   { label: "Services", href: "/services" },
   { label: "Help Wanted", href: "/job-posts" },
   { label: "About Us", href: "/about-us" },
-  { label: "Contact Us", href: "/contact" },
+  // { label: "Contact Us", href: "/contact" },
 ];
 
 
@@ -50,6 +50,7 @@ const Navbar = () => {
     sessionUser?.accessToken ?? sessionUser?.token,
   );
   const profile = profileResponse?.data;
+  const userName = profile?.username || "N/A";
   const profileImage =
     profile?.profilePicture ??
     sessionUser?.profilePicture ??
@@ -87,7 +88,7 @@ const Navbar = () => {
           aria-label="Primary navigation"
         >
           <ul className="flex min-w-0 items-center justify-center gap-5 text-[15px] font-medium text-black xl:gap-8">
-            {navItems.map((item) => {
+            {navItems?.map((item) => {
               const isActive =
                 pathname === item.href ||
                 (item.href !== "/" && pathname.startsWith(item.href));
@@ -117,7 +118,9 @@ const Navbar = () => {
             <div className="h-10 w-10 animate-pulse rounded-full bg-white/70" />
           ) : isAuthenticated ? (
             <DropdownMenu modal={false}>
-              <DropdownMenuTrigger asChild>
+              
+                <Link href={`/${userName}`} target="_blank">{userName}</Link>
+              <DropdownMenuTrigger asChild className="">
                 <button type="button" className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border-2 border-[#22245F] bg-white text-[#22245F] outline-none focus-visible:ring-2 focus-visible:ring-[#22245F] focus-visible:ring-offset-2" aria-label={`Open ${displayName} menu`}>
                   {profileImage ? <Image src={profileImage} alt={displayName} fill sizes="40px" className="object-cover" /> : <User className="h-5 w-5" />}
                 </button>
