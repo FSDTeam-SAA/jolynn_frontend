@@ -1,7 +1,7 @@
 "use client";
 
 // import { Facebook, Instagram, Linkedin, Youtube } from "lucide-react";
-import { Mail, MapPin, Phone } from "lucide-react";
+import { Mail, MapPin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -35,35 +35,30 @@ const footerColumns = [
     title: "For Customers",
     links: [
       { label: "Find Services", href: "/services" },
-      { label: "Get Listed", href: "/services/businesses" },
-      { label: "Advertise with Us", href: "/advertise-with-us" },
+
       { label: "How It Works", href: "/#how_it_works" },
       { label: "Leave a Review", href: "/reviews" },
+      { label: "FAQ", href: "/#faq" },
     ],
   },
   {
     title: "For Businesses",
     links: [
-      { label: "About Us", href: "/about-us" },
-       { label: "Contact Us", href: "/contact" },
-       { label: "FAQ", href: "/#faq" },
-       { label: "Terms of Service", href: "/terms-and-condition" },
-       { label: "Privacy Policy", href: "/privacy-policy" },
-      // { label: "Pricing", href: "#" },
-      // { label: "Success Stories", href: "#" },
+      { label: "Get Listed", href: "/services/businesses" },
+      { label: "Contact Us", href: "/contact" },
+      { label: "FAQ", href: "/#faq" },
+
     ],
   },
-  // {
-  //   title: "Company",
-  //   links: [
-  //     { label: "About Us", href: "/about-us" },
-  //     { label: "FAQ", href: "/#faq" },
-  //     { label: "Contact Us", href: "/contact" },
-  //     { label: "Terms of Service", href: "/terms-and-condition" },
-  //     { label: "Privacy Policy", href: "/privacy-policy" },
-  //   ],
-  // },
-
+  {
+    title: "Contact Us",
+    links: [
+      { label: "About Us", href: "/about-us" },
+      { label: "Advertise with Us", href: "/advertise-with-us" },
+      { label: "Terms of Service", href: "/terms-and-condition" },
+      { label: "Privacy Policy", href: "/privacy-policy" },
+    ],
+  },
 ];
 
 // const socialLinks = [
@@ -112,17 +107,17 @@ const Footer = () => {
   return (
     <footer className="bg-[#292E78] text-white">
       <div className="container px-4 py-10 sm:px-6 sm:py-12 md:py-14 lg:px-8 lg:pb-9 lg:pt-20 xl:px-10">
-        <div className="grid gap-10 lg:grid-cols-[minmax(240px,0.9fr)_minmax(0,2fr)] lg:gap-14 xl:gap-20">
-          <div className="max-w-[420px]">
+        <div className="grid grid-cols-1 gap-x-8 gap-y-10 min-[520px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-[minmax(220px,1.3fr)_repeat(4,minmax(0,1fr))] lg:gap-x-8 xl:grid-cols-[minmax(260px,1.4fr)_repeat(4,minmax(0,1fr))] xl:gap-x-12">
+          <div className="max-w-[420px] min-[520px]:col-span-2 md:col-span-3 lg:col-span-1">
             <Link href="/">
-            <Image
-              src="/assets/images/logo.png"
-              alt="Logo"
-              width={100}
-              height={100}
-              className="w-16 h-16"
-            />
-          </Link>
+              <Image
+                src="/assets/images/logo.png"
+                alt="Logo"
+                width={100}
+                height={100}
+                className="w-16 h-16"
+              />
+            </Link>
 
             <h2 className="mt-7 text-base font-bold leading-tight">
               SideQuote
@@ -149,7 +144,7 @@ const Footer = () => {
             </ul> */}
           </div>
 
-          <div className="grid grid-cols-1 gap-8 min-[520px]:grid-cols-2 md:grid-cols-3 md:gap-7 lg:gap-10 xl:gap-14">
+          <div className="grid grid-cols-1 gap-x-8 gap-y-8 min-[520px]:col-span-2 min-[520px]:grid-cols-2 md:col-span-3 md:grid-cols-3 lg:contents">
             {footerColumns.map((column) => (
               <div key={column.title}>
                 <h3 className="text-base font-bold leading-tight">
@@ -176,12 +171,12 @@ const Footer = () => {
             ))}
 
             <div>
-              <h3 className="text-base font-bold leading-tight">Contact Us</h3>
+              <h3 className="text-base font-bold leading-tight">Info</h3>
               <address className="mt-5 not-italic">
                 <ul className="space-y-4">
                   <li>
                     <a
-                      href="mailto:info@sidequote.com"
+                      href="/contact"
                       className="group flex items-start gap-3 text-sm font-light leading-6 text-white/85 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:text-[15px]"
                     >
                       <Mail
@@ -193,7 +188,7 @@ const Footer = () => {
                       </span>
                     </a>
                   </li>
-                  <li>
+                  {/* <li>
                     <a
                       href="tel:+14159027471"
                       className="group flex items-start gap-3 text-sm font-light leading-6 text-white/85 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:text-[15px]"
@@ -206,7 +201,7 @@ const Footer = () => {
                         +1 (415) 902-7471
                       </span>
                     </a>
-                  </li>
+                  </li> */}
                   <li className="flex items-start gap-3 text-sm font-light leading-6 text-white/85 sm:text-[15px]">
                     <MapPin
                       className="mt-0.5 h-5 w-5 shrink-0 text-white"

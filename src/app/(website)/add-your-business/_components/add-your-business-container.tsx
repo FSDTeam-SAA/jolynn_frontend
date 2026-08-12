@@ -38,6 +38,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -132,6 +133,7 @@ const createFormSchema = (isExistingUser: boolean) =>
     businessWebsiteUrl: z.string().url("Please enter a valid website URL."),
     address: z.string(),
     serviceArea: z.string(),
+    bio: z.string(),
     category: z.string().min(1, "Category is required."),
     requestedCategory: z.string().optional(),
     state: z.string().min(1, "State is required."),
@@ -398,6 +400,7 @@ const AddYourBusinessContainer = () => {
       businessWebsiteUrl: "",
       address: "",
       serviceArea: "",
+      bio: "",
       category: "",
       requestedCategory: "",
       state: "",
@@ -445,6 +448,7 @@ const AddYourBusinessContainer = () => {
             businessWebsiteUrl: values.businessWebsiteUrl,
             address: values.address,
             serviceArea: values.serviceArea,
+            bio: values.bio,
             category,
             requestedCategory,
             state: values.state,
@@ -660,6 +664,26 @@ const AddYourBusinessContainer = () => {
                   )}
                 />
               </div>
+
+              <FormField
+                control={form.control}
+                name="bio"
+                render={({ field }) => (
+                  <FormItem className="w-full">
+                    <FormLabel className={labelClassName}>
+                      Business Overview
+                    </FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Tell customers about your business"
+                        className="min-h-28 w-full resize-y rounded-[9px] border border-[#D8DDE7] bg-white px-4 py-3 text-sm font-medium text-[#20244A] shadow-none placeholder:font-normal placeholder:text-[#98A2B3] focus-visible:border-[#292D73] focus-visible:ring-4 focus-visible:ring-[#292D73]/10"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage className={messageClassName} />
+                  </FormItem>
+                )}
+              />
 
               <div className="flex items-center gap-3 border-b border-[#EAECF0] pb-3 pt-1">
                 <span className="flex h-9 w-9 items-center justify-center rounded-[9px] bg-[#EAF7F4] text-[#28796E]">
