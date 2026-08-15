@@ -10,10 +10,14 @@ type SponsoredAd = {
   title: string;
   content: string;
   image: string;
-  imagePublicId: string;
+  imagePublicId?: string;
   link?: string;
-  createdAt: string;
-  updatedAt: string;
+  videoUrl?: string;
+  video?: string;
+  videoLink?: string;
+  video_url?: string;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 type SponsorResponse = {
@@ -69,6 +73,70 @@ const getSponsorUrl = (link?: string) => {
   }
 };
 
+type VideoEmbedResult =
+  | { type: "iframe"; url: string }
+  | { type: "video"; url: string }
+  | null;
+
+const getEmbeddableVideoUrl = (rawVideoUrl?: string): VideoEmbedResult => {
+  const urlStr = rawVideoUrl?.trim();
+  if (!urlStr) return null;
+
+  const candidate = /^https?:\/\//i.test(urlStr) ? urlStr : `https://${urlStr}`;
+
+  try {
+    const parsed = new URL(candidate);
+    const hostname = parsed.hostname.toLowerCase();
+
+    // YouTube URLs
+    if (hostname.includes("youtube.com") || hostname.includes("youtu.be")) {
+      let videoId = "";
+
+      if (hostname.includes("youtu.be")) {
+        videoId = parsed.pathname.slice(1);
+      } else if (parsed.pathname.startsWith("/embed/")) {
+        videoId = parsed.pathname.replace("/embed/", "");
+      } else if (parsed.pathname.startsWith("/shorts/")) {
+        videoId = parsed.pathname.replace("/shorts/", "");
+      } else {
+        videoId = parsed.searchParams.get("v") || "";
+      }
+
+      if (videoId) {
+        return {
+          type: "iframe",
+          url: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=1&modestbranding=1`,
+        };
+      }
+    }
+
+    // Vimeo URLs
+    if (hostname.includes("vimeo.com")) {
+      const match = parsed.pathname.match(/\/(\d+)/);
+      if (match && match[1]) {
+        return {
+          type: "iframe",
+          url: `https://player.vimeo.com/video/${match[1]}?autoplay=1&muted=1&loop=1`,
+        };
+      }
+    }
+
+    // Embed URL
+    if (parsed.pathname.includes("/embed/")) {
+      return { type: "iframe", url: candidate };
+    }
+
+    // Direct MP4 / WebM / OGG video or HTML5 video
+    if (/\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(candidate) || parsed.pathname.includes("/video/")) {
+      return { type: "video", url: candidate };
+    }
+
+    return { type: "video", url: candidate };
+  } catch {
+    return null;
+  }
+};
+
 const SponsorsSkeleton = () => (
   <div
     className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4"
@@ -89,6 +157,14 @@ const SponsorsSkeleton = () => (
     ))}
   </div>
 );
+
+const isVideoUrl = (urlStr?: string): boolean => {
+  if (!urlStr) return false;
+  const trimmed = urlStr.trim();
+  return /youtube\.com|youtu\.be|vimeo\.com|\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(
+    trimmed,
+  );
+};
 
 const SponsoredAdvertisements = () => {
   const { data, isPending, isError, error, refetch, isFetching } =
@@ -154,10 +230,51 @@ const SponsoredAdvertisements = () => {
         ) : (
           <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {sponsoredAds.map((ad) => {
-              const sponsorUrl = getSponsorUrl(ad.link);
-              const cardContent = (
-                <>
-                  <div className="relative h-[195px] overflow-hidden bg-[#EEF2F6]">
+              const rawVideo =
+                ad.videoUrl ||
+                ad.video ||
+                ad.videoLink ||
+                ad.video_url ||
+                (isVideoUrl(ad.link) ? ad.link : undefined);
+              const videoEmbed = getEmbeddableVideoUrl(rawVideo);
+              const sponsorUrl = isVideoUrl(ad.link)
+                ? null
+                : getSponsorUrl(ad.link);
+
+              const cardMedia = videoEmbed ? (
+                <div className="relative h-[195px] w-full overflow-hidden bg-[#111827]">
+                  {videoEmbed.type === "iframe" ? (
+                    <iframe
+                      src={videoEmbed.url}
+                      title={ad.title}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      className="h-full w-full border-0 object-cover"
+                    />
+                  ) : (
+                    <video
+                      src={videoEmbed.url}
+                      autoPlay
+                      controls
+                      muted
+                      loop
+                      playsInline
+                      poster={ad.image}
+                      className="h-full w-full object-cover"
+                    />
+                  )}
+                  <span className="absolute left-3 top-3 z-10 inline-flex items-center gap-1.5 rounded-full border border-amber-200/80 bg-white/95 px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[0.12em] text-[#292D73] shadow-sm backdrop-blur">
+                    <Megaphone className="h-3 w-3 text-amber-500" aria-hidden="true" />
+                    Sponsored Video
+                  </span>
+                  <span
+                    className="absolute inset-x-0 bottom-0 z-10 h-1 bg-gradient-to-r from-amber-400 via-[#F6C85F] to-amber-400"
+                    aria-hidden="true"
+                  />
+                </div>
+              ) : (
+                <div className="relative h-[195px] overflow-hidden bg-[#EEF2F6]">
+                  {ad.image ? (
                     <Image
                       src={ad.image}
                       alt={ad.title}
@@ -165,16 +282,26 @@ const SponsoredAdvertisements = () => {
                       sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
                       className="object-cover transition duration-500 ease-out group-hover:scale-[1.06]"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#111827]/45 via-transparent to-transparent" />
-                    <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full border border-amber-200/80 bg-white/95 px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[0.12em] text-[#292D73] shadow-sm backdrop-blur">
-                      <Megaphone className="h-3 w-3 text-amber-500" aria-hidden="true" />
-                      Sponsored
-                    </span>
-                    <span
-                      className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-amber-400 via-[#F6C85F] to-amber-400"
-                      aria-hidden="true"
-                    />
-                  </div>
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center bg-slate-100 text-slate-400">
+                      <Megaphone className="h-10 w-10" />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#111827]/45 via-transparent to-transparent" />
+                  <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full border border-amber-200/80 bg-white/95 px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[0.12em] text-[#292D73] shadow-sm backdrop-blur">
+                    <Megaphone className="h-3 w-3 text-amber-500" aria-hidden="true" />
+                    Sponsored
+                  </span>
+                  <span
+                    className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-amber-400 via-[#F6C85F] to-amber-400"
+                    aria-hidden="true"
+                  />
+                </div>
+              );
+
+              const cardContent = (
+                <>
+                  {cardMedia}
 
                   <div className="flex min-h-[88px] flex-col justify-center p-4">
                     <div className="flex items-start justify-between gap-3">
@@ -186,7 +313,7 @@ const SponsoredAdvertisements = () => {
                       )}
                     </div>
                     <span className="mt-1 text-[11px] font-bold text-[#4365D0]">
-                      {sponsorUrl ? "Visit sponsor site" : "Sponsor details"}
+                      {videoEmbed ? "Sponsored Video" : sponsorUrl ? "Visit sponsor site" : "Sponsor details"}
                     </span>
                   </div>
                 </>
