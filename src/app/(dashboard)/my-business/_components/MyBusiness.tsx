@@ -10,10 +10,22 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Building2, Globe2, Mail, MapPin, Pencil, Phone } from "lucide-react";
+import {
+  ArrowLeft,
+  Building2,
+  ExternalLink,
+  Globe2,
+  Mail,
+  MapPin,
+  Pencil,
+  Phone,
+  RotateCw,
+  ShieldAlert,
+  X,
+} from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
-import Link from "next/link";
+// import Link from "next/lnk";
 import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -84,6 +96,52 @@ const toDraft = (profile: BusinessProfile): BusinessDraft => ({
   phoneNumber: profile.phoneNumber || "",
 });
 
+const getEmbeddableUrl = (
+  url: string
+): { embedUrl: string; originalUrl: string; isConvertedYoutube: boolean; isYoutubeMain: boolean } => {
+  if (!url) return { embedUrl: "", originalUrl: "", isConvertedYoutube: false, isYoutubeMain: false };
+  let cleanUrl = url.trim();
+  if (!cleanUrl.startsWith("http://") && !cleanUrl.startsWith("https://")) {
+    cleanUrl = `https://${cleanUrl}`;
+  }
+
+  try {
+    const parsed = new URL(cleanUrl);
+    const host = parsed.hostname.toLowerCase();
+
+    if (host.includes("youtube.com") || host.includes("youtu.be")) {
+      const videoId = parsed.searchParams.get("v");
+      if (videoId) {
+        return {
+          embedUrl: `https://www.youtube.com/embed/${videoId}`,
+          originalUrl: cleanUrl,
+          isConvertedYoutube: true,
+          isYoutubeMain: false,
+        };
+      }
+      if (host.includes("youtu.be")) {
+        const pathId = parsed.pathname.slice(1);
+        if (pathId) {
+          return {
+            embedUrl: `https://www.youtube.com/embed/${pathId}`,
+            originalUrl: cleanUrl,
+            isConvertedYoutube: true,
+            isYoutubeMain: false,
+          };
+        }
+      }
+      if (parsed.pathname.startsWith("/embed/")) {
+        return { embedUrl: cleanUrl, originalUrl: cleanUrl, isConvertedYoutube: false, isYoutubeMain: false };
+      }
+      return { embedUrl: cleanUrl, originalUrl: cleanUrl, isConvertedYoutube: false, isYoutubeMain: true };
+    }
+  } catch {
+    // fallback
+  }
+
+  return { embedUrl: cleanUrl, originalUrl: cleanUrl, isConvertedYoutube: false, isYoutubeMain: false };
+};
+
 function MyBusiness() {
   const { data: session, status: sessionStatus } = useSession();
   const user = session?.user as { token?: string; accessToken?: string } | undefined;
@@ -91,6 +149,7 @@ function MyBusiness() {
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState<BusinessDraft>(emptyDraft);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [profileImageFile, setProfileImageFile] = useState<File>();
   const [profileImagePreview, setProfileImagePreview] = useState("");
   const profileInputRef = useRef<HTMLInputElement>(null);
@@ -206,6 +265,107 @@ function MyBusiness() {
     );
   }
 
+  if (isPreviewOpen && business?.businessWebsiteUrl) {
+    const { embedUrl, originalUrl, isConvertedYoutube, isYoutubeMain } = getEmbeddableUrl(business.businessWebsiteUrl);
+
+    return (
+      <section className="flex min-h-[calc(100vh-140px)] flex-col overflow-hidden rounded-[12px] border border-[#E4E7EC] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.02)]">
+        {/* Top Header Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#EAECF0] bg-[#FAFAFC] px-5 py-3.5 sm:px-6">
+          <div className="flex min-w-0 items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setIsPreviewOpen(false)}
+              className="flex items-center gap-1.5 rounded-lg border border-[#D0D5DD] bg-white px-3 py-1.5 text-xs font-semibold text-[#344054] shadow-xs hover:bg-[#F9FAFB] transition-colors"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span>Back to Business Info</span>
+            </button>
+
+            <div className="hidden h-5 w-[1px] bg-[#E4E7EC] sm:block" />
+
+            <div className="flex min-w-0 items-center gap-2">
+              <Globe2 className="h-4 w-4 shrink-0 text-[#30347F]" />
+              <span className="truncate text-sm font-semibold text-[#101828]">
+                {business.businessWebsiteUrl}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex shrink-0 items-center gap-2">
+            <a
+              href={originalUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-1.5 rounded-lg bg-[#EEF1FF] px-3 py-1.5 text-xs font-semibold text-[#30347F] hover:bg-[#E0E5FF] transition-colors"
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+              <span>Open in New Tab</span>
+            </a>
+            <button
+              type="button"
+              onClick={() => {
+                const iframe = document.getElementById("website-preview-iframe") as HTMLIFrameElement;
+                if (iframe) iframe.src = embedUrl;
+              }}
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#D0D5DD] bg-white text-[#475467] hover:bg-[#F9FAFB] transition-colors"
+              title="Refresh website"
+            >
+              <RotateCw className="h-3.5 w-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsPreviewOpen(false)}
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-[#667085] hover:bg-[#F2F4F7] hover:text-[#101828] transition-colors"
+              title="Close preview"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* Security / Info Banner */}
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#B2DDFF] bg-[#EFF8FF] px-5 py-2 text-xs text-[#175CD3] sm:px-6">
+          <div className="flex items-center gap-2">
+            <ShieldAlert className="h-4 w-4 shrink-0 text-[#175CD3]" />
+            <span>
+              {isConvertedYoutube
+                ? "Converted YouTube video URL to official Embed format for inline playback."
+                : isYoutubeMain
+                ? "YouTube main site blocks embedding for security (X-Frame-Options: SAMEORIGIN). Click 'Open in New Tab' to view."
+                : "If this external site prevents embedding (X-Frame-Options / CSP), click 'Open in New Tab' to view it directly."}
+            </span>
+          </div>
+        </div>
+
+        {/* Main iFrame Body */}
+        <div className="relative flex-1 w-full bg-[#F8FAFC] min-h-[580px]">
+          <iframe
+            id="website-preview-iframe"
+            src={embedUrl}
+            title={`${business.businessName || "Business"} Website Preview`}
+            className="h-full w-full border-0 min-h-[600px]"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+          />
+        </div>
+
+        {/* Bottom Footer Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#EAECF0] bg-[#FAFAFC] px-5 py-3 text-xs text-[#475467] sm:px-6">
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="font-medium">Embedded Website Preview</span>
+            <span>•</span>
+            <span className="text-[#667085]">{business.businessName}</span>
+          </div>
+          <div className="truncate text-slate-500">
+            Target URL: <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs text-[#344054]">{embedUrl}</code>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <>
       <section className="overflow-hidden rounded-[12px] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.02)]">
@@ -259,9 +419,34 @@ function MyBusiness() {
             {business.businessWebsiteUrl && (
               <div>
                 <h3 className="mb-1.5 text-base font-semibold">Website</h3>
-                <Link href={business.businessWebsiteUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 break-all text-sm text-[#30569B] hover:underline">
-                  <Globe2 className="h-4 w-4 shrink-0" />{business.businessWebsiteUrl}
-                </Link>
+                <div className="flex flex-wrap items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsPreviewOpen(true)}
+                    className="flex items-center gap-2 rounded-lg bg-[#EEF1FF] px-4 py-2 text-sm font-medium text-[#30347F] hover:bg-[#E0E5FF] transition-colors"
+                  >
+                    <Globe2 className="h-4 w-4 shrink-0" />
+                    <span className="break-all">{business.businessWebsiteUrl}</span>
+                    <span className="ml-1 rounded-full bg-[#30347F] px-2 py-0.5 text-[10px] font-semibold text-white">
+                      Preview
+                    </span>
+                  </button>
+
+                  <a
+                    href={
+                      business.businessWebsiteUrl.startsWith("http://") || business.businessWebsiteUrl.startsWith("https://")
+                        ? business.businessWebsiteUrl
+                        : `https://${business.businessWebsiteUrl}`
+                    }
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-1.5 text-xs text-[#667085] hover:text-[#30347F] hover:underline"
+                    title="Open in new tab"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    Open external
+                  </a>
+                </div>
               </div>
             )}
           </div>

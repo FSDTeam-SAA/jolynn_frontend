@@ -1,6 +1,5 @@
 "use client";
 
-// import { Facebook, Instagram, Linkedin, Youtube } from "lucide-react";
 import { Mail, MapPin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -35,14 +34,14 @@ const footerColumns = [
     title: "For Customers",
     links: [
       { label: "Find Services", href: "/services" },
-
+      { label: "Get Listed", href: "/services/businesses" },
       { label: "How It Works", href: "/#how_it_works" },
       { label: "Leave a Review", href: "/reviews" },
       { label: "FAQ", href: "/#faq" },
     ],
   },
   {
-    title: "For Businesses",
+    title: "Corporate Info",
     links: [
       { label: "Get Listed", href: "/services/businesses" },
       { label: "Contact Us", href: "/contact" },
@@ -60,34 +59,6 @@ const footerColumns = [
     ],
   },
 ];
-
-// const socialLinks = [
-//   {
-//     label: "Facebook",
-//     href: "https://www.facebook.com",
-//     icon: <Facebook className="h-3.5 w-3.5" />,
-//   },
-//   {
-//     label: "X",
-//     href: "https://x.com",
-//     icon: <span className="text-[13px] font-medium leading-none">X</span>,
-//   },
-//   {
-//     label: "Instagram",
-//     href: "https://www.instagram.com",
-//     icon: <Instagram className="h-3.5 w-3.5" />,
-//   },
-//   {
-//     label: "LinkedIn",
-//     href: "https://www.linkedin.com",
-//     icon: <Linkedin className="h-3.5 w-3.5" />,
-//   },
-//   {
-//     label: "YouTube",
-//     href: "https://www.youtube.com",
-//     icon: <Youtube className="h-3.5 w-3.5" />,
-//   },
-// ];
 
 const Footer = () => {
   const pathname = usePathname();
@@ -115,7 +86,7 @@ const Footer = () => {
                 alt="Logo"
                 width={100}
                 height={100}
-                className="w-16 h-16"
+                className="h-16 w-16"
               />
             </Link>
 
@@ -123,25 +94,8 @@ const Footer = () => {
               SideQuote
             </h2>
             <p className="mt-4 max-w-sm text-sm font-light leading-6 text-white/80">
-              Connect with verified electricians, plumbers, HVAC technicians,
-              roofers, and more in your area.
+              The Largest Business Directory and Help Wanted Platform.
             </p>
-
-            {/* <ul className="mt-6 flex flex-wrap items-center gap-3">
-              {socialLinks?.map((item) => (
-                <li key={item.label}>
-                  <Link
-                    href={item.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label={item.label}
-                    className="flex h-9 w-9 items-center justify-center bg-[#FFFFFF1A] rounded-full bg-white/13 text-white transition hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-                  >
-                    {item.icon}
-                  </Link>
-                </li>
-              ))}
-            </ul> */}
           </div>
 
           <div className="grid grid-cols-1 gap-x-8 gap-y-8 min-[520px]:col-span-2 min-[520px]:grid-cols-2 md:col-span-3 md:grid-cols-3 lg:contents">
@@ -171,54 +125,42 @@ const Footer = () => {
             ))}
 
             <div>
-              <h3 className="text-base font-bold leading-tight">Info</h3>
-              <address className="mt-5 not-italic">
-                <ul className="space-y-4">
-                  <li>
-                    <a
-                      href="/contact"
-                      className="group flex items-start gap-3 text-sm font-light leading-6 text-white/85 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:text-[15px]"
-                    >
-                      <Mail
-                        className="mt-0.5 h-5 w-5 shrink-0 text-white"
-                        aria-hidden="true"
-                      />
-                      <span className="break-all group-hover:underline">
-                        info@sidequote.com
-                      </span>
-                    </a>
-                  </li>
-                  {/* <li>
-                    <a
-                      href="tel:+14159027471"
-                      className="group flex items-start gap-3 text-sm font-light leading-6 text-white/85 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:text-[15px]"
-                    >
-                      <Phone
-                        className="mt-0.5 h-5 w-5 shrink-0 text-white"
-                        aria-hidden="true"
-                      />
-                      <span className="group-hover:underline">
-                        +1 (415) 902-7471
-                      </span>
-                    </a>
-                  </li> */}
-                  <li className="flex items-start gap-3 text-sm font-light leading-6 text-white/85 sm:text-[15px]">
-                    <MapPin
-                      className="mt-0.5 h-5 w-5 shrink-0 text-white"
+              <h3 className="text-base font-bold leading-tight">Contact Us</h3>
+              <ul className="mt-4 space-y-4">
+                <li>
+                  <Link
+                    href="/contact"
+                    className="group inline-flex items-center gap-2.5 text-sm font-light leading-6 text-white/85 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:text-[15px]"
+                  >
+                    <Mail
+                      className="h-4 w-4 shrink-0 text-white"
                       aria-hidden="true"
                     />
-                    <span>
-                      8414 Farm Road
-                      <br />
-                      Ste 180 PMB 1105
-                      <br />
-                      Las Vegas, NV 89131
-                      <br />
-                      United States
-                    </span>
-                  </li>
-                </ul>
-              </address>
+                    <span className="group-hover:underline">Email Us</span>
+                  </Link>
+                </li>
+
+                <li className="pt-2">
+                  <h4 className="text-sm font-bold text-white">Customer Service</h4>
+                  <address className="mt-2.5 not-italic">
+                    <div className="flex items-start gap-2.5 text-sm font-light leading-6 text-white/85 sm:text-[15px]">
+                      <MapPin
+                        className="mt-1 h-4 w-4 shrink-0 text-white"
+                        aria-hidden="true"
+                      />
+                      <span>
+                        8414 Farm Road
+                        <br />
+                        Ste 180 PMB 1105
+                        <br />
+                        Las Vegas, NV 89131
+                        <br />
+                        United States
+                      </span>
+                    </div>
+                  </address>
+                </li>
+              </ul>
             </div>
           </div>
         </div>

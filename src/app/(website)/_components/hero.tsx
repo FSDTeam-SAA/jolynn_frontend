@@ -69,13 +69,13 @@ const heroSlides: HeroSlide[] = [
   },
   {
     id: 2,
-    eyebrow: "INCREASE ADVERTISING REACH WITHOUT ADDITIONAL OVERHEAD.",
-    titleStart: "Help",
-    titleAccentOne: "Wanted",
-    titleMiddle: "Find Local",
-    titleAccentTwo: "Work Faster",
+    eyebrow: "Your local business directory",
+    titleStart: "Our",
+    titleAccentOne: "Business Directory",
+    titleMiddle: "Finds Small to Medium Sized Businesses",
+    titleAccentTwo: "Faster.",
     description:
-      "Compare trusted local professionals, connect with the right skillset that fits your project needs and receive side quotes that fit your budget..",
+      "Discover trusted local professionals, compare top-rated services, and connect with businesses in your community.",
     image: "/assets/images/caro_2.png",
     imageAlt: "Local business owners talking on a neighborhood main street",
     backgroundClass: "bg-[#FDFBF8]",
@@ -522,7 +522,13 @@ const Hero = () => {
                 exit={{ opacity: 0, x: -horizontalOffset, y: reduceMotion ? 0 : 22 }}
                 transition={{ duration: reduceMotion ? 0 : 0.72, delay: reduceMotion ? 0 : 0.2, ease: [0.22, 1, 0.36, 1] }}
               >
-                <h1 className="max-w-[620px] text-4xl font-extrabold leading-[1.06] tracking-[-0.035em] text-[#292D73] sm:text-5xl lg:text-6xl xl:text-[68px]">
+                <h1
+                  className={`max-w-[650px] font-extrabold tracking-[-0.03em] text-[#292D73] ${
+                    activeSlide.id === 2
+                      ? "text-2xl leading-[1.32] sm:text-3xl sm:leading-[1.3] lg:text-[38px] lg:leading-[1.28] xl:text-[44px] xl:leading-[1.26]"
+                      : "text-3xl leading-[1.2] sm:text-4xl sm:leading-[1.18] lg:text-5xl lg:leading-[1.16] xl:text-[54px] xl:leading-[1.14]"
+                  }`}
+                >
                   {activeSlide.titleStart}{" "}
                   <span className="font-medium text-[#4365D0]">
                     {activeSlide.titleAccentOne}
@@ -532,7 +538,7 @@ const Hero = () => {
                     {activeSlide.titleAccentTwo}
                   </span>
                 </h1>
-                <p className="mt-5 max-w-[570px] text-sm leading-7 text-[#3f4852] sm:text-base lg:text-lg">
+                <p className="mt-6 max-w-[570px] text-sm leading-8 text-[#3f4852] sm:text-base lg:text-lg">
                   {activeSlide.description}
                 </p>
 
