@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import {
   FileText,
   LayoutDashboard,
+  Home,
   LogOut,
   X,
   BriefcaseBusiness,
@@ -23,6 +24,7 @@ import LogoutModal from "@/components/modals/LogoutModal";
 import { useProfileQuery } from "@/hooks/APicalling";
 
 const navigation = [
+  { name: "Home", href: "/", icon: Home },
   { name: "Dashboard Overview", href: "/overview", icon: LayoutDashboard },
   {
     name: "My Business",

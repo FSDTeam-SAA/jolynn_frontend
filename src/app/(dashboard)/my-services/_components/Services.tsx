@@ -406,7 +406,9 @@ function Services() {
                 </label>
               )}
               <label className="block space-y-2 text-xs font-medium text-[#344054]"><span>Description</span><textarea required maxLength={1000} rows={4} value={draft.description} onChange={(event) => setDraft((current) => ({ ...current, description: event.target.value }))} placeholder="Describe your Service..." className="min-h-[88px] w-full resize-none rounded-[2px] border border-[#B9BEC5] px-3 py-3 text-sm font-normal text-[#344054] outline-none placeholder:text-[#98A2B3] focus:border-[#30347F] focus:ring-1 focus:ring-[#30347F]" /></label>
-              <label className="block space-y-2 text-xs font-medium text-[#344054]"><span>Status</span><select value={draft.status} onChange={(event) => setDraft((current) => ({ ...current, status: event.target.value as ServiceStatus }))} className="h-[38px] w-full rounded-[2px] border border-[#B9BEC5] bg-white px-3 text-sm font-normal text-[#344054] outline-none focus:border-[#30347F]"><option value="active">Active</option><option value="inactive">Inactive</option></select></label>
+              {editingService && (
+                <label className="block space-y-2 text-xs font-medium text-[#344054]"><span>Status</span><select value={draft.status} onChange={(event) => setDraft((current) => ({ ...current, status: event.target.value as ServiceStatus }))} className="h-[38px] w-full rounded-[2px] border border-[#B9BEC5] bg-white px-3 text-sm font-normal text-[#344054] outline-none focus:border-[#30347F]"><option value="active">Active</option><option value="inactive">Inactive</option></select></label>
+              )}
               <div className="space-y-2">
                 <span className="text-xs font-medium text-[#344054]">Service logo (optional)</span>
                 <div className="flex items-center gap-3">
