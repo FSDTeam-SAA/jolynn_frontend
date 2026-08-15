@@ -234,7 +234,9 @@ const JobPostsContainer = () => {
     ) {
       return;
     }
+    
 
+    
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) void jobPostsQuery.fetchNextPage();
