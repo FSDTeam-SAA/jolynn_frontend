@@ -43,6 +43,15 @@ const footerColumns = [
   {
     title: "Corporate Info",
     links: [
+      { label: "Get Listed", href: "/services/businesses" },
+      { label: "Contact Us", href: "/contact" },
+      { label: "FAQ", href: "/#faq" },
+
+    ],
+  },
+  {
+    title: "Contact Us",
+    links: [
       { label: "About Us", href: "/about-us" },
       { label: "Advertise with Us", href: "/advertise-with-us" },
       { label: "Terms of Service", href: "/terms-and-condition" },
@@ -69,8 +78,8 @@ const Footer = () => {
   return (
     <footer className="bg-[#292E78] text-white">
       <div className="container px-4 py-10 sm:px-6 sm:py-12 md:py-14 lg:px-8 lg:pb-9 lg:pt-20 xl:px-10">
-        <div className="grid gap-10 lg:grid-cols-[minmax(240px,0.9fr)_minmax(0,2fr)] lg:gap-14 xl:gap-20">
-          <div className="max-w-[420px]">
+        <div className="grid grid-cols-1 gap-x-8 gap-y-10 min-[520px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-[minmax(220px,1.3fr)_repeat(4,minmax(0,1fr))] lg:gap-x-8 xl:grid-cols-[minmax(260px,1.4fr)_repeat(4,minmax(0,1fr))] xl:gap-x-12">
+          <div className="max-w-[420px] min-[520px]:col-span-2 md:col-span-3 lg:col-span-1">
             <Link href="/">
               <Image
                 src="/assets/images/logo.png"
@@ -89,7 +98,7 @@ const Footer = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-8 min-[520px]:grid-cols-2 md:grid-cols-3 md:gap-7 lg:gap-10 xl:gap-14">
+          <div className="grid grid-cols-1 gap-x-8 gap-y-8 min-[520px]:col-span-2 min-[520px]:grid-cols-2 md:col-span-3 md:grid-cols-3 lg:contents">
             {footerColumns.map((column) => (
               <div key={column.title}>
                 <h3 className="text-base font-bold leading-tight">
