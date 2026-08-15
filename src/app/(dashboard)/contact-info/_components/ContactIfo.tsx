@@ -17,6 +17,9 @@ type ContactDetails = {
   state: string;
   country: string;
   postcode: string;
+
+
+  
 };
 
 type UserProfile = ContactDetails & {
