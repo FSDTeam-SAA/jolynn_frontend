@@ -168,7 +168,6 @@ const JobPostsContainer = () => {
       }
     | undefined;
 
-
   const token = sessionUser?.accessToken ?? sessionUser?.token;
   const { data: profileResponse } = useProfileQuery(token);
   const profile = profileResponse?.data;
@@ -186,10 +185,9 @@ const JobPostsContainer = () => {
 
     return Boolean(
       (currentUserId && postUserId === currentUserId) ||
-        (currentUserEmail && postEmails.includes(currentUserEmail)),
+      (currentUserEmail && postEmails.includes(currentUserEmail)),
     );
   };
-
 
   const [searchTerm, setSearchTerm] = useState("");
   const [budgetRange, setBudgetRange] = useState("");
@@ -234,9 +232,7 @@ const JobPostsContainer = () => {
     ) {
       return;
     }
-    
 
-    
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) void jobPostsQuery.fetchNextPage();
@@ -251,20 +247,14 @@ const JobPostsContainer = () => {
     jobPostsQuery.hasNextPage,
     jobPostsQuery.isFetchingNextPage,
   ]);
-  const selectedReportPost = posts.find(
-    (post) => post._id === selectedPostId,
-  );
+  const selectedReportPost = posts.find((post) => post._id === selectedPostId);
   const selectedReportUsername = selectedReportPost
     ? getPopulatedUser(selectedReportPost)?.username ||
       selectedReportPost.username
     : "";
-  const viewedPostUser = postToView
-    ? getPopulatedUser(postToView)
-    : undefined;
+  const viewedPostUser = postToView ? getPopulatedUser(postToView) : undefined;
   const viewedPostUsername = postToView
-    ? normalizePublicUsername(
-        viewedPostUser?.username || postToView.username,
-      )
+    ? normalizePublicUsername(viewedPostUser?.username || postToView.username)
     : "";
   const viewedPostProfileImage =
     postToView?.profilePicture || viewedPostUser?.profilePicture;
@@ -315,7 +305,8 @@ const JobPostsContainer = () => {
         throw new Error("You can only delete your own help post.");
       }
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-      if (!apiUrl) throw new Error("The help wanted service is not configured.");
+      if (!apiUrl)
+        throw new Error("The help wanted service is not configured.");
 
       const response = await fetch(
         `${apiUrl}/help-wanted/${encodeURIComponent(post?._id)}`,
@@ -504,22 +495,22 @@ const JobPostsContainer = () => {
                     </button>
                   </>
                 )} */}
-                 <button
-                      type="button"
-                      onClick={openCreatePost}
-                      className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#292D73] px-4 text-xs font-bold text-white shadow-[0_7px_16px_rgba(41,45,115,0.18)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#1F2464] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4365D0] focus-visible:ring-offset-2"
-                    >
-                      <PlusCircle className="h-4 w-4" />
-                      Add Job Post
-                    </button>
-                    <button
-                      type="button"
-                      onClick={openAddBusiness}
-                      className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-[#292D73] bg-white px-4 text-xs font-bold text-[#292D73] transition duration-300 hover:-translate-y-0.5 hover:bg-[#EEF2FF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4365D0] focus-visible:ring-offset-2"
-                    >
-                      <BriefcaseBusiness className="h-4 w-4" />
-                      Add your business
-                    </button>
+                <button
+                  type="button"
+                  onClick={openCreatePost}
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#292D73] px-4 text-xs font-bold text-white shadow-[0_7px_16px_rgba(41,45,115,0.18)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#1F2464] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4365D0] focus-visible:ring-offset-2"
+                >
+                  <PlusCircle className="h-4 w-4" />
+                  Add Job Post
+                </button>
+                <button
+                  type="button"
+                  onClick={openAddBusiness}
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-[#292D73] bg-white px-4 text-xs font-bold text-[#292D73] transition duration-300 hover:-translate-y-0.5 hover:bg-[#EEF2FF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4365D0] focus-visible:ring-offset-2"
+                >
+                  <BriefcaseBusiness className="h-4 w-4" />
+                  Add your business
+                </button>
                 <div
                   className="inline-flex items-center rounded-lg border border-[#D8DEE8] bg-white p-1 shadow-sm"
                   role="group"
@@ -617,7 +608,10 @@ const JobPostsContainer = () => {
                             aria-label={`View full details for ${post.category} service post`}
                           >
                             View More
-                            <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+                            <ChevronRight
+                              className="h-3.5 w-3.5"
+                              aria-hidden="true"
+                            />
                           </button>
                         </div>
                       </div>
@@ -626,123 +620,128 @@ const JobPostsContainer = () => {
                 }
 
                 return (
-                <article
-                  key={post._id}
-                  className="group flex h-full flex-col overflow-hidden rounded-xl border border-[#D4E6E8] bg-[#F0FEFE] shadow-[0_7px_18px_rgba(19,35,68,0.10)] transition-[transform,box-shadow,border-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-[#A9E1E5] hover:shadow-[0_16px_32px_rgba(19,35,68,0.16)] motion-reduce:transform-none motion-reduce:transition-none"
-                >
-                  <div className="flex h-full flex-col px-4 pb-4 pt-4 sm:px-5 sm:pb-5">
-                    <div className="flex items-start justify-between gap-2.5">
-                      <div className="flex min-w-0 items-center gap-2.5">
-                        <button
-                          type="button"
-                          onClick={() => setPostToView(post)}
-                          className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary text-lg font-extrabold uppercase text-white shadow-[0_3px_10px_rgba(41,45,115,0.22)] ring-2 ring-white transition hover:ring-[#4365D0]/30 sm:h-12 sm:w-12"
-                          aria-label={`View ${publicUsername}'s job details`}
-                        >
-                          {profileImage ? (
-                            <Image
-                              src={profileImage}
-                              alt={publicUsername}
-                              fill
-                              sizes="48px"
-                              className="object-cover"
-                            />
-                          ) : (
-                            publicUsername.charAt(0)
-                          )}
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => setPostToView(post)}
-                          className="min-w-0 truncate text-sm font-bold leading-normal text-primary transition hover:text-[#4365D0] hover:underline md:text-base"
-                        >
-                          @{publicUsername}
-                        </button>
-                      </div>
-                      <div className="flex shrink-0 items-center gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => openReportForm(post._id)}
-                          className="inline-flex h-7 items-center justify-center gap-1 rounded-md border border-[#D0D5DD] bg-white px-2 text-[10px] font-bold text-[#667085] transition hover:bg-[#F2F4F7]"
-                        >
-                          <Flag className="h-3 w-3" />
-                          Report
-                        </button>
-                        {isOwnPost(post) && (
+                  <article
+                    key={post._id}
+                    className="group flex h-full flex-col overflow-hidden rounded-xl border border-[#D4E6E8] bg-[#F0FEFE] shadow-[0_7px_18px_rgba(19,35,68,0.10)] transition-[transform,box-shadow,border-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-[#A9E1E5] hover:shadow-[0_16px_32px_rgba(19,35,68,0.16)] motion-reduce:transform-none motion-reduce:transition-none"
+                  >
+                    <div className="flex h-full flex-col px-4 pb-4 pt-4 sm:px-5 sm:pb-5">
+                      <div className="flex items-start justify-between gap-2.5">
+                        <div className="flex min-w-0 items-center gap-2.5">
                           <button
                             type="button"
-                            onClick={() => setPostToDelete(post)}
-                            disabled={
-                              deletePostMutation.isPending &&
-                              deletePostMutation.variables?._id === post._id
-                            }
-                            className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-red-200 bg-red-50 text-red-600 transition hover:bg-red-600 hover:text-white disabled:opacity-50"
-                            aria-label="Delete your help post"
+                            onClick={() => setPostToView(post)}
+                            className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary text-lg font-extrabold uppercase text-white shadow-[0_3px_10px_rgba(41,45,115,0.22)] ring-2 ring-white transition hover:ring-[#4365D0]/30 sm:h-12 sm:w-12"
+                            aria-label={`View ${publicUsername}'s job details`}
                           >
-                            <Trash2 className="h-3.5 w-3.5" />
+                            {profileImage ? (
+                              <Image
+                                src={profileImage}
+                                alt={publicUsername}
+                                fill
+                                sizes="48px"
+                                className="object-cover"
+                              />
+                            ) : (
+                              publicUsername.charAt(0)
+                            )}
                           </button>
-                        )}
+
+                          <button
+                            type="button"
+                            onClick={() => setPostToView(post)}
+                            className="min-w-0 truncate text-sm font-bold leading-normal text-primary transition hover:text-[#4365D0] hover:underline md:text-base"
+                          >
+                            @{publicUsername}
+                          </button>
+                        </div>
+                        <div className="flex shrink-0 items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => openReportForm(post._id)}
+                            className="inline-flex h-7 items-center justify-center gap-1 rounded-md border border-[#D0D5DD] bg-white px-2 text-[10px] font-bold text-[#667085] transition hover:bg-[#F2F4F7]"
+                          >
+                            <Flag className="h-3 w-3" />
+                            Report
+                          </button>
+                          {isOwnPost(post) && (
+                            <button
+                              type="button"
+                              onClick={() => setPostToDelete(post)}
+                              disabled={
+                                deletePostMutation.isPending &&
+                                deletePostMutation.variables?._id === post._id
+                              }
+                              className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-red-200 bg-red-50 text-red-600 transition hover:bg-red-600 hover:text-white disabled:opacity-50"
+                              aria-label="Delete your help post"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="my-4 h-px bg-[#86D6E4]" />
+
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-normal text-[#667481] md:text-sm">
+                        <p>
+                          Category:{" "}
+                          <span className="text-primary">{post.category}</span>
+                        </p>
+                        <p>
+                          Zip code:{" "}
+                          <span className="text-primary">{post.zipcode}</span>
+                        </p>
+                        <p>
+                          Budget:{" "}
+                          <span className="text-primary">
+                            {post.budgetRange || "Not provided"}
+                          </span>
+                        </p>
+                      </div>
+
+                      <div className="mt-3 min-w-0 px-0 py-1">
+                        <p className="text-[9px] font-extrabold uppercase tracking-[0.12em] text-[#7A8793]">
+                          Request details
+                        </p>
+                        <h3 className="mt-1.5 break-words text-[12px] font-bold leading-5 text-[#1F2937] sm:text-[13px]">
+                          Looking for {post.category} service
+                        </h3>
+                        <p className="mt-2 line-clamp-2 min-h-10 max-w-full whitespace-pre-wrap break-words text-xs font-normal leading-5 text-[#52606D] sm:text-[13px]">
+                          {post.message.length > 90
+                            ? `${post.message.slice(0, 90).trim()}…`
+                            : post.message}
+                        </p>
+                      </div>
+                      <div className="mt-2.5 flex items-center justify-between gap-3">
+                        <p className="text-[10px] font-medium text-[#7A8793]">
+                          Posted {new Date(post.createdAt).toLocaleDateString()}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => setPostToView(post)}
+                          className="inline-flex shrink-0 items-center gap-0.5 rounded px-1 py-0.5 text-[11px] font-bold text-[#292D73] transition hover:text-[#0082D7] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4365D0]/40"
+                          aria-label={`View full details for ${post.category} service post`}
+                        >
+                          View More
+                          <ChevronRight
+                            className="h-3.5 w-3.5"
+                            aria-hidden="true"
+                          />
+                        </button>
+                      </div>
+
+                      <div className="mt-auto pt-4">
+                        <button
+                          type="button"
+                          onClick={() => openSideQuote(post.email)}
+                          className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-primary px-3 text-xs font-bold text-white shadow-[0_5px_12px_rgba(41,45,115,0.18)] transition hover:bg-[#1F2464] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2"
+                        >
+                          <Mail className="h-4 w-4" />
+                          Get SideQuote
+                        </button>
                       </div>
                     </div>
-
-                    <div className="my-4 h-px bg-[#86D6E4]" />
-
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-normal text-[#667481] md:text-sm">
-                      <p>
-                        Category: <span className="text-primary">{post.category}</span>
-                      </p>
-                      <p>
-                        Zip code: <span className="text-primary">{post.zipcode}</span>
-                      </p>
-                      <p>
-                        Budget: <span className="text-primary">{post.budgetRange || "Not provided"}</span>
-                      </p>
-                    </div>
-
-                    <div className="mt-3 min-w-0 px-0 py-1">
-                      <p className="text-[9px] font-extrabold uppercase tracking-[0.12em] text-[#7A8793]">
-                        Request details
-                      </p>
-                      <h3 className="mt-1.5 break-words text-[12px] font-bold leading-5 text-[#1F2937] sm:text-[13px]">
-                        Looking for {post.category} service
-                      </h3>
-                      <p className="mt-2 line-clamp-2 min-h-10 max-w-full whitespace-pre-wrap break-words text-xs font-normal leading-5 text-[#52606D] sm:text-[13px]">
-                        {post.message.length > 90
-                          ? `${post.message.slice(0, 90).trim()}…`
-                          : post.message}
-                      </p>
-                    </div>
-                    <div className="mt-2.5 flex items-center justify-between gap-3">
-                      <p className="text-[10px] font-medium text-[#7A8793]">
-                        Posted {new Date(post.createdAt).toLocaleDateString()}
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => setPostToView(post)}
-                        className="inline-flex shrink-0 items-center gap-0.5 rounded px-1 py-0.5 text-[11px] font-bold text-[#292D73] transition hover:text-[#0082D7] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4365D0]/40"
-                        aria-label={`View full details for ${post.category} service post`}
-                      >
-                        View More
-                        <ChevronRight
-                          className="h-3.5 w-3.5"
-                          aria-hidden="true"
-                        />
-                      </button>
-                    </div>
-
-                    <div className="mt-auto pt-4">
-                      <button
-                        type="button"
-                        onClick={() => openSideQuote(post.email)}
-                        className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-primary px-3 text-xs font-bold text-white shadow-[0_5px_12px_rgba(41,45,115,0.18)] transition hover:bg-[#1F2464] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2"
-                      >
-                        <Mail className="h-4 w-4" />
-                        Get SideQuote
-                      </button>
-                    </div>
-                  </div>
-                </article>
+                  </article>
                 );
               })}
             </div>
@@ -835,7 +834,11 @@ const JobPostsContainer = () => {
                     value: `@${viewedPostUsername}`,
                     icon: UserRound,
                   },
-                  { label: "Zip code", value: postToView.zipcode, icon: MapPin },
+                  {
+                    label: "Zip code",
+                    value: postToView.zipcode,
+                    icon: MapPin,
+                  },
                   {
                     label: "Budget",
                     value: postToView.budgetRange || "Not provided",
@@ -872,7 +875,7 @@ const JobPostsContainer = () => {
                     <BriefcaseBusiness className="h-4 w-4" />
                   </span>
                   <p className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#667085]">
-                  Job details
+                    Job details
                   </p>
                 </div>
                 <p className="mt-3 max-w-full whitespace-pre-wrap break-words text-sm font-normal leading-6 text-[#475467]">
@@ -937,7 +940,10 @@ const JobPostsContainer = () => {
           aria-modal="true"
           aria-labelledby="job-report-title"
           onMouseDown={(event) => {
-            if (event.target === event.currentTarget && !reportMutation.isPending) {
+            if (
+              event.target === event.currentTarget &&
+              !reportMutation.isPending
+            ) {
               setSelectedPostId(null);
             }
           }}
@@ -955,7 +961,10 @@ const JobPostsContainer = () => {
             >
               <X className="h-5 w-5" />
             </button>
-            <h2 id="job-report-title" className="text-xl font-extrabold text-primary">
+            <h2
+              id="job-report-title"
+              className="text-xl font-extrabold text-primary"
+            >
               Report Job Post
             </h2>
             <p className="mt-1 text-xs text-[#667085]">
@@ -975,7 +984,10 @@ const JobPostsContainer = () => {
               aria-readonly="true"
               className="mt-2 h-11 w-full cursor-default rounded-[5px] border border-[#D7DEE8] bg-[#F6F8FB] px-4 text-sm font-semibold text-primary outline-none"
             />
-            <label htmlFor="job-report-message" className="mt-5 block text-xs font-semibold text-[#344054]">
+            <label
+              htmlFor="job-report-message"
+              className="mt-5 block text-xs font-semibold text-[#344054]"
+            >
               Report message
             </label>
             <textarea
@@ -1099,7 +1111,7 @@ const JobPostsContainer = () => {
                 ? "Sign in to add a job post"
                 : signInIntent === "business"
                   ? "Sign in to add your business"
-                : "Sign in to report this post"}
+                  : "Sign in to report this post"}
             </h2>
             <p className="mt-2 text-[13px] leading-5 text-[#667085]">
               {signInIntent === "create"
@@ -1108,7 +1120,7 @@ const JobPostsContainer = () => {
                   ? "You need to sign in before you can add your business."
                   : signInIntent === "sidequote"
                     ? "You need to sign in before you can get a SideQuote."
-                : "You need to sign in before you can submit a report."}
+                    : "You need to sign in before you can submit a report."}
             </p>
             <div className="mt-6 grid grid-cols-2 gap-3">
               <button
