@@ -1,6 +1,7 @@
 "use client";
 
 import { Skeleton } from "@/components/ui/skeleton";
+import { useProfileQuery } from "@/hooks/APicalling";
 import {
   Popover,
   PopoverContent,
@@ -23,15 +24,19 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronsUpDown,
+  Clock3,
   LayoutGrid,
   List,
   MapPin,
   MessageCircle,
   Search,
   Star,
+  X,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import BusinessSearchForm from "./business-search-form";
 import NoBusinessResults from "./no-business-results";
@@ -62,6 +67,31 @@ const excludedStateNames = new Set([
   "armed forces pacific",
   "armed forces of the americas",
 ]);
+
+const formatRelativeTime = (dateString: string) => {
+  const date = new Date(dateString);
+  const timestamp = date.getTime();
+
+  if (Number.isNaN(timestamp)) return null;
+
+  const secondsAgo = Math.max(0, Math.floor((Date.now() - timestamp) / 1000));
+
+  if (secondsAgo < 60) return "Just now";
+
+  const intervals = [
+    { seconds: 60 * 60 * 24 * 365, label: "year" },
+    { seconds: 60 * 60 * 24 * 30, label: "month" },
+    { seconds: 60 * 60 * 24, label: "day" },
+    { seconds: 60 * 60, label: "hour" },
+    { seconds: 60, label: "minute" },
+  ];
+  const interval = intervals.find(({ seconds }) => secondsAgo >= seconds);
+
+  if (!interval) return "Just now";
+
+  const value = Math.floor(secondsAgo / interval.seconds);
+  return `${value} ${interval.label}${value === 1 ? "" : "s"} ago`;
+};
 
 type FilterLocationDropdownProps = {
   value: string;
@@ -107,7 +137,10 @@ const FilterLocationDropdown = ({
           aria-expanded={open}
           className="flex h-11 w-full items-center justify-between gap-2 rounded-[6px] border border-[#A7A7A7] bg-white px-3 text-left text-[12px] font-medium text-[#8A8F99] outline-none transition focus:ring-2 focus:ring-[#292D73]/20 disabled:cursor-not-allowed disabled:bg-[#F8FAFC]"
         >
-          <span className="min-w-0 flex-1 truncate" title={value || placeholder}>
+          <span
+            className="min-w-0 flex-1 truncate"
+            title={value || placeholder}
+          >
             {loading ? "Loading..." : value || placeholder}
           </span>
           <ChevronsUpDown className="h-4 w-4 shrink-0" />
@@ -128,7 +161,7 @@ const FilterLocationDropdown = ({
             className="h-full min-w-0 flex-1 bg-transparent px-2 text-xs font-medium text-[#292D73] outline-none placeholder:text-[#98A2B3]"
           />
         </div>
-        <div className="max-h-52 overflow-y-auto p-1.5">
+        <div className="max-h-64 overflow-y-auto p-1.5">
           <button
             type="button"
             onClick={() => {
@@ -214,6 +247,18 @@ const ServicesSearchContainer = ({
   initialState = "",
   initialCity = "",
 }: ServicesSearchContainerProps) => {
+  const router = useRouter();
+  const { data: session } = useSession();
+  const sessionUser = session?.user as
+    | {
+        token?: string;
+        accessToken?: string;
+        role?: string;
+      }
+    | undefined;
+  const token = sessionUser?.accessToken ?? sessionUser?.token;
+  const { data: profileResponse } = useProfileQuery(token);
+  const profile = profileResponse?.data;
   const categoriesQuery = useServiceCategories();
   const categories = categoriesQuery.data?.data ?? [];
   const statesQuery = useLocationStates();
@@ -239,6 +284,8 @@ const ServicesSearchContainer = ({
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [selectedBusiness, setSelectedBusiness] =
     useState<SelectedBusiness | null>(null);
+  const [showExistingBusinessNotice, setShowExistingBusinessNotice] =
+    useState(false);
   const selectedDraftState = states.find(
     (state) => state.name === draftFilters.state,
   );
@@ -256,11 +303,7 @@ const ServicesSearchContainer = ({
     setDraftFilters(syncedFilters);
     setAppliedFilters(syncedFilters);
     setPage(1);
-  }, [
-    initialCity,
-    initialSearchTerm,
-    initialState,
-  ]);
+  }, [initialCity, initialSearchTerm, initialState]);
 
   const queryFilters: BusinessOwnerFilters = {
     searchTerm: appliedFilters.searchTerm,
@@ -308,6 +351,17 @@ const ServicesSearchContainer = ({
     setDraftFilters(reset);
     setAppliedFilters(reset);
     setPage(1);
+  };
+
+  const openAddBusiness = () => {
+    const currentRole = profile?.role ?? sessionUser?.role;
+
+    if (currentRole === "businessOwner") {
+      setShowExistingBusinessNotice(true);
+      return;
+    }
+
+    router.push("/add-your-business");
   };
 
   return (
@@ -358,26 +412,19 @@ const ServicesSearchContainer = ({
                       Categories unavailable — retry
                     </button>
                   ) : (
-                    <label className="relative block">
-                      <span className="sr-only">Category</span>
-                      <select
-                        value={draftFilters.category}
-                        onChange={(event) =>
-                          updateFilter("category", event.target.value)
-                        }
-                        className="h-11 w-full appearance-none rounded-[6px] border border-[#A7A7A7] bg-white px-3 pr-9 text-[12px] font-medium text-[#8A8F99] focus:outline-none focus:ring-2 focus:ring-[#292D73]/20"
-                      >
-                        <option value="">Select Category</option>
-                        {categories
-                          .filter((category) => category.isActive)
-                          .map((category) => (
-                            <option key={category._id} value={category.name}>
-                              {category.name}
-                            </option>
-                          ))}
-                      </select>
-                      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8A8F99]" />
-                    </label>
+                    <FilterLocationDropdown
+                      value={draftFilters.category}
+                      options={categories
+                        .filter((category) => category.isActive)
+                        .map((category) => category.name)}
+                      placeholder="Select Category"
+                      searchPlaceholder="Search categories..."
+                      emptyMessage="No category found."
+                      clearLabel="All Categories"
+                      onChange={(nextCategory) =>
+                        updateFilter("category", nextCategory)
+                      }
+                    />
                   )}
 
                   <label className="relative block">
@@ -428,7 +475,9 @@ const ServicesSearchContainer = ({
                     searchPlaceholder="Search cities..."
                     emptyMessage="No city found."
                     clearLabel="None"
-                    loading={Boolean(selectedDraftState) && citiesQuery.isPending}
+                    loading={
+                      Boolean(selectedDraftState) && citiesQuery.isPending
+                    }
                     disabled={
                       !selectedDraftState ||
                       citiesQuery.isError ||
@@ -466,11 +515,20 @@ const ServicesSearchContainer = ({
                   </p>
 
                   <div
-                    className="inline-flex items-center rounded-[7px] border border-[#D8DEE8] bg-[#F5F7FA] p-1"
+                    className="inline-flex gap-2 items-center rounded-[7px] border border-[#D8DEE8] bg-[#F5F7FA] p-1"
                     role="group"
                     aria-label="Choose results view"
                   >
                     <button
+                      type="button"
+                      onClick={openAddBusiness}
+                      className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-[#292D73] bg-white px-4 text-xs font-bold text-[#292D73] transition duration-300 hover:-translate-y-0.5 hover:bg-[#EEF2FF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4365D0] focus-visible:ring-offset-2"
+                    >
+                      <BriefcaseBusiness className="h-4 w-4" />
+                      Add your business
+                    </button>
+                   <div>
+                     <button
                       type="button"
                       onClick={() => setViewMode("list")}
                       aria-pressed={viewMode === "list"}
@@ -498,6 +556,8 @@ const ServicesSearchContainer = ({
                       <LayoutGrid className="h-4 w-4" aria-hidden="true" />
                       <span className="hidden sm:inline">Grid</span>
                     </button>
+                   </div>
+                    
                   </div>
                 </div>
 
@@ -553,6 +613,9 @@ const ServicesSearchContainer = ({
                         business.service?.description ||
                         business.bio ||
                         "Contact this business to learn more about its services.";
+                      const createdAtLabel = formatRelativeTime(
+                        business.createdAt,
+                      );
 
                       if (viewMode === "list") {
                         return (
@@ -598,6 +661,15 @@ const ServicesSearchContainer = ({
                                         ({totalReviews})
                                       </span>
                                     </div>
+                                    {createdAtLabel && (
+                                      <time
+                                        dateTime={business.createdAt}
+                                        className="inline-flex items-center gap-1 text-[10px] text-[#667085]"
+                                      >
+                                        <Clock3 className="h-3 w-3" />
+                                        {createdAtLabel}
+                                      </time>
+                                    )}
                                   </div>
                                 </div>
                               </div>
@@ -628,9 +700,17 @@ const ServicesSearchContainer = ({
                                   Report
                                 </button>
                                 <Link
-                                  href={business?.businessEmail ? `mailto:${business?.businessEmail}` : "#"}
+                                  href={
+                                    business?.businessEmail
+                                      ? `mailto:${business?.businessEmail}`
+                                      : "#"
+                                  }
                                   className={`inline-flex h-9 min-w-9 items-center justify-center rounded-md border border-[#292E78] bg-white text-[#292E78] transition hover:bg-[#292E78] hover:text-white ${!business.businessEmail ? "pointer-events-none opacity-50" : ""}`}
-                                  aria-label={business.businessEmail ? `Email ${business.businessName}` : `Email unavailable for ${business.businessName}`}
+                                  aria-label={
+                                    business.businessEmail
+                                      ? `Email ${business.businessName}`
+                                      : `Email unavailable for ${business.businessName}`
+                                  }
                                   aria-disabled={!business.businessEmail}
                                 >
                                   <MessageCircle className="h-4 w-4" />
@@ -646,104 +726,123 @@ const ServicesSearchContainer = ({
                           key={business.businessOwnerId}
                           className="group rounded-[8px] bg-white p-4 shadow-[0_6px_18px_rgba(30,45,75,0.14)] ring-1 ring-[#E8ECF2] transition duration-200 hover:-translate-y-1"
                         >
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex min-w-0 items-start gap-3">
-                            <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl border border-white bg-[linear-gradient(145deg,#F7F9FF_0%,#E9F2F4_100%)] shadow-[0_6px_16px_rgba(41,46,120,0.12)] ring-1 ring-[#DDE5F0] transition duration-300 group-hover:-translate-y-0.5 group-hover:shadow-[0_9px_22px_rgba(41,46,120,0.17)]">
-                              {serviceLogoUrl ? (
-                                <Image
-                                  src={serviceLogoUrl}
-                                  alt={`${serviceTitle} logo`}
-                                  fill
-                                  sizes="48px"
-                                  className="object-contain p-1.5 transition duration-500 ease-out group-hover:scale-105"
-                                />
-                              ) : (
-                                <BriefcaseBusiness className="absolute inset-0 m-auto h-5 w-5 text-[#98A2B3]" />
-                              )}
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex min-w-0 items-start gap-3">
+                              <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl border border-white bg-[linear-gradient(145deg,#F7F9FF_0%,#E9F2F4_100%)] shadow-[0_6px_16px_rgba(41,46,120,0.12)] ring-1 ring-[#DDE5F0] transition duration-300 group-hover:-translate-y-0.5 group-hover:shadow-[0_9px_22px_rgba(41,46,120,0.17)]">
+                                {serviceLogoUrl ? (
+                                  <Image
+                                    src={serviceLogoUrl}
+                                    alt={`${serviceTitle} logo`}
+                                    fill
+                                    sizes="48px"
+                                    className="object-contain p-1.5 transition duration-500 ease-out group-hover:scale-105"
+                                  />
+                                ) : (
+                                  <BriefcaseBusiness className="absolute inset-0 m-auto h-5 w-5 text-[#98A2B3]" />
+                                )}
+                              </div>
+                              <div className="min-w-0">
+                                <h3 className="line-clamp-1 text-[15px] font-extrabold leading-tight text-[#292D73]">
+                                  {business.businessName}
+                                </h3>
+                                <span className="mt-1 inline-flex rounded-[3px] bg-[#DFEEEE] px-2 py-0.5 text-[11px] font-semibold leading-none text-[#426078]">
+                                  {business.category || serviceTitle}
+                                </span>
+                              </div>
                             </div>
-                            <div className="min-w-0">
-                              <h3 className="line-clamp-1 text-[15px] font-extrabold leading-tight text-[#292D73]">
-                                {business.businessName}
-                              </h3>
-                              <span className="mt-1 inline-flex rounded-[3px] bg-[#DFEEEE] px-2 py-0.5 text-[11px] font-semibold leading-none text-[#426078]">
-                                {business.category || serviceTitle}
+                            <Link
+                              href={`/services/businesses/${business.businessOwnerId}?tab=reviews`}
+                              className="inline-flex h-9 shrink-0 items-center justify-center rounded-[5px] border border-[#F8AA18] bg-[#FFF6D8] px-4 text-xs font-medium text-[#E56D00] transition hover:bg-[#F8AA18] hover:text-white"
+                            >
+                              Review
+                            </Link>
+                          </div>
+
+                          <div>
+                            <div className="mt-3 flex flex-wrap items-center gap-1.5">
+                              <div
+                                className="flex gap-px"
+                                aria-label={`${rating} out of 5 stars`}
+                              >
+                                {Array.from({ length: 5 }).map((_, index) => (
+                                  <Star
+                                    key={index}
+                                    className={`h-[12px] w-[12px] ${
+                                      index < Math.round(rating)
+                                        ? "fill-[#FFB800] text-[#FFB800]"
+                                        : "text-[#D9DEE7]"
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+                              <span className="text-xs font-bold text-[#292E78]">
+                                {rating.toFixed(1)}
+                              </span>
+                              <span className="text-xs text-[#667085]">
+                                ({totalReviews} reviews)
                               </span>
                             </div>
-                          </div>
-                          <Link
-                            href={`/services/businesses/${business.businessOwnerId}?tab=reviews`}
-                            className="inline-flex h-9 shrink-0 items-center justify-center rounded-[5px] border border-[#F8AA18] bg-[#FFF6D8] px-4 text-xs font-medium text-[#E56D00] transition hover:bg-[#F8AA18] hover:text-white"
-                          >
-                            Review
-                          </Link>
-                        </div>
 
-                        <div>
-                          <div className="mt-3 flex flex-wrap items-center gap-1.5">
-                            <div
-                              className="flex gap-px"
-                              aria-label={`${rating} out of 5 stars`}
-                            >
-                              {Array.from({ length: 5 }).map((_, index) => (
-                                <Star
-                                  key={index}
-                                  className={`h-[12px] w-[12px] ${
-                                    index < Math.round(rating)
-                                      ? "fill-[#FFB800] text-[#FFB800]"
-                                      : "text-[#D9DEE7]"
-                                  }`}
-                                />
-                              ))}
+                            <div className="mt-3 flex items-start gap-1 text-xs text-[#667085]">
+                              <MapPin className="h-3.5 w-3.5 shrink-0" />
+                              <span>
+                                {[business.city, business.state]
+                                  .filter(Boolean)
+                                  .join(", ") ||
+                                  business.address ||
+                                  business.serviceArea}
+                              </span>
                             </div>
-                            <span className="text-xs font-bold text-[#292E78]">
-                              {rating.toFixed(1)}
-                            </span>
-                            <span className="text-xs text-[#667085]">
-                              ({totalReviews} reviews)
-                            </span>
+                            <p className="mt-1.5 line-clamp-2 min-h-[32px] text-xs leading-[1.4] text-[#667085]">
+                              {serviceDescription}
+                            </p>
+                            {createdAtLabel && (
+                              <time
+                                dateTime={business.createdAt}
+                                className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-[#667085]"
+                              >
+                                <Clock3 className="h-3.5 w-3.5" />
+                                {createdAtLabel}
+                              </time>
+                            )}
                           </div>
 
-                          <div className="mt-3 flex items-start gap-1 text-xs text-[#667085]">
-                            <MapPin className="h-3.5 w-3.5 shrink-0" />
-                            <span>
-                              {[business.city, business.state]
-                                .filter(Boolean)
-                                .join(", ") || business.address || business.serviceArea}
-                            </span>
+                          <div className="mt-3 grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_34px] gap-1.5">
+                            <Link
+                              href={profileHref}
+                              className="inline-flex h-8 items-center justify-center rounded-[4px] bg-[#292E78] px-3 text-xs font-bold text-white transition hover:bg-[#1F2464]"
+                            >
+                              View Profile
+                            </Link>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setSelectedBusiness({
+                                  id: business.businessOwnerId,
+                                  name: business.businessName,
+                                })
+                              }
+                              className="inline-flex h-8 items-center justify-center rounded-[4px] bg-[#A7A7A7] px-3 text-xs font-bold text-white transition hover:bg-[#8E8E8E]"
+                            >
+                              Report
+                            </button>
+                            <Link
+                              href={
+                                business.businessEmail
+                                  ? `mailto:${business.businessEmail}`
+                                  : "#"
+                              }
+                              className={`inline-flex h-8 items-center justify-center rounded-[4px] border border-[#292E78] bg-white text-[#292E78] transition hover:bg-[#292E78] hover:text-white ${!business.businessEmail ? "pointer-events-none opacity-50" : ""}`}
+                              aria-label={
+                                business.businessEmail
+                                  ? `Email ${business.businessName}`
+                                  : `Email unavailable for ${business.businessName}`
+                              }
+                              aria-disabled={!business.businessEmail}
+                            >
+                              <MessageCircle className="h-4 w-4" />
+                            </Link>
                           </div>
-                          <p className="mt-1.5 line-clamp-2 min-h-[32px] text-xs leading-[1.4] text-[#667085]">
-                            {serviceDescription}
-                          </p>
-                        </div>
-
-                        <div className="mt-3 grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_34px] gap-1.5">
-                          <Link
-                            href={profileHref}
-                            className="inline-flex h-8 items-center justify-center rounded-[4px] bg-[#292E78] px-3 text-xs font-bold text-white transition hover:bg-[#1F2464]"
-                          >
-                            View Profile
-                          </Link>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setSelectedBusiness({
-                                id: business.businessOwnerId,
-                                name: business.businessName,
-                              })
-                            }
-                            className="inline-flex h-8 items-center justify-center rounded-[4px] bg-[#A7A7A7] px-3 text-xs font-bold text-white transition hover:bg-[#8E8E8E]"
-                          >
-                            Report
-                          </button>
-                          <Link
-                            href={business.businessEmail ? `mailto:${business.businessEmail}` : "#"}
-                            className={`inline-flex h-8 items-center justify-center rounded-[4px] border border-[#292E78] bg-white text-[#292E78] transition hover:bg-[#292E78] hover:text-white ${!business.businessEmail ? "pointer-events-none opacity-50" : ""}`}
-                            aria-label={business.businessEmail ? `Email ${business.businessName}` : `Email unavailable for ${business.businessName}`}
-                            aria-disabled={!business.businessEmail}
-                          >
-                            <MessageCircle className="h-4 w-4" />
-                          </Link>
-                        </div>
                         </article>
                       );
                     })}
@@ -806,6 +905,65 @@ const ServicesSearchContainer = ({
           if (!open) setSelectedBusiness(null);
         }}
       />
+
+      {showExistingBusinessNotice && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[#101828]/60 px-4 py-6 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="existing-business-title"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setShowExistingBusinessNotice(false);
+            }
+          }}
+        >
+          <div className="relative w-full max-w-[440px] overflow-hidden rounded-2xl border border-white/70 bg-white shadow-[0_24px_70px_rgba(16,24,40,0.28)]">
+            <div className="h-1.5 bg-[linear-gradient(90deg,#292D73_0%,#5962B8_55%,#75B8AE_100%)]" />
+            <button
+              type="button"
+              onClick={() => setShowExistingBusinessNotice(false)}
+              className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#E1E7EF] bg-[#F8FAFC] text-[#667085] transition hover:bg-[#EEF2F6] hover:text-[#292D73] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4365D0]/40"
+              aria-label="Close business notice"
+            >
+              <X className="h-4 w-4" />
+            </button>
+
+            <div className="px-6 py-8 text-center sm:px-8">
+              <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-[#EEF1FF] text-[#292D73]">
+                <BriefcaseBusiness className="h-7 w-7" aria-hidden="true" />
+              </span>
+              <h2
+                id="existing-business-title"
+                className="mt-5 text-xl font-extrabold text-[#171A3A] sm:text-2xl"
+              >
+                Your business is already listed
+              </h2>
+              <p className="mx-auto mt-2 max-w-[340px] text-sm leading-6 text-[#667085]">
+                You already have a business in the SideQuote directory. You can
+                view and manage its information from your dashboard.
+              </p>
+
+              <div className="mt-6 grid gap-2.5 sm:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={() => setShowExistingBusinessNotice(false)}
+                  className="inline-flex h-11 items-center justify-center rounded-lg border border-[#D0D5DD] bg-white px-5 text-xs font-bold text-[#475467] transition hover:bg-[#F8FAFC]"
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  onClick={() => router.push("/overview")}
+                  className="inline-flex h-11 items-center justify-center rounded-lg bg-primary px-5 text-xs font-bold text-white shadow-[0_6px_14px_rgba(41,45,115,0.18)] transition hover:bg-[#20255F]"
+                >
+                  Go to Dashboard
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

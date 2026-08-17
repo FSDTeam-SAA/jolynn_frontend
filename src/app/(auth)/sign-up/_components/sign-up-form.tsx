@@ -286,7 +286,7 @@ const SignupForm = () => {
       return data;
     },
     onSuccess: (data, values) => {
-      toast.success(data?.message || "User registered successfully");
+      // toast.success(data?.message || "User registered successfully");
       setSuccessEmail(values.email);
       setShowSuccessModal(true);
       form.reset();
