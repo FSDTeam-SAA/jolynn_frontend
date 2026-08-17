@@ -3,6 +3,11 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import DeleteModal from "@/components/modals/delete-modal";
 import { useProfileQuery } from "@/hooks/APicalling";
+import { useServiceCategories } from "@/hooks/use-service-categories";
+import {
+  useLocationCities,
+  useLocationStates,
+} from "@/hooks/use-location-options";
 import { normalizePublicUsername } from "@/lib/public-username";
 import {
   type InfiniteData,
@@ -51,6 +56,8 @@ type HelpWantedPost = {
   username: string;
   email: string;
   zipcode: string;
+  state?: string;
+  city?: string;
   category: string;
   budgetRange?: string;
   profilePicture: string;
@@ -96,6 +103,61 @@ type DeleteHelpWantedResponse = {
 const PAGE_LIMIT = 9;
 type ViewMode = "grid" | "list";
 type SignInIntent = "report" | "create" | "business" | "sidequote";
+type JobPostFilters = {
+  category: string;
+  state: string;
+  city: string;
+  budgetRange: string;
+};
+
+type CompactDropdownProps = {
+  value: string;
+  options: string[];
+  placeholder: string;
+  disabled?: boolean;
+  onChange: (value: string) => void;
+};
+
+const CompactDropdown = ({
+  value,
+  options,
+  placeholder,
+  disabled = false,
+  onChange,
+}: CompactDropdownProps) => {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => setOpen((current) => !current)}
+        className="flex h-10 w-full items-center justify-between rounded-[6px] border border-[#A7A7A7] bg-white px-3 pr-10 text-left text-[12px] font-medium text-[#344054] outline-none disabled:cursor-not-allowed disabled:bg-[#F8FAFC]"
+      >
+        <span className="truncate">{value || placeholder}</span>
+        <ChevronDown className="pointer-events-none absolute right-3 h-4 w-4 text-[#667085]" />
+      </button>
+      {open && !disabled && (
+        <div className="absolute inset-x-0 top-[calc(100%+4px)] z-50 max-h-52 overflow-y-auto rounded-md border border-[#D0D5DD] bg-white p-1 shadow-[0_10px_24px_rgba(16,24,40,0.18)]">
+          <button type="button" onClick={() => { onChange(""); setOpen(false); }} className="block w-full rounded px-2.5 py-2 text-left text-xs text-[#667085] hover:bg-[#F2F4F7]">
+            {placeholder}
+          </button>
+          {options.map((option) => (
+            <button key={option} type="button" onClick={() => { onChange(option); setOpen(false); }} className={`block w-full rounded px-2.5 py-2 text-left text-xs ${value === option ? "bg-[#EEF2FF] font-semibold text-[#292D73]" : "text-[#344054] hover:bg-[#F2F4F7]"}`}>
+              {option}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const excludedStateNames = new Set([
+  "armed forces pacific",
+  "armed forces of the americas",
+]);
 
 const getPopulatedUser = (post: HelpWantedPost): HelpWantedUser | undefined =>
   post.userId !== null && typeof post.userId === "object"
@@ -108,6 +170,9 @@ const getPostUserId = (post: HelpWantedPost) =>
 const fetchJobPosts = async (
   page: number,
   searchTerm: string,
+  category: string,
+  state: string,
+  city: string,
   budgetRange: string,
 ): Promise<HelpWantedResponse> => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -119,6 +184,9 @@ const fetchJobPosts = async (
     page: String(page),
   });
   if (searchTerm.trim()) params.set("searchTerm", searchTerm.trim());
+  if (category.trim()) params.set("category", category.trim());
+  if (state.trim()) params.set("state", state.trim());
+  if (city.trim()) params.set("city", city.trim());
   if (budgetRange.trim()) params.set("budgetRange", budgetRange.trim());
   const response = await fetch(`${apiUrl}/help-wanted?${params}`, {
     headers: { Accept: "*/*" },
@@ -190,7 +258,28 @@ const JobPostsContainer = () => {
   };
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [budgetRange, setBudgetRange] = useState("");
+  const [draftFilters, setDraftFilters] = useState<JobPostFilters>({
+    category: "",
+    state: "",
+    city: "",
+    budgetRange: "",
+  });
+  const [appliedFilters, setAppliedFilters] = useState<JobPostFilters>({
+    category: "",
+    state: "",
+    city: "",
+    budgetRange: "",
+  });
+  const categoriesQuery = useServiceCategories();
+  const statesQuery = useLocationStates();
+  const states = (statesQuery.data?.data ?? []).filter(
+    (state) => !excludedStateNames.has(state.name.trim().toLowerCase()),
+  );
+  const selectedState = states.find(
+    (state) => state.name === draftFilters.state,
+  );
+  const citiesQuery = useLocationCities(selectedState);
+  const cities = citiesQuery.data?.data.cities ?? [];
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [postToView, setPostToView] = useState<HelpWantedPost | null>(null);
@@ -204,12 +293,27 @@ const JobPostsContainer = () => {
     HelpWantedResponse,
     Error,
     InfiniteData<HelpWantedResponse>,
-    readonly ["help-wanted", number, string, string],
+    readonly ["help-wanted", number, string, string, string, string, string],
     number
   >({
-    queryKey: ["help-wanted", PAGE_LIMIT, searchTerm, budgetRange],
+    queryKey: [
+      "help-wanted",
+      PAGE_LIMIT,
+      searchTerm,
+      appliedFilters.category,
+      appliedFilters.state,
+      appliedFilters.city,
+      appliedFilters.budgetRange,
+    ],
     queryFn: ({ pageParam }) =>
-      fetchJobPosts(pageParam, searchTerm, budgetRange),
+      fetchJobPosts(
+        pageParam,
+        searchTerm,
+        appliedFilters.category,
+        appliedFilters.state,
+        appliedFilters.city,
+        appliedFilters.budgetRange,
+      ),
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {
       const { page: currentPage, limit, total } = lastPage.meta;
@@ -382,58 +486,100 @@ const JobPostsContainer = () => {
     });
   };
 
-  const submitSearch = (event: FormEvent<HTMLFormElement>) => {
+  const applyFilters = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setAppliedFilters(draftFilters);
     void jobPostsQuery.refetch();
+  };
+
+  const updateFilter = (changes: Partial<JobPostFilters>) => {
+    setDraftFilters((current) => ({ ...current, ...changes }));
+    setAppliedFilters((current) => ({ ...current, ...changes }));
+  };
+
+  const resetFilters = () => {
+    const reset = { category: "", state: "", city: "", budgetRange: "" };
+    setDraftFilters(reset);
+    setAppliedFilters(reset);
   };
 
   return (
     <section className="bg-[#F9FAFB] px-2 py-10 md:px-0 md:py-14 lg:px-8 lg:py-16">
       <div className="container">
-        <form
-          onSubmit={submitSearch}
-          className="mb-6 mr-auto grid w-full max-w-3xl grid-cols-1 gap-2 rounded-xl border border-[#D8DEE8] bg-white p-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]"
-        >
-          <label className="flex min-w-0 items-center gap-2 rounded-lg px-2 sm:border-r sm:border-[#EAECF0]">
+        <div className="mb-6 grid items-center gap-3 sm:grid-cols-[auto_minmax(220px,1fr)_auto]">
+          <p className="order-1 shrink-0 text-sm font-semibold text-[#667481]" aria-live="polite">
+            {jobPostsQuery.isPending ? "Finding job posts..." : `${total} job post${total === 1 ? "" : "s"} found`}
+          </p>
+          <label className="order-2 flex h-10 w-full items-center gap-2 rounded-lg border border-[#D8DEE8] bg-white px-3 sm:mx-auto sm:max-w-md">
             <Search className="h-4 w-4 shrink-0 text-[#667085]" />
-            <span className="sr-only">Search job posts</span>
-            <input
-              type="search"
-              value={searchTerm}
-              onChange={(event) => {
-                setSearchTerm(event.target.value);
-              }}
-              placeholder="Search job posts..."
-              className="h-9 min-w-0 flex-1 bg-transparent text-sm font-medium text-[#344054] outline-none placeholder:text-[#98A2B3]"
-            />
+            <span className="sr-only">Global search job posts</span>
+            <input type="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Search job posts..." className="min-w-0 flex-1 bg-transparent text-sm font-medium text-[#344054] outline-none placeholder:text-[#98A2B3]" />
           </label>
-          <label className="relative flex min-w-0 items-center gap-2 rounded-lg px-2">
-            <BriefcaseBusiness className="h-4 w-4 shrink-0 text-[#667085]" />
-            <span className="sr-only">Filter by budget range</span>
-            <select
-              value={budgetRange}
-              onChange={(event) => setBudgetRange(event.target.value)}
-              className="h-9 min-w-0 flex-1 appearance-none bg-transparent pr-7 text-sm font-medium text-[#344054] outline-none"
-              aria-label="Filter by budget range"
-            >
-              <option value="">All budget ranges</option>
-              <option value="$0 - $500">$0 - $500</option>
-              <option value="$500 - $1,000">$500 - $1,000</option>
-              <option value="$1,000 - $2,500">$1,000 - $2,500</option>
-              <option value="$2,500 - $5,000">$2,500 - $5,000</option>
-              <option value="$5,000 - $10,000">$5,000 - $10,000</option>
-              <option value="$10,000 - $50,000">$10,000 - $50,000</option>
-            </select>
-            <ChevronDown className="pointer-events-none absolute right-2 h-4 w-4 text-[#667085]" />
-          </label>
+          <div className="order-3 flex flex-wrap items-center justify-start gap-2 sm:justify-end">
           <button
-            type="submit"
-            disabled={jobPostsQuery.isFetching}
-            className="inline-flex h-9 items-center justify-center rounded-lg bg-primary px-5 text-xs font-bold text-white transition hover:bg-[#1F2464] disabled:cursor-wait disabled:opacity-60"
+            type="button"
+            onClick={openCreatePost}
+            className="inline-flex h-10 w-fit items-center justify-center gap-2 rounded-lg bg-[#292D73] px-4 text-xs font-bold text-white shadow-[0_7px_16px_rgba(41,45,115,0.18)] transition hover:bg-[#1F2464]"
           >
-            Search
+            <PlusCircle className="h-4 w-4" />
+            Add Job Post
           </button>
-        </form>
+          <button
+            type="button"
+            onClick={openAddBusiness}
+            className="inline-flex h-10 w-fit items-center justify-center gap-2 rounded-lg border border-[#292D73] bg-white px-4 text-xs font-bold text-[#292D73] transition hover:bg-[#EEF2FF]"
+          >
+            <BriefcaseBusiness className="h-4 w-4" />
+            Add your business
+          </button>
+          <div
+            className="inline-flex items-center rounded-lg border border-[#D8DEE8] bg-white p-1 shadow-sm"
+            role="group"
+            aria-label="Choose job posts view"
+          >
+            <button
+              type="button"
+              onClick={() => setViewMode("list")}
+              aria-pressed={viewMode === "list"}
+              className={`inline-flex h-8 items-center gap-1.5 rounded-md px-2.5 text-[11px] font-semibold transition ${
+                viewMode === "list"
+                  ? "bg-primary text-white"
+                  : "text-[#667085] hover:bg-[#F2F4F7] hover:text-primary"
+              }`}
+            >
+              <List className="h-4 w-4" />
+              <span className="hidden sm:inline">List</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("grid")}
+              aria-pressed={viewMode === "grid"}
+              className={`inline-flex h-8 items-center gap-1.5 rounded-md px-2.5 text-[11px] font-semibold transition ${
+                viewMode === "grid"
+                  ? "bg-primary text-white"
+                  : "text-[#667085] hover:bg-[#F2F4F7] hover:text-primary"
+              }`}
+            >
+              <LayoutGrid className="h-4 w-4" />
+              <span className="hidden sm:inline">Grid</span>
+            </button>
+          </div>
+          </div>
+        </div>
+
+        <div className="grid items-start gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
+          <aside className="h-fit rounded-[8px] bg-white p-5 shadow-[0_8px_24px_rgba(30,45,75,0.13)] ring-1 ring-[#E8ECF2] lg:sticky lg:top-24">
+            <h2 className="text-[16px] font-semibold text-[#111827]">Filter Results</h2>
+            <form onSubmit={applyFilters} className="mt-5 space-y-3">
+              <CompactDropdown value={draftFilters.category} options={(categoriesQuery.data?.data ?? []).filter((category) => category.isActive).map((category) => category.name)} placeholder={categoriesQuery.isPending ? "Loading categories..." : "Select Category"} disabled={categoriesQuery.isPending || categoriesQuery.isError} onChange={(category) => updateFilter({ category })} />
+              <CompactDropdown value={draftFilters.state} options={states.map((state) => state.name)} placeholder={statesQuery.isPending ? "Loading states..." : "State"} disabled={statesQuery.isPending || statesQuery.isError} onChange={(state) => updateFilter({ state, city: "" })} />
+              <CompactDropdown value={draftFilters.city} options={cities} placeholder={!selectedState ? "Select State First" : citiesQuery.isPending ? "Loading cities..." : "City"} disabled={!selectedState || citiesQuery.isPending || citiesQuery.isError} onChange={(city) => updateFilter({ city })} />
+              <CompactDropdown value={draftFilters.budgetRange} options={["$0 - $500", "$500 - $1,000", "$1,000 - $2,500", "$2,500 - $5,000", "$5,000 - $10,000", "$10,000 - $50,000"]} placeholder="Budget Range" onChange={(budgetRange) => updateFilter({ budgetRange })} />
+              <button type="submit" disabled={jobPostsQuery.isFetching} className="h-11 w-full rounded-[6px] bg-[#292D73] text-[12px] font-extrabold text-white transition hover:bg-[#20255F] disabled:cursor-wait disabled:opacity-60">Apply Filters</button>
+              <button type="button" onClick={resetFilters} className="h-11 w-full rounded-[6px] bg-[#EEEEEE] text-[11px] font-extrabold text-[#292D73] transition hover:bg-[#E5E7EB]">Reset</button>
+            </form>
+          </aside>
+          <div>
 
         {jobPostsQuery.isPending ? (
           <JobPostsSkeleton />
@@ -462,89 +608,13 @@ const JobPostsContainer = () => {
         ) : posts.length === 0 ? (
           <div className="flex min-h-[280px] items-center justify-center rounded-[8px] border border-[#D4F0F1] bg-[#F0FEFE] text-center">
             <p className="text-sm font-semibold text-[#667481]">
-              {searchTerm.trim() || budgetRange.trim()
-                ? "No job posts match your search or budget range."
+              {searchTerm.trim() || Object.values(appliedFilters).some(Boolean)
+                ? "No job posts match your filters."
                 : "No job posts are available yet."}
             </p>
           </div>
         ) : (
           <>
-            <div className="flex w-full flex-col gap-4 pb-6 lg:flex-row lg:items-center lg:justify-between">
-              <p className="text-sm font-semibold text-[#667481] lg:text-base">
-                {total} job post{total === 1 ? "" : "s"} found
-              </p>
-
-              <div className="flex flex-wrap items-center gap-2">
-                {/* {sessionUser?.role !== "businessOwner" && (
-                  <>
-                    <button
-                      type="button"
-                      onClick={openCreatePost}
-                      className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#292D73] px-4 text-xs font-bold text-white shadow-[0_7px_16px_rgba(41,45,115,0.18)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#1F2464] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4365D0] focus-visible:ring-offset-2"
-                    >
-                      <PlusCircle className="h-4 w-4" />
-                      Add Job Post
-                    </button>
-                    <button
-                      type="button"
-                      onClick={openAddBusiness}
-                      className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-[#292D73] bg-white px-4 text-xs font-bold text-[#292D73] transition duration-300 hover:-translate-y-0.5 hover:bg-[#EEF2FF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4365D0] focus-visible:ring-offset-2"
-                    >
-                      <BriefcaseBusiness className="h-4 w-4" />
-                      Add your business
-                    </button>
-                  </>
-                )} */}
-                <button
-                  type="button"
-                  onClick={openCreatePost}
-                  className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#292D73] px-4 text-xs font-bold text-white shadow-[0_7px_16px_rgba(41,45,115,0.18)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#1F2464] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4365D0] focus-visible:ring-offset-2"
-                >
-                  <PlusCircle className="h-4 w-4" />
-                  Add Job Post
-                </button>
-                <button
-                  type="button"
-                  onClick={openAddBusiness}
-                  className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-[#292D73] bg-white px-4 text-xs font-bold text-[#292D73] transition duration-300 hover:-translate-y-0.5 hover:bg-[#EEF2FF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4365D0] focus-visible:ring-offset-2"
-                >
-                  <BriefcaseBusiness className="h-4 w-4" />
-                  Add your business
-                </button>
-                <div
-                  className="inline-flex items-center rounded-lg border border-[#D8DEE8] bg-white p-1 shadow-sm"
-                  role="group"
-                  aria-label="Choose job posts view"
-                >
-                  <button
-                    type="button"
-                    onClick={() => setViewMode("list")}
-                    aria-pressed={viewMode === "list"}
-                    className={`inline-flex h-8 items-center gap-1.5 rounded-md px-2.5 text-[11px] font-semibold transition ${
-                      viewMode === "list"
-                        ? "bg-primary text-white"
-                        : "text-[#667085] hover:bg-[#F2F4F7] hover:text-primary"
-                    }`}
-                  >
-                    <List className="h-4 w-4" />
-                    <span className="hidden sm:inline">List</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setViewMode("grid")}
-                    aria-pressed={viewMode === "grid"}
-                    className={`inline-flex h-8 items-center gap-1.5 rounded-md px-2.5 text-[11px] font-semibold transition ${
-                      viewMode === "grid"
-                        ? "bg-primary text-white"
-                        : "text-[#667085] hover:bg-[#F2F4F7] hover:text-primary"
-                    }`}
-                  >
-                    <LayoutGrid className="h-4 w-4" />
-                    <span className="hidden sm:inline">Grid</span>
-                  </button>
-                </div>
-              </div>
-            </div>
             <div
               className={
                 viewMode === "grid"
@@ -597,6 +667,12 @@ const JobPostsContainer = () => {
                             <p className="text-xs font-medium text-[#344054]">
                               Looking for {post.category} service
                             </p>
+                            {(post.city || post.state || post.zipcode) && (
+                              <p className="mt-0.5 flex items-center gap-1 text-[11px] font-medium text-[#667481]">
+                                <MapPin className="h-3 w-3 shrink-0 text-[#292D73]" />
+                                {[post.city, post.state, post.zipcode].filter(Boolean).join(", ")}
+                              </p>
+                            )}
                           </div>
                         </div>
 
@@ -691,6 +767,14 @@ const JobPostsContainer = () => {
                           Zip code:{" "}
                           <span className="text-primary">{post.zipcode}</span>
                         </p>
+                        {(post.city || post.state) && (
+                          <p className="inline-flex items-center gap-1">
+                            <MapPin className="h-3.5 w-3.5 text-[#292D73]" />
+                            <span className="text-primary">
+                              {[post.city, post.state].filter(Boolean).join(", ")}
+                            </span>
+                          </p>
+                        )}
                         <p>
                           Budget:{" "}
                           <span className="text-primary">
@@ -768,6 +852,8 @@ const JobPostsContainer = () => {
             </div>
           </>
         )}
+      </div>
+        </div>
       </div>
 
       {postToView && (
