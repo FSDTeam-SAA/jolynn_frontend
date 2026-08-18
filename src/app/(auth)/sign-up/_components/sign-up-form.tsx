@@ -611,7 +611,7 @@ const SignupForm = () => {
                       className="text-sm md:text-base font-medium text-[#4365D0] leading-[120%]"
                       htmlFor="agreementAccepted"
                     >
-                      I agree to the <span className="text-[#667481]">Terms and Conditions</span> 
+                      I agree to the <Link href="/terms-and-condition" className="text-[#667481]">Terms and Conditions</Link> and <Link href="/privacy-policy" className="text-[#667481]">Privacy Policy</Link>.
                     </Label>
                   </div>
                   <FormMessage className="text-red-500" />
