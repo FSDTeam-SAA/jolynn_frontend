@@ -87,7 +87,7 @@ export const useBusinessReviews = (businessId: string) =>
     queryKey: ["business-reviews", businessId],
     queryFn: () =>
       fetchSection<BusinessReviewsData>(
-        `/reviews/business/${encodeURIComponent(businessId)}?sortBy=createdAt&limit=10&page=1&rating=5`,
+        `/reviews/business/${encodeURIComponent(businessId)}?sortBy=createdAt&limit=10&page=1`,
       ),
     enabled: Boolean(businessId),
     staleTime: 60 * 1000,
