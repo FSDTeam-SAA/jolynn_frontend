@@ -760,11 +760,11 @@ const JobPostsContainer = () => {
 
                       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-normal text-[#667481] md:text-sm">
                         <p>
-                          Category:{" "}
+                          Category :{" "}
                           <span className="text-primary">{post.category}</span>
                         </p>
                         <p>
-                          Zip code:{" "}
+                          Zip code :{" "}
                           <span className="text-primary">{post.zipcode}</span>
                         </p>
                         {(post.city || post.state) && (
@@ -776,7 +776,7 @@ const JobPostsContainer = () => {
                           </p>
                         )}
                         <p>
-                          Budget:{" "}
+                          Budget :{" "}
                           <span className="text-primary">
                             {post.budgetRange || "Not provided"}
                           </span>
@@ -785,12 +785,12 @@ const JobPostsContainer = () => {
 
                       <div className="mt-3 min-w-0 px-0 py-1">
                         <p className="text-[9px] font-extrabold uppercase tracking-[0.12em] text-[#7A8793]">
-                          Request details
+                          Requirements : 
                         </p>
-                        <h3 className="mt-1.5 break-words text-[12px] font-bold leading-5 text-[#1F2937] sm:text-[13px]">
+                        {/* <h3 className="mt-1.5 break-words text-[12px] font-bold leading-5 text-[#1F2937] sm:text-[13px]">
                           Looking for {post.category} service
-                        </h3>
-                        <p className="mt-2 line-clamp-2 min-h-10 max-w-full whitespace-pre-wrap break-words text-xs font-normal leading-5 text-[#52606D] sm:text-[13px]">
+                        </h3> */}
+                        <p className="mt-0 line-clamp-2 min-h-10 max-w-full whitespace-pre-wrap break-words text-xs font-normal leading-5 text-[#52606D] sm:text-[13px]">
                           {post.message.length > 90
                             ? `${post.message.slice(0, 90).trim()}…`
                             : post.message}
