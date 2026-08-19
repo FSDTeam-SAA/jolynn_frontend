@@ -608,10 +608,10 @@ const SignupForm = () => {
                       />
                     </FormControl>
                     <Label
-                      className="text-sm md:text-base font-medium text-[#4365D0] leading-[120%]"
+                      className="text-sm md:text-base font-medium text-black leading-[120%]"
                       htmlFor="agreementAccepted"
                     >
-                      I agree to the <Link href="/terms-and-condition" className="text-[#667481]">Terms and Conditions</Link> and <Link href="/privacy-policy" className="text-[#667481]">Privacy Policy</Link>.
+                      I agree to the <Link href="/terms-and-condition" className="text-[#4365D0] underline">Terms and Conditions</Link> and <Link href="/privacy-policy" className="text-[#4365D0] underline">Privacy Policy</Link>.
                     </Label>
                   </div>
                   <FormMessage className="text-red-500" />
