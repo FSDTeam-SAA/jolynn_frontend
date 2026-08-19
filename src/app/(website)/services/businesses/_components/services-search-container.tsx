@@ -513,51 +513,51 @@ const ServicesSearchContainer = ({
                       ? "Finding businesses..."
                       : `${total} business${total === 1 ? "" : "es"} found`}
                   </p>
-
+                  <div className="flex flex-wrap items-center gap-4">
+                    <button
+                    type="button"
+                    onClick={openAddBusiness}
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-[#292D73] bg-white px-4 text-xs font-bold text-[#292D73] transition duration-300 hover:-translate-y-0.5 hover:bg-[#EEF2FF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4365D0] focus-visible:ring-offset-2"
+                  >
+                    <BriefcaseBusiness className="h-4 w-4" />
+                    Add your business
+                  </button>
                   <div
                     className="inline-flex gap-2 items-center rounded-[7px] border border-[#D8DEE8] bg-[#F5F7FA] p-1"
                     role="group"
                     aria-label="Choose results view"
                   >
-                    <button
-                      type="button"
-                      onClick={openAddBusiness}
-                      className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-[#292D73] bg-white px-4 text-xs font-bold text-[#292D73] transition duration-300 hover:-translate-y-0.5 hover:bg-[#EEF2FF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4365D0] focus-visible:ring-offset-2"
-                    >
-                      <BriefcaseBusiness className="h-4 w-4" />
-                      Add your business
-                    </button>
-                   <div>
-                     <button
-                      type="button"
-                      onClick={() => setViewMode("list")}
-                      aria-pressed={viewMode === "list"}
-                      title="List view"
-                      className={`inline-flex h-8 items-center justify-center gap-1.5 rounded-[5px] px-2.5 text-[11px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73]/40 sm:px-3 ${
-                        viewMode === "list"
-                          ? "bg-[#292D73] text-white shadow-sm"
-                          : "text-[#667085] hover:bg-white hover:text-[#292D73]"
-                      }`}
-                    >
-                      <List className="h-4 w-4" aria-hidden="true" />
-                      <span className="hidden sm:inline">List</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setViewMode("grid")}
-                      aria-pressed={viewMode === "grid"}
-                      title="Grid view"
-                      className={`inline-flex h-8 items-center justify-center gap-1.5 rounded-[5px] px-2.5 text-[11px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73]/40 sm:px-3 ${
-                        viewMode === "grid"
-                          ? "bg-[#292D73] text-white shadow-sm"
-                          : "text-[#667085] hover:bg-white hover:text-[#292D73]"
-                      }`}
-                    >
-                      <LayoutGrid className="h-4 w-4" aria-hidden="true" />
-                      <span className="hidden sm:inline">Grid</span>
-                    </button>
-                   </div>
-                    
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => setViewMode("list")}
+                        aria-pressed={viewMode === "list"}
+                        title="List view"
+                        className={`inline-flex h-8 items-center justify-center gap-1.5 rounded-[5px] px-2.5 text-[11px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73]/40 sm:px-3 ${
+                          viewMode === "list"
+                            ? "bg-[#292D73] text-white shadow-sm"
+                            : "text-[#667085] hover:bg-white hover:text-[#292D73]"
+                        }`}
+                      >
+                        <List className="h-4 w-4" aria-hidden="true" />
+                        <span className="hidden sm:inline">List</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setViewMode("grid")}
+                        aria-pressed={viewMode === "grid"}
+                        title="Grid view"
+                        className={`inline-flex h-8 items-center justify-center gap-1.5 rounded-[5px] px-2.5 text-[11px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73]/40 sm:px-3 ${
+                          viewMode === "grid"
+                            ? "bg-[#292D73] text-white shadow-sm"
+                            : "text-[#667085] hover:bg-white hover:text-[#292D73]"
+                        }`}
+                      >
+                        <LayoutGrid className="h-4 w-4" aria-hidden="true" />
+                        <span className="hidden sm:inline">Grid</span>
+                      </button>
+                    </div>
+                  </div>
                   </div>
                 </div>
 
