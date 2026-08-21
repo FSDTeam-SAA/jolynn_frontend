@@ -97,10 +97,11 @@ function QuateRequest() {
     } catch {}
   }, []);
 
-  const markAsRead = (quoteId: string) => {
+  const markAsRead = (quoteId: string, updatedAt?: string) => {
+    const readKey = updatedAt ? `${quoteId}_${updatedAt}` : quoteId;
     setReadQuoteIds((prev) => {
-      if (prev.includes(quoteId)) return prev;
-      const updated = [...prev, quoteId];
+      if (prev.includes(readKey)) return prev;
+      const updated = Array.from(new Set([...prev, readKey, quoteId]));
       try {
         localStorage.setItem(READ_STORAGE_KEY, JSON.stringify(updated));
       } catch {}
@@ -110,7 +111,7 @@ function QuateRequest() {
 
   const handleOpenDetails = (request: QuoteRequest) => {
     setSelectedRequest(request);
-    markAsRead(request._id);
+    markAsRead(request._id, request.updatedAt);
   };
 
   // Reply Form State
@@ -150,6 +151,7 @@ function QuateRequest() {
 
   const openReplyModal = (req: QuoteRequest) => {
     setReplyingRequest(req);
+    markAsRead(req._id, req.updatedAt);
     setReplySubject(`Reply regarding ${req.serviceNeeded}`);
     setReplyDescription("");
   };
@@ -169,7 +171,7 @@ function QuateRequest() {
       },
       {
         onSuccess: () => {
-          markAsRead(replyingRequest._id);
+          markAsRead(replyingRequest._id, replyingRequest.updatedAt);
           setReplyingRequest(null);
           setReplySubject("");
           setReplyDescription("");
@@ -254,7 +256,8 @@ function QuateRequest() {
               quoteRequests.map((request) => {
                 const createdAt = formatDateTime(request.createdAt);
                 const isReplied = request.isReplied || request.status === "responded";
-                const isUnread = isReplied && !readQuoteIds.includes(request._id);
+                const readKey = request.updatedAt ? `${request._id}_${request.updatedAt}` : request._id;
+                const isUnread = !readQuoteIds.includes(readKey);
 
                 return (
                   <tr
@@ -274,24 +277,31 @@ function QuateRequest() {
 
                     {/* Status & Replies Indicator Column */}
                     <td className="px-3 text-center">
-                      {isReplied ? (
+                      {isUnread ? (
+                        <button
+                          type="button"
+                          onClick={() => handleOpenDetails(request)}
+                          title="Click to view quote details"
+                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-colors cursor-pointer ${
+                            isReplied
+                              ? "bg-indigo-600 text-white shadow-sm hover:bg-indigo-700"
+                              : "bg-blue-600 text-white shadow-sm hover:bg-blue-700"
+                          }`}
+                        >
+                          <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+                          </span>
+                          {isReplied ? "New Reply" : "New Request"}
+                        </button>
+                      ) : isReplied ? (
                         <button
                           type="button"
                           onClick={() => handleOpenDetails(request)}
                           title="Click to view reply history"
-                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-colors cursor-pointer ${
-                            isUnread
-                              ? "bg-indigo-600 text-white shadow-sm hover:bg-indigo-700"
-                              : "bg-indigo-100 text-indigo-800 border border-indigo-200 hover:bg-indigo-200"
-                          }`}
+                          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-100 text-indigo-800 border border-indigo-200 hover:bg-indigo-200"
                         >
-                          {isUnread && (
-                            <span className="relative flex h-2 w-2">
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                              <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
-                            </span>
-                          )}
-                          {isUnread ? "New Reply" : "Replied"}
+                          Replied
                         </button>
                       ) : (
                         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">
@@ -325,7 +335,7 @@ function QuateRequest() {
                         >
                           <Eye className="h-[17px] w-[17px]" />
                           {isUnread && (
-                            <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-indigo-600 rounded-full ring-2 ring-white" />
+                            <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-indigo-600 rounded-full ring-2 ring-white animate-pulse" />
                           )}
                         </button>
 

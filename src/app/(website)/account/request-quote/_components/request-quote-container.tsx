@@ -147,10 +147,11 @@ const RequestQuoteContainer = () => {
     } catch {}
   }, []);
 
-  const markAsRead = (quoteId: string) => {
+  const markAsRead = (quoteId: string, updatedAt?: string) => {
+    const readKey = updatedAt ? `${quoteId}_${updatedAt}` : quoteId;
     setReadQuoteIds((prev) => {
-      if (prev.includes(quoteId)) return prev;
-      const updated = [...prev, quoteId];
+      if (prev.includes(readKey)) return prev;
+      const updated = Array.from(new Set([...prev, readKey, quoteId]));
       try {
         localStorage.setItem(READ_STORAGE_KEY_USER, JSON.stringify(updated));
       } catch {}
@@ -160,7 +161,7 @@ const RequestQuoteContainer = () => {
 
   const handleOpenDetails = (quote: QuoteRequest) => {
     setSelectedQuote(quote);
-    markAsRead(quote._id);
+    markAsRead(quote._id, quote.updatedAt);
   };
 
   // Reply Form State
@@ -189,6 +190,7 @@ const RequestQuoteContainer = () => {
 
   const openReplyModal = (quote: QuoteRequest) => {
     setReplyingQuote(quote);
+    markAsRead(quote._id, quote.updatedAt);
     setReplySubject(`Reply to ${quote.businessOwnerName}`);
     setReplyDescription("");
   };
@@ -208,7 +210,7 @@ const RequestQuoteContainer = () => {
       },
       {
         onSuccess: () => {
-          markAsRead(replyingQuote._id);
+          markAsRead(replyingQuote._id, replyingQuote.updatedAt);
           setReplyingQuote(null);
           setReplySubject("");
           setReplyDescription("");
@@ -327,7 +329,8 @@ const RequestQuoteContainer = () => {
 
                 {quotes.map((quote) => {
                   const isReplied = quote.isReplied || quote.status === "responded";
-                  const isUnread = isReplied && !readQuoteIds.includes(quote._id);
+                  const readKey = quote.updatedAt ? `${quote._id}_${quote.updatedAt}` : quote._id;
+                  const isUnread = !readQuoteIds.includes(readKey);
 
                   return (
                     <div
@@ -362,24 +365,31 @@ const RequestQuoteContainer = () => {
                         <span className="mb-2 block text-[10px] uppercase tracking-wide text-[#98A2B3] sm:hidden">
                           Status
                         </span>
-                        {isReplied ? (
+                        {isUnread ? (
+                          <button
+                            type="button"
+                            onClick={() => handleOpenDetails(quote)}
+                            title="Click to view quote details"
+                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold whitespace-nowrap shrink-0 transition-colors cursor-pointer ${
+                              isReplied
+                                ? "bg-indigo-600 text-white shadow-sm hover:bg-indigo-700"
+                                : "bg-blue-600 text-white shadow-sm hover:bg-blue-700"
+                            }`}
+                          >
+                            <span className="relative flex h-2 w-2 shrink-0">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+                            </span>
+                            <span>{isReplied ? "New Reply" : "Submitted"}</span>
+                          </button>
+                        ) : isReplied ? (
                           <button
                             type="button"
                             onClick={() => handleOpenDetails(quote)}
                             title="Click to view reply history"
-                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold whitespace-nowrap shrink-0 transition-colors cursor-pointer ${
-                              isUnread
-                                ? "bg-indigo-600 text-white shadow-sm hover:bg-indigo-700"
-                                : "bg-indigo-100 text-indigo-800 border border-indigo-200 hover:bg-indigo-200"
-                            }`}
+                            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold whitespace-nowrap shrink-0 bg-indigo-100 text-indigo-800 border border-indigo-200 hover:bg-indigo-200"
                           >
-                            {isUnread && (
-                              <span className="relative flex h-2 w-2 shrink-0">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
-                              </span>
-                            )}
-                            <span>{isUnread ? "New Reply" : "Replied"}</span>
+                            <span>Replied</span>
                           </button>
                         ) : (
                           <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold whitespace-nowrap shrink-0 bg-amber-100 text-amber-800 border border-amber-200">
@@ -411,7 +421,7 @@ const RequestQuoteContainer = () => {
                         >
                           <Eye className="h-4 w-4" />
                           {isUnread && (
-                            <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-indigo-600 rounded-full ring-2 ring-white" />
+                            <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-indigo-600 rounded-full ring-2 ring-white animate-pulse" />
                           )}
                         </button>
 
