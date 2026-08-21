@@ -187,7 +187,7 @@ const ServicesContainer = () => {
                     viewMode === "grid" ? "mt-4 w-full" : "w-full sm:w-auto"
                   }`}
                 >
-                  Get Started
+                  Search
                   <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </Link>
               </article>

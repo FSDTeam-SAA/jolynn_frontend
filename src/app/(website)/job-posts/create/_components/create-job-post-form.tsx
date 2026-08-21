@@ -1,19 +1,30 @@
 "use client";
 
 import { useProfileQuery } from "@/hooks/APicalling";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  useLocationCities,
+  useLocationStates,
+} from "@/hooks/use-location-options";
 import { useServiceCategories } from "@/hooks/use-service-categories";
 import { useMutation } from "@tanstack/react-query";
 import {
   AlertCircle,
   ArrowRight,
+  Check,
   CheckCircle2,
-  ChevronDown,
+  ChevronsUpDown,
   CircleHelp,
   DollarSign,
   Mail,
   MapPin,
   MessageSquareText,
   Phone,
+  Search,
   Sparkles,
   UserRound,
   Wrench,
@@ -28,6 +39,8 @@ type FormValues = {
   name: string;
   email: string;
   zipCode: string;
+  state: string;
+  city: string;
   category: string;
   customCategory: string;
   phone: string;
@@ -40,6 +53,8 @@ type HelpWantedPayload = {
   username: string;
   email: string;
   zipcode: string;
+  state: string;
+  city: string;
   category: string;
   budgetRange: string;
   requestedCategory?: string;
@@ -59,6 +74,11 @@ type HelpWantedResponse = {
 };
 
 const OTHER_CATEGORY = "__other__";
+const excludedStateNames = new Set([
+  "armed forces europe",
+  "armed forces pacific",
+  "armed forces of the americas",
+]);
 const MESSAGE_LIMIT = 1000;
 const MIN_BUDGET = 10;
 const MAX_BUDGET = 5_000;
@@ -140,10 +160,113 @@ const initialValues: FormValues = {
   name: "",
   email: "",
   zipCode: "",
+  state: "",
+  city: "",
   category: "",
   customCategory: "",
   phone: "",
   message: "",
+};
+
+type LocationDropdownProps = {
+  id: "state" | "city" | "category";
+  value: string;
+  options: string[];
+  placeholder: string;
+  searchPlaceholder: string;
+  emptyMessage: string;
+  disabled?: boolean;
+  loading?: boolean;
+  error?: boolean;
+  onChange: (value: string) => void;
+};
+
+const LocationDropdown = ({
+  id,
+  value,
+  options,
+  placeholder,
+  searchPlaceholder,
+  emptyMessage,
+  disabled = false,
+  loading = false,
+  error = false,
+  onChange,
+}: LocationDropdownProps) => {
+  const [open, setOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const filteredOptions = options.filter((option) =>
+    option.toLowerCase().includes(searchTerm.trim().toLowerCase()),
+  );
+
+  return (
+    <div className="relative">
+      <Popover
+        open={open}
+        onOpenChange={(nextOpen) => {
+          setOpen(nextOpen);
+          if (!nextOpen) setSearchTerm("");
+        }}
+      >
+        <PopoverTrigger asChild>
+          <button
+            id={id}
+            type="button"
+            disabled={disabled || loading}
+            aria-expanded={open}
+            data-invalid={error}
+            aria-describedby={error ? `${id}-error` : undefined}
+            className={`h-11 w-full rounded-[10px] border bg-white py-2 pl-11 pr-4 text-left text-[14px] font-medium text-[#20244A] outline-none transition focus:border-[#292D73] focus:ring-4 focus:ring-[#292D73]/10 disabled:cursor-not-allowed disabled:bg-[#F8FAFC] disabled:text-[#98A2B3] ${error ? "border-[#FDA29B]" : "border-[#D0D5DD]"}`}
+          >
+            <span className="block truncate">
+              {loading ? "Loading..." : value || placeholder}
+            </span>
+            <ChevronsUpDown className="absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent
+          align="start"
+          className="w-[var(--radix-popover-trigger-width)] p-0"
+        >
+          <div className="flex items-center border-b px-3">
+            <Search className="h-4 w-4 shrink-0 text-[#98A2B3]" />
+            <input
+              autoFocus
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder={searchPlaceholder}
+              className="h-10 w-full bg-transparent px-2 text-sm text-primary outline-none placeholder:text-[#98A2B3]"
+            />
+          </div>
+          <div className="max-h-52 overflow-y-auto p-1">
+            {filteredOptions.length === 0 ? (
+              <p className="px-3 py-6 text-center text-sm text-[#667085]">
+                {emptyMessage}
+              </p>
+            ) : (
+              filteredOptions.map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => {
+                    onChange(option);
+                    setOpen(false);
+                    setSearchTerm("");
+                  }}
+                  className="flex w-full items-center rounded px-3 py-2 text-left text-sm text-[#344054] hover:bg-[#F2F4F7] focus:bg-[#F2F4F7] focus:outline-none"
+                >
+                  <Check
+                    className={`mr-2 h-4 w-4 ${value === option ? "opacity-100" : "opacity-0"}`}
+                  />
+                  {option}
+                </button>
+              ))
+            )}
+          </div>
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
 };
 
 const fieldClassName =
@@ -170,6 +293,12 @@ const validateField = (
       if (!value) return "Please enter your zip or postal code.";
       if (!/^[A-Za-z0-9][A-Za-z0-9 -]{1,10}[A-Za-z0-9]$/.test(value))
         return "Please enter a valid zip or postal code.";
+      return undefined;
+    case "state":
+      if (!value) return "Please select your state.";
+      return undefined;
+    case "city":
+      if (!value) return "Please select your city.";
       return undefined;
     case "category":
       if (!value) return "Please select a service category.";
@@ -204,6 +333,8 @@ const validateForm = (values: FormValues): FormErrors => {
     "name",
     "email",
     "zipCode",
+    "state",
+    "city",
     "category",
     "customCategory",
     "phone",
@@ -295,6 +426,13 @@ const CreateJobPostForm = () => {
   const profileQuery = useProfileQuery(token);
   const profile = profileQuery.data?.data;
   const categoriesQuery = useServiceCategories();
+  const statesQuery = useLocationStates();
+  const states = (statesQuery.data?.data ?? []).filter(
+    (state) => !excludedStateNames.has(state.name.trim().toLowerCase()),
+  );
+  const selectedState = states.find((state) => state.name === values.state);
+  const citiesQuery = useLocationCities(selectedState);
+  const cities = citiesQuery.data?.data.cities ?? [];
   const categoryOptions = useMemo(() => {
     const categories = categoriesQuery.data?.data ?? [];
     return Array.from(
@@ -341,6 +479,8 @@ const CreateJobPostForm = () => {
       name: current.name || profileName,
       email: current.email || profile.email || "",
       zipCode: current.zipCode || profile.postcode || "",
+      state: current.state || profile.state || "",
+      city: current.city || profile.city || "",
       phone: current.phone || profile.phoneNumber || "",
     }));
     prefilledProfileId.current = profile._id;
@@ -406,6 +546,21 @@ const CreateJobPostForm = () => {
     if (formMessage) setFormMessage("");
   };
 
+  const updateStateAndResetCity = (state: string) => {
+    const nextValues = { ...values, state, city: "" };
+    setValues(nextValues);
+    setErrors((current) => ({
+      ...current,
+      ...(touched.state || errors.state
+        ? { state: validateField("state", nextValues) }
+        : {}),
+      ...(touched.city || errors.city
+        ? { city: validateField("city", nextValues) }
+        : {}),
+    }));
+    if (formMessage) setFormMessage("");
+  };
+
   const handleBlur = (field: keyof FormValues) => {
     setTouched((current) => ({ ...current, [field]: true }));
     setErrors((current) => ({
@@ -429,6 +584,8 @@ const CreateJobPostForm = () => {
       name: true,
       email: true,
       zipCode: true,
+      state: true,
+      city: true,
       category: true,
       customCategory: true,
       phone: true,
@@ -438,7 +595,11 @@ const CreateJobPostForm = () => {
     if (Object.keys(nextErrors).length > 0) {
       toast.error("Please check the highlighted fields.");
       requestAnimationFrame(() => {
-        document.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+        document
+          .querySelector<HTMLElement>(
+            '[aria-invalid="true"], [data-invalid="true"]',
+          )
+          ?.focus();
       });
       return;
     }
@@ -447,6 +608,8 @@ const CreateJobPostForm = () => {
       username: values.name.trim(),
       email: values.email.trim().toLowerCase(),
       zipcode: values.zipCode.trim(),
+      state: values.state,
+      city: values.city,
       category:
         values.category === OTHER_CATEGORY ? "Other" : values.category.trim(),
       budgetRange: `${formatBudget(budgetRange[0])} - ${formatBudget(budgetRange[1])}`,
@@ -659,6 +822,76 @@ const CreateJobPostForm = () => {
                     {...errorProps("zipCode")}
                   />
                 </Field>
+
+                <Field
+                  id="state"
+                  label="State"
+                  icon={MapPin}
+                  error={errors.state}
+                >
+                  <LocationDropdown
+                    id="state"
+                    value={values.state}
+                    options={states.map((state) => state.name)}
+                    placeholder={
+                      statesQuery.isError ? "States unavailable" : "Select state"
+                    }
+                    searchPlaceholder="Search states..."
+                    emptyMessage="No state found."
+                    loading={statesQuery.isPending}
+                    disabled={statesQuery.isError || states.length === 0}
+                    error={Boolean(errors.state)}
+                    onChange={updateStateAndResetCity}
+                  />
+                  {statesQuery.isError && (
+                    <button
+                      type="button"
+                      onClick={() => statesQuery.refetch()}
+                      className="mt-1.5 text-[11px] font-bold text-[#292D73] underline underline-offset-2"
+                    >
+                      Unable to load states. Try again
+                    </button>
+                  )}
+                </Field>
+
+                <Field
+                  id="city"
+                  label="City"
+                  icon={MapPin}
+                  error={errors.city}
+                >
+                  <LocationDropdown
+                    id="city"
+                    value={values.city}
+                    options={cities}
+                    placeholder={
+                      !selectedState
+                        ? "Select a state first"
+                        : citiesQuery.isError
+                          ? "Cities unavailable"
+                          : "Select city"
+                    }
+                    searchPlaceholder="Search cities..."
+                    emptyMessage="No city found."
+                    loading={Boolean(selectedState) && citiesQuery.isPending}
+                    disabled={
+                      !selectedState ||
+                      citiesQuery.isError ||
+                      (!citiesQuery.isPending && cities.length === 0)
+                    }
+                    error={Boolean(errors.city)}
+                    onChange={(city) => updateValue("city", city)}
+                  />
+                  {selectedState && citiesQuery.isError && (
+                    <button
+                      type="button"
+                      onClick={() => citiesQuery.refetch()}
+                      className="mt-1.5 text-[11px] font-bold text-[#292D73] underline underline-offset-2"
+                    >
+                      Unable to load cities. Try again
+                    </button>
+                  )}
+                </Field>
               </div>
 
               <div className="my-5 h-px bg-[#EAECF0]" />
@@ -684,33 +917,36 @@ const CreateJobPostForm = () => {
                       : "Choose the closest match for your request."
                   }
                 >
-                  <select
+                  <LocationDropdown
                     id="category"
-                    value={values.category}
-                    onChange={(event) =>
-                      updateValue("category", event.target.value)
+                    value={
+                      values.category === OTHER_CATEGORY
+                        ? "Others"
+                        : values.category
                     }
-                    onBlur={() => handleBlur("category")}
-                    className={`${fieldClassName} appearance-none pr-11 ${errors.category ? "border-[#FDA29B]" : "border-[#D0D5DD]"}`}
-                    {...errorProps("category")}
-                  >
-                    <option value="">
-                      {categoriesQuery.isPending
+                    options={[
+                      ...categoryOptions.map((category) =>
+                        category.name.trim(),
+                      ),
+                      "Others",
+                    ]}
+                    placeholder={
+                      categoriesQuery.isPending
                         ? "Loading categories..."
                         : categoriesQuery.isError
                           ? "Select Others to add a category"
-                          : "Select a category"}
-                    </option>
-                    {categoryOptions.map((category) => (
-                      <option key={category._id} value={category.name.trim()}>
-                        {category.name.trim()}
-                      </option>
-                    ))}
-                    <option value={OTHER_CATEGORY}>Others</option>
-                  </select>
-                  <ChevronDown
-                    className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]"
-                    aria-hidden="true"
+                          : "Select a category"
+                    }
+                    searchPlaceholder="Search categories..."
+                    emptyMessage="No category found."
+                    disabled={categoriesQuery.isPending}
+                    error={Boolean(errors.category)}
+                    onChange={(category) =>
+                      updateValue(
+                        "category",
+                        category === "Others" ? OTHER_CATEGORY : category,
+                      )
+                    }
                   />
                 </Field>
 

@@ -171,7 +171,7 @@ const SearchableDropdown = ({
           type="button"
           disabled={disabled || loading}
           aria-expanded={open}
-          className="flex h-11 w-full items-center justify-between rounded-[8px] border border-[#F5F3FA] bg-white px-4 text-left text-base font-medium text-[#1A1A2E] shadow-[0px_0px_10px_0px_#00000026] outline-none focus:ring-2 focus:ring-[#4365D0]/20 disabled:cursor-not-allowed disabled:bg-[#F8FAFC] disabled:text-[#98A2B3] md:h-[48px]"
+          className="flex h-10 w-full items-center justify-between rounded-[8px] border border-[#F5F3FA] bg-white px-4 text-left text-base font-medium text-[#1A1A2E] shadow-[0px_0px_10px_0px_#00000026] outline-none focus:ring-2 focus:ring-[#4365D0]/20 disabled:cursor-not-allowed disabled:bg-[#F8FAFC] disabled:text-[#98A2B3] md:h-11"
         >
           <span className="truncate">
             {loading ? "Loading..." : value || placeholder}
@@ -286,7 +286,7 @@ const SignupForm = () => {
       return data;
     },
     onSuccess: (data, values) => {
-      toast.success(data?.message || "User registered successfully");
+      // toast.success(data?.message || "User registered successfully");
       setSuccessEmail(values.email);
       setShowSuccessModal(true);
       form.reset();
@@ -305,12 +305,12 @@ const SignupForm = () => {
   };
 
   const inputClassName =
-    "auth-input h-11 w-full rounded-[8px] border border-[#F5F3FA] bg-white px-4 py-0 text-base font-medium leading-normal text-[#1A1A2E] caret-[#1A1A2E] shadow-[0px_0px_10px_0px_#00000026] placeholder:text-[#667481] focus:bg-white md:h-[48px]";
+    "auth-input h-10 w-full rounded-[8px] border border-[#F5F3FA] bg-white px-4 py-0 text-base font-medium leading-normal text-[#1A1A2E] caret-[#1A1A2E] shadow-[0px_0px_10px_0px_#00000026] placeholder:text-[#667481] focus:bg-white md:h-11";
   const labelClassName =
     "flex items-center gap-1 text-base font-semibold leading-[120%] text-[#4365D0]";
 
   return (
-    <div className="flex h-full w-full items-center justify-center px-4 py-2">
+    <div className="flex min-h-full w-full items-center justify-center px-4 py-2">
       <div className="w-full max-w-[680px] rounded-[16px] bg-white p-3 shadow-[0px_5px_10px_0px_#00000029] sm:p-5 md:p-6">
         <div className="flex items-center justify-center mb-1 sm:mb-2">
           <Link href="/">
@@ -608,10 +608,10 @@ const SignupForm = () => {
                       />
                     </FormControl>
                     <Label
-                      className="text-sm md:text-base font-medium text-[#4365D0] leading-[120%]"
+                      className="text-sm md:text-base font-medium text-black leading-[120%]"
                       htmlFor="agreementAccepted"
                     >
-                      I agree to the <span className="text-[#667481]">Terms and Conditions</span> 
+                      I agree to the <Link href="/terms-and-condition" className="text-[#4365D0] underline">Terms and Conditions</Link> and <Link href="/privacy-policy" className="text-[#4365D0] underline">Privacy Policy</Link>.
                     </Label>
                   </div>
                   <FormMessage className="text-red-500" />

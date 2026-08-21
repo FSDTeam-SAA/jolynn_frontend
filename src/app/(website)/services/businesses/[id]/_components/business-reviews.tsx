@@ -45,6 +45,8 @@ const BusinessReviews = ({ businessId }: BusinessReviewsProps) => {
   const token = sessionUser?.accessToken ?? sessionUser?.token;
   const summary = data?.data.summary;
   const reviews = data?.data.reviews ?? [];
+
+
   const distribution = [5, 4, 3, 2, 1].map((stars) => {
     const count =
       summary?.ratingBreakdown[String(stars) as "1" | "2" | "3" | "4" | "5"] ??
@@ -162,7 +164,7 @@ const BusinessReviews = ({ businessId }: BusinessReviewsProps) => {
       </article>
 
       <div className="space-y-5">
-        {reviews.map((review) => (
+        {reviews?.map((review) => (
           <article
             key={review._id}
             className="rounded-[8px] border border-[#E1E7EC] bg-white px-4 py-4 shadow-[0_1px_2px_rgba(17,24,39,0.03)] sm:px-5"

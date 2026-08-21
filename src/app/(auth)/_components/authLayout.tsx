@@ -12,7 +12,9 @@ const AuthLayoutDesign = ({
   return (
     <div
       className={`relative min-h-dvh bg-[linear-gradient(180deg,_#292D73_0%,_#91C7D9_50%,_#CBE4E3_100%),_linear-gradient(0deg,_rgba(0,0,0,0.2),_rgba(0,0,0,0.2))] ${
-        preventPageScroll ? "h-dvh overflow-hidden" : ""
+        preventPageScroll
+          ? "min-h-dvh lg:h-dvh lg:overflow-hidden"
+          : ""
       }`}
     >
       <Link
@@ -27,7 +29,7 @@ const AuthLayoutDesign = ({
       <div
         className={`flex w-full items-center justify-center px-0 ${
           preventPageScroll
-            ? "h-dvh py-2 sm:py-4"
+            ? "min-h-dvh py-2 sm:py-4 [align-items:safe_center]"
             : "min-h-dvh pb-6 pt-20 sm:pb-8 sm:pt-24 md:py-24 lg:py-28"
         }`}
       >

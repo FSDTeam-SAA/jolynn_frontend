@@ -41,13 +41,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -287,7 +280,7 @@ const SearchableDropdown = ({
             className="h-10 w-full bg-transparent px-2 text-sm text-primary outline-none placeholder:text-[#98A2B3]"
           />
         </div>
-        <div className="max-h-60 overflow-y-auto p-1">
+        <div className="max-h-52 overflow-y-auto p-1">
           {filteredOptions.length === 0 ? (
             <p className="px-3 py-6 text-center text-sm text-[#667085]">
               {emptyMessage}
@@ -704,40 +697,40 @@ const AddYourBusinessContainer = () => {
                       <FormLabel className={labelClassName}>
                         Category*
                       </FormLabel>
-                      <Select
-                        onValueChange={(value) => {
-                          field.onChange(value);
-                          if (value !== OTHER_CATEGORY) {
-                            form.setValue("requestedCategory", "", {
-                              shouldDirty: true,
-                              shouldValidate: false,
-                            });
+                      <FormControl>
+                        <SearchableDropdown
+                          value={
+                            field.value === OTHER_CATEGORY
+                              ? "Others"
+                              : field.value
                           }
-                        }}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger className={inputClassName}>
-                            <SelectValue
-                              placeholder={
-                                categoriesQuery.isPending
-                                  ? "Loading categories..."
-                                  : categoriesQuery.isError
-                                    ? "Select Others to add a category"
-                                    : "Select category"
-                              }
-                            />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {categories.map((category) => (
-                            <SelectItem key={category._id} value={category.name}>
-                              {category.name}
-                            </SelectItem>
-                          ))}
-                          <SelectItem value={OTHER_CATEGORY}>Others</SelectItem>
-                        </SelectContent>
-                      </Select>
+                          options={[
+                            ...categories.map((category) => category.name),
+                            "Others",
+                          ]}
+                          placeholder={
+                            categoriesQuery.isPending
+                              ? "Loading categories..."
+                              : categoriesQuery.isError
+                                ? "Select Others to add a category"
+                                : "Select category"
+                          }
+                          searchPlaceholder="Search categories..."
+                          emptyMessage="No category found."
+                          loading={categoriesQuery.isPending}
+                          onChange={(category) => {
+                            const value =
+                              category === "Others" ? OTHER_CATEGORY : category;
+                            field.onChange(value);
+                            if (value !== OTHER_CATEGORY) {
+                              form.setValue("requestedCategory", "", {
+                                shouldDirty: true,
+                                shouldValidate: false,
+                              });
+                            }
+                          }}
+                        />
+                      </FormControl>
                       {categoriesQuery.isError && (
                         <button
                           type="button"
