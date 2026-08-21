@@ -7,6 +7,7 @@ import {
   Mail,
   Phone,
   Star,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
@@ -18,6 +19,7 @@ import BusinessGallery from "./business-gallery";
 import BusinessOverview from "./business-overview";
 import { usePublicBusinessProfile } from "@/hooks/use-public-business-profile";
 import { useSavedBusinesses } from "@/hooks/use-saved-businesses";
+import { useCreateConversation } from "@/hooks/use-messages";
 import BusinessReviews from "./business-reviews";
 import BusinessServices from "./business-services";
 import RequestAQuoteModal from "./request-a-quote-modal";
@@ -120,16 +122,20 @@ const BusinessProfileSkeleton = () => (
 const ContactCard = ({
   onOpenQuoteModal,
   onOpenReportModal,
+  onOpenMessageFlow,
   onToggleSave,
   isSaving,
   isSaved,
+  isCreatingMessage,
   business,
 }: {
   onOpenQuoteModal: () => void;
   onOpenReportModal: () => void;
+  onOpenMessageFlow: () => void;
   onToggleSave: () => void;
   isSaving: boolean;
   isSaved: boolean;
+  isCreatingMessage: boolean;
   business: NonNullable<ReturnType<typeof usePublicBusinessProfile>["data"]>;
 }) => (
   <aside className="rounded-[10px] border border-[#E1E5EC] bg-white px-4 py-5 shadow-[0_8px_24px_rgba(41,45,115,0.07)] lg:sticky lg:top-6">
@@ -138,7 +144,7 @@ const ContactCard = ({
     </h2>
 
     <div className="mt-4 space-y-3">
-      {(business?.phoneNumber) && (
+      {business?.phoneNumber && (
         <Link
           href={`tel:${business?.phoneNumber || "#"}`}
           className="flex h-10 items-center justify-center gap-2 rounded-[6px] bg-[#292D73] px-4 text-[12px] font-bold text-white shadow-sm transition hover:bg-[#20255F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73]/40 focus-visible:ring-offset-2"
@@ -148,21 +154,30 @@ const ContactCard = ({
         </Link>
       )}
 
-      {business.businessWebsiteUrl && <Link
-        href={business.businessWebsiteUrl}
-        className="flex h-10 items-center justify-center gap-2 rounded-[6px] border border-[#D7DCE5] bg-white px-4 text-[12px] font-bold text-[#344054] transition hover:border-[#292D73]/35 hover:bg-[#F7F7FC] hover:text-[#292D73] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73]/30 focus-visible:ring-offset-2"
-      >
-        <Globe2 className="h-3.5 w-3.5" />
-        Visit Website
-      </Link>}
+      {business.businessWebsiteUrl && (
+        <Link
+          href={business.businessWebsiteUrl}
+          className="flex h-10 items-center justify-center gap-2 rounded-[6px] border border-[#D7DCE5] bg-white px-4 text-[12px] font-bold text-[#344054] transition hover:border-[#292D73]/35 hover:bg-[#F7F7FC] hover:text-[#292D73] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73]/30 focus-visible:ring-offset-2"
+        >
+          <Globe2 className="h-3.5 w-3.5" />
+          Visit Website
+        </Link>
+      )}
 
-      <Link
-        href={`mailto:${business.businessEmail || business.email || ""}`}
-        className="flex h-10 items-center justify-center gap-2 rounded-[6px] border border-[#D7DCE5] bg-white px-4 text-[12px] font-bold text-[#344054] transition hover:border-[#292D73]/35 hover:bg-[#F7F7FC] hover:text-[#292D73] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73]/30 focus-visible:ring-offset-2"
+      {/* Email / Message Button (Triggers POST /messages) */}
+      <button
+        type="button"
+        onClick={onOpenMessageFlow}
+        disabled={isCreatingMessage}
+        className="flex h-10 w-full items-center justify-center gap-2 rounded-[6px] border border-[#D7DCE5] bg-white px-4 text-[12px] font-bold text-[#344054] transition hover:border-[#292D73]/35 hover:bg-[#F7F7FC] hover:text-[#292D73] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73]/30 focus-visible:ring-offset-2 disabled:opacity-60 cursor-pointer"
       >
-        <Mail className="h-3.5 w-3.5" />
-        Email
-      </Link>
+        {isCreatingMessage ? (
+          <Loader2 className="h-3.5 w-3.5 animate-spin text-[#292D73]" />
+        ) : (
+          <Mail className="h-3.5 w-3.5" />
+        )}
+        {isCreatingMessage ? "Starting Chat..." : "Email / Message"}
+      </button>
 
       <button
         type="button"
@@ -171,41 +186,38 @@ const ContactCard = ({
       >
         Report
       </button>
-        <div className="flex flex-col gap-2">
-              <button
-                type="button"
-                onClick={onToggleSave}
-                disabled={isSaving}
-                aria-pressed={isSaved}
-                className={`inline-flex h-10 w-full items-center justify-center gap-2 rounded-[6px] border border-[#292D73] px-5 text-[13px] font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73]/35 focus-visible:ring-offset-2 disabled:cursor-not-allowed ${
-                  isSaved
-                    ? "bg-[#F0F1FA] text-[#292D73] hover:bg-[#E5E7F5]"
-                    : "bg-white text-[#292D73] hover:bg-[#F3F4FA]"
-                } ${isSaving ? "opacity-60" : ""}`}
-              >
-                <Bookmark className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`} />
-                {isSaving
-                  ? isSaved
-                    ? "Unsaving..."
-                    : "Saving..."
-                  : isSaved
-                    ? "Unsave"
-                    : "Save"}
-              </button>
-              <button
-                type="button"
-                onClick={onOpenQuoteModal}
-                className="inline-flex h-10 w-full items-center justify-center rounded-[6px] bg-[#292D73] px-6 text-[13px] font-extrabold text-white shadow-sm transition hover:bg-[#20255F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73]/40 focus-visible:ring-offset-2"
-              >
-                Request a Quote
-              </button>
-            </div>
-    </div>
 
-    {/* <div className="mt-6 h-px bg-[#EAECF0]" />
-    <p className="mt-4 text-center text-xs font-medium text-[#98A2B3]">
-      Typically responds within 2 hours
-    </p> */}
+      <div className="flex flex-col gap-2">
+        <button
+          type="button"
+          onClick={onToggleSave}
+          disabled={isSaving}
+          aria-pressed={isSaved}
+          className={`inline-flex h-10 w-full items-center justify-center gap-2 rounded-[6px] border border-[#292D73] px-5 text-[13px] font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73]/35 focus-visible:ring-offset-2 disabled:cursor-not-allowed ${
+            isSaved
+              ? "bg-[#F0F1FA] text-[#292D73] hover:bg-[#E5E7F5]"
+              : "bg-white text-[#292D73] hover:bg-[#F3F4FA]"
+          } ${isSaving ? "opacity-60" : ""}`}
+        >
+          <Bookmark className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`} />
+          {isSaving
+            ? isSaved
+              ? "Unsaving..."
+              : "Saving..."
+            : isSaved
+            ? "Unsave"
+            : "Save"}
+        </button>
+
+        <button
+          type="button"
+          onClick={onOpenQuoteModal}
+          className="inline-flex h-10 w-full items-center justify-center rounded-[6px] bg-[#292D73] px-6 text-[13px] font-extrabold text-white shadow-sm transition hover:bg-[#20255F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73]/40 focus-visible:ring-offset-2"
+        >
+          Request a Quote
+        </button>
+      </div>
+    </div>
   </aside>
 );
 
@@ -217,24 +229,28 @@ const BusinessViewProfileContainer = ({ businessId }: { businessId: string }) =>
   const requestedTab = searchParams.get("tab");
   const serviceId = searchParams.get("serviceId") || undefined;
   const [activeTab, setActiveTab] = useState<ProfileTab>(
-    requestedTab === "reviews" ? "reviews" : "overview",
+    requestedTab === "reviews" ? "reviews" : "overview"
   );
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isSaveSignInModalOpen, setIsSaveSignInModalOpen] = useState(false);
   const [isQuoteSignInModalOpen, setIsQuoteSignInModalOpen] = useState(false);
   const [savedOverride, setSavedOverride] = useState<boolean | null>(null);
+
   const { data: business, isPending, isError, refetch } =
     usePublicBusinessProfile(businessId, serviceId);
   const sessionUser = session?.user as
     | { token?: string; accessToken?: string }
     | undefined;
   const token = sessionUser?.accessToken ?? sessionUser?.token;
+
   const { data: savedBusinessesData } = useSavedBusinesses(token, 1, 100);
+  const createConversation = useCreateConversation(token);
+
   const savedOnServer = (savedBusinessesData?.data ?? []).some(
-      (savedBusiness) =>
-        savedBusiness.businessOwner.businessOwnerId === businessId,
-    );
+    (savedBusiness) =>
+      savedBusiness.businessOwner.businessOwnerId === businessId
+  );
   const isSaved = savedOverride ?? savedOnServer;
 
   const openQuoteFlow = () => {
@@ -242,8 +258,37 @@ const BusinessViewProfileContainer = ({ businessId }: { businessId: string }) =>
       setIsQuoteSignInModalOpen(true);
       return;
     }
-
     setIsQuoteModalOpen(true);
+  };
+
+  const openMessageFlow = () => {
+    if (!token) {
+      setIsQuoteSignInModalOpen(true);
+      return;
+    }
+    if (!business?.ownerId) {
+      toast.error("Business details not available yet.");
+      return;
+    }
+
+    createConversation.mutate(
+      {
+        businessOwnerId: business.ownerId,
+        subject: `Inquiry for ${business.businessName}`,
+        message: `Hello ${business.businessName}, I would like to inquire about your services.`,
+      },
+      {
+        onSuccess: (resData) => {
+          const conversationId =
+            resData?.conversation?._id || resData?._id;
+          router.push(
+            `/account/message${
+              conversationId ? `?conversationId=${conversationId}` : ""
+            }`
+          );
+        },
+      }
+    );
   };
 
   const redirectToLogin = () => {
@@ -263,7 +308,6 @@ const BusinessViewProfileContainer = ({ businessId }: { businessId: string }) =>
       setIsSaveSignInModalOpen(true);
       return;
     }
-
     toggleSaveMutation.mutate(isSaved);
   };
 
@@ -271,7 +315,7 @@ const BusinessViewProfileContainer = ({ businessId }: { businessId: string }) =>
     mutationFn: async (shouldUnsave: boolean) => {
       if (!token) {
         throw new Error(
-          `Please sign in to ${shouldUnsave ? "unsave" : "save"} this business.`,
+          `Please sign in to ${shouldUnsave ? "unsave" : "save"} this business.`
         );
       }
       const apiUrl = (
@@ -285,22 +329,23 @@ const BusinessViewProfileContainer = ({ businessId }: { businessId: string }) =>
           ? `${apiUrl}/save-quote/${encodeURIComponent(businessId)}`
           : `${apiUrl}/save-quote`,
         {
-        method: shouldUnsave ? "DELETE" : "POST",
-        headers: {
-          accept: "*/*",
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        ...(shouldUnsave
-          ? {}
-          : { body: JSON.stringify({ businessOwnerId: businessId }) }),
-      });
+          method: shouldUnsave ? "DELETE" : "POST",
+          headers: {
+            accept: "*/*",
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          ...(shouldUnsave
+            ? {}
+            : { body: JSON.stringify({ businessOwnerId: businessId }) }),
+        }
+      );
       const result = await response.json();
 
       if (!response.ok || !result.success) {
         throw new Error(
           result.message ||
-            `Unable to ${shouldUnsave ? "unsave" : "save"} this business.`,
+            `Unable to ${shouldUnsave ? "unsave" : "save"} this business.`
         );
       }
       return { result, shouldUnsave };
@@ -309,7 +354,7 @@ const BusinessViewProfileContainer = ({ businessId }: { businessId: string }) =>
       setSavedOverride(!shouldUnsave);
       toast.success(
         result.message ||
-          `Business ${shouldUnsave ? "unsaved" : "saved"} successfully.`,
+          `Business ${shouldUnsave ? "unsaved" : "saved"} successfully.`
       );
       await queryClient.invalidateQueries({ queryKey: ["saved-businesses"] });
       setSavedOverride(null);
@@ -318,7 +363,7 @@ const BusinessViewProfileContainer = ({ businessId }: { businessId: string }) =>
       toast.error(
         error instanceof Error
           ? error.message
-          : "Unable to update this saved business.",
+          : "Unable to update this saved business."
       );
     },
   });
@@ -330,7 +375,21 @@ const BusinessViewProfileContainer = ({ businessId }: { businessId: string }) =>
   }, [requestedTab]);
 
   if (isPending) return <BusinessProfileSkeleton />;
-  if (isError || !business) return <main className="bg-[#F5F8F7]"><div className="container  py-16"><p className="text-sm text-red-600">Unable to load this business.</p><button type="button" onClick={() => refetch()} className="mt-3 rounded bg-[#292D73] px-4 py-2 text-xs font-bold text-white">Try again</button></div></main>;
+  if (isError || !business)
+    return (
+      <main className="bg-[#F5F8F7]">
+        <div className="container py-16">
+          <p className="text-sm text-red-600">Unable to load this business.</p>
+          <button
+            type="button"
+            onClick={() => refetch()}
+            className="mt-3 rounded bg-[#292D73] px-4 py-2 text-xs font-bold text-white"
+          >
+            Try again
+          </button>
+        </div>
+      </main>
+    );
 
   const activeContent = {
     overview: <BusinessOverview overview={business} />,
@@ -340,93 +399,92 @@ const BusinessViewProfileContainer = ({ businessId }: { businessId: string }) =>
   }[activeTab];
 
   return (
-    <div className="">
+    <div>
       <main className="bg-[#F5F8F7]">
-      <header className="border-b border-[#E2E8F0] bg-white">
-        <div className="container pb-0 pt-8">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="flex items-center justify-start gap-2 md:gap-3 lg:gap-4">
-              <div>
-              <Image src={business?.profilePicture || "/assets/images/no-image.jpg"} alt={business?.businessName} width={200} height={200} className="w-14 h-14 rounded-[12px]"/>
-            </div>
-            <div>
-              <h1 className="text-[28px] font-extrabold leading-tight text-[#111827] sm:text-[32px]">
-                {business.businessName}
-              </h1>
-
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <div className="flex items-center gap-[1px]">
-                  {renderStars(business.rating ?? business.reviewSummary?.averageRating ?? 0)}
+        <header className="border-b border-[#E2E8F0] bg-white">
+          <div className="container pb-0 pt-8">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="flex items-center justify-start gap-2 md:gap-3 lg:gap-4">
+                <div>
+                  <Image
+                    src={business?.profilePicture || "/assets/images/no-image.jpg"}
+                    alt={business?.businessName}
+                    width={200}
+                    height={200}
+                    className="w-14 h-14 rounded-[12px]"
+                  />
                 </div>
-                <span className="text-[12px] font-extrabold text-[#111827]">
-                  {(business.rating ?? business.reviewSummary?.averageRating ?? 0).toFixed(1)}
-                </span>
-                <span className="text-[11px] font-medium text-[#667085]">
-                  ({business.totalReviews ?? business.reviewSummary?.totalReviews ?? 0} reviews)
-                </span>
-                <span className="rounded-[3px] bg-[#DFEEEE] px-2 py-1 text-[11px] font-semibold text-[#426078]">
-                  {business.category}
-                </span>
+                <div>
+                  <h1 className="text-[28px] font-extrabold leading-tight text-[#111827] sm:text-[32px]">
+                    {business.businessName}
+                  </h1>
+
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <div className="flex items-center gap-[1px]">
+                      {renderStars(
+                        business.rating ?? business.reviewSummary?.averageRating ?? 0
+                      )}
+                    </div>
+                    <span className="text-[12px] font-extrabold text-[#111827]">
+                      {(
+                        business.rating ??
+                        business.reviewSummary?.averageRating ??
+                        0
+                      ).toFixed(1)}
+                    </span>
+                    <span className="text-[11px] font-medium text-[#667085]">
+                      ({business.totalReviews ?? business.reviewSummary?.totalReviews ?? 0}{" "}
+                      reviews)
+                    </span>
+                    <span className="rounded-[3px] bg-[#DFEEEE] px-2 py-1 text-[11px] font-semibold text-[#426078]">
+                      {business.category}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
-            </div>
 
-            {/* <div className="flex flex-wrap items-center gap-2">
-              <Link
-                href={businessProfile.saveUrl}
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-[6px] border border-[#315CFF] bg-white px-5 text-[13px] font-semibold text-[#315CFF] transition hover:bg-[#F2F5FF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#315CFF]"
-              >
-                <Bookmark className="h-4 w-4" />
-                Save
-              </Link>
-              <button
-                type="button"
-                onClick={() => setIsQuoteModalOpen(true)}
-                className="inline-flex h-10 items-center justify-center rounded-[6px] bg-[#292D73] px-6 text-[13px] font-extrabold text-white transition hover:bg-[#20255F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2"
-              >
-                Request a Quote
-              </button>
-            </div> */}
-          </div>
-
-          <nav className="mt-6 flex gap-7 overflow-x-auto text-[13px] font-medium text-[#475467]">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveTab(tab.id)}
-                className={`relative h-11 shrink-0 transition hover:text-[#292D73] ${
-                  activeTab === tab.id
-                    ? "font-extrabold text-[#292D73]"
-                    : "text-[#475467]"
-                }`}
-              >
-                {tab.label}
-                <span
-                  className={`absolute bottom-0 left-0 h-px w-full bg-[#292D73] transition ${
-                    activeTab === tab.id ? "opacity-100" : "opacity-0"
+            <nav className="mt-6 flex gap-7 overflow-x-auto text-[13px] font-medium text-[#475467]">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`relative h-11 shrink-0 transition hover:text-[#292D73] ${
+                    activeTab === tab.id
+                      ? "font-extrabold text-[#292D73]"
+                      : "text-[#475467]"
                   }`}
-                />
-              </button>
-            ))}
-          </nav>
-        </div>
-      </header>
+                >
+                  {tab.label}
+                  <span
+                    className={`absolute bottom-0 left-0 h-px w-full bg-[#292D73] transition ${
+                      activeTab === tab.id ? "opacity-100" : "opacity-0"
+                    }`}
+                  />
+                </button>
+              ))}
+            </nav>
+          </div>
+        </header>
 
-      <section className="container  py-10 sm:py-12 lg:py-14">
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-5">
-          <div>{activeContent}</div>
-          <ContactCard
-            business={business}
-            onOpenQuoteModal={openQuoteFlow}
-            onOpenReportModal={openReportFlow}
-            onToggleSave={toggleSaveFlow}
-            isSaving={toggleSaveMutation.isPending}
-            isSaved={isSaved}
-          />
-        </div>
-      </section>
+        <section className="container py-10 sm:py-12 lg:py-14">
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-5">
+            <div>{activeContent}</div>
+            <ContactCard
+              business={business}
+              onOpenQuoteModal={openQuoteFlow}
+              onOpenReportModal={openReportFlow}
+              onOpenMessageFlow={openMessageFlow}
+              onToggleSave={toggleSaveFlow}
+              isSaving={toggleSaveMutation.isPending}
+              isSaved={isSaved}
+              isCreatingMessage={createConversation.isPending}
+            />
+          </div>
+        </section>
       </main>
+
       <RequestAQuoteModal
         open={isQuoteModalOpen}
         businessOwnerId={business.ownerId}
@@ -492,10 +550,10 @@ const BusinessViewProfileContainer = ({ businessId }: { businessId: string }) =>
               <LogIn className="h-6 w-6" aria-hidden="true" />
             </div>
             <DialogTitle className="text-xl font-extrabold leading-tight text-[#292D73]">
-              Sign in to request a quote
+              Sign in required
             </DialogTitle>
             <DialogDescription className="pt-2 text-[13px] leading-5 text-[#667085]">
-              You need to sign in before you can send a quote request.
+              You need to sign in before you can start a message or request a quote.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-2 grid grid-cols-2 gap-3 sm:space-x-0">

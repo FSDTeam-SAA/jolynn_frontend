@@ -35,7 +35,8 @@ const navIcons = {
   "save-services": Bookmark,
   "request-quote": FileText,
   "help-wanted": BriefcaseBusiness,
-  "my-reviews" : MessageSquareCode 
+  "my-reviews" : MessageSquareCode,
+  message: MessageCircle
 };
 
 type AccountPageShellProps = {
