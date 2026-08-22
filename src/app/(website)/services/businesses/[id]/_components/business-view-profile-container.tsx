@@ -1,13 +1,18 @@
 "use client";
 
 import {
+  ArrowLeft,
   Bookmark,
+  ExternalLink,
   Globe2,
   LogIn,
   Mail,
   Phone,
+  RotateCw,
+  ShieldAlert,
   Star,
   Loader2,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
@@ -55,6 +60,52 @@ const renderStars = (rating: number) =>
       }`}
     />
   ));
+
+const getEmbeddableUrl = (
+  url: string
+): { embedUrl: string; originalUrl: string; isConvertedYoutube: boolean; isYoutubeMain: boolean } => {
+  if (!url) return { embedUrl: "", originalUrl: "", isConvertedYoutube: false, isYoutubeMain: false };
+  let cleanUrl = url.trim();
+  if (!cleanUrl.startsWith("http://") && !cleanUrl.startsWith("https://")) {
+    cleanUrl = `https://${cleanUrl}`;
+  }
+
+  try {
+    const parsed = new URL(cleanUrl);
+    const host = parsed.hostname.toLowerCase();
+
+    if (host.includes("youtube.com") || host.includes("youtu.be")) {
+      const videoId = parsed.searchParams.get("v");
+      if (videoId) {
+        return {
+          embedUrl: `https://www.youtube.com/embed/${videoId}`,
+          originalUrl: cleanUrl,
+          isConvertedYoutube: true,
+          isYoutubeMain: false,
+        };
+      }
+      if (host.includes("youtu.be")) {
+        const pathId = parsed.pathname.slice(1);
+        if (pathId) {
+          return {
+            embedUrl: `https://www.youtube.com/embed/${pathId}`,
+            originalUrl: cleanUrl,
+            isConvertedYoutube: true,
+            isYoutubeMain: false,
+          };
+        }
+      }
+      if (parsed.pathname.startsWith("/embed/")) {
+        return { embedUrl: cleanUrl, originalUrl: cleanUrl, isConvertedYoutube: false, isYoutubeMain: false };
+      }
+      return { embedUrl: cleanUrl, originalUrl: cleanUrl, isConvertedYoutube: false, isYoutubeMain: true };
+    }
+  } catch {
+    // fallback
+  }
+
+  return { embedUrl: cleanUrl, originalUrl: cleanUrl, isConvertedYoutube: false, isYoutubeMain: false };
+};
 
 const BusinessProfileSkeleton = () => (
   <main className="min-h-screen bg-[#F5F8F7]" aria-label="Loading business profile">
@@ -123,6 +174,7 @@ const ContactCard = ({
   onOpenQuoteModal,
   onOpenReportModal,
   onOpenMessageFlow,
+  onOpenWebsitePreview,
   onToggleSave,
   isSaving,
   isSaved,
@@ -132,6 +184,7 @@ const ContactCard = ({
   onOpenQuoteModal: () => void;
   onOpenReportModal: () => void;
   onOpenMessageFlow: () => void;
+  onOpenWebsitePreview: () => void;
   onToggleSave: () => void;
   isSaving: boolean;
   isSaved: boolean;
@@ -155,13 +208,34 @@ const ContactCard = ({
       )}
 
       {business.businessWebsiteUrl && (
-        <Link
-          href={business.businessWebsiteUrl}
-          className="flex h-10 items-center justify-center gap-2 rounded-[6px] border border-[#D7DCE5] bg-white px-4 text-[12px] font-bold text-[#344054] transition hover:border-[#292D73]/35 hover:bg-[#F7F7FC] hover:text-[#292D73] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73]/30 focus-visible:ring-offset-2"
-        >
-          <Globe2 className="h-3.5 w-3.5" />
-          Visit Website
-        </Link>
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={onOpenWebsitePreview}
+            className="flex h-10 flex-1 items-center justify-center gap-2 rounded-[6px] border border-[#D7DCE5] bg-white px-3 text-[12px] font-bold text-[#344054] transition hover:border-[#292D73]/35 hover:bg-[#F7F7FC] hover:text-[#292D73] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73]/30 cursor-pointer"
+            title="Preview website inline"
+          >
+            <Globe2 className="h-3.5 w-3.5 text-[#292D73]" />
+            <span>Visit Website</span>
+            <span className="rounded bg-[#EEF1FF] px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#292D73]">
+              Preview
+            </span>
+          </button>
+
+          <a
+            href={
+              business.businessWebsiteUrl.startsWith("http://") || business.businessWebsiteUrl.startsWith("https://")
+                ? business.businessWebsiteUrl
+                : `https://${business.businessWebsiteUrl}`
+            }
+            target="_blank"
+            rel="noreferrer"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[6px] border border-[#D7DCE5] bg-white text-[#475467] transition hover:border-[#292D73]/35 hover:bg-[#F7F7FC] hover:text-[#292D73]"
+            title="Open external website in new tab"
+          >
+            <ExternalLink className="h-4 w-4" />
+          </a>
+        </div>
       )}
 
       {/* Email / Message Button (Triggers POST /messages) */}
@@ -235,6 +309,7 @@ const BusinessViewProfileContainer = ({ businessId }: { businessId: string }) =>
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isSaveSignInModalOpen, setIsSaveSignInModalOpen] = useState(false);
   const [isQuoteSignInModalOpen, setIsQuoteSignInModalOpen] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [savedOverride, setSavedOverride] = useState<boolean | null>(null);
 
   const { data: business, isPending, isError, refetch } =
@@ -398,6 +473,115 @@ const BusinessViewProfileContainer = ({ businessId }: { businessId: string }) =>
     reviews: <BusinessReviews businessId={businessId} />,
   }[activeTab];
 
+  if (isPreviewOpen && business?.businessWebsiteUrl) {
+    const { embedUrl, originalUrl, isConvertedYoutube, isYoutubeMain } = getEmbeddableUrl(
+      business.businessWebsiteUrl
+    );
+
+    return (
+      <div>
+        <main className="bg-[#F5F8F7] py-6 sm:py-8 min-h-[calc(100vh-140px)]">
+          <div className="container">
+            <section className="flex min-h-[calc(100vh-180px)] flex-col overflow-hidden rounded-[12px] border border-[#E4E7EC] bg-white shadow-[0_4px_24px_rgba(41,45,115,0.08)]">
+              {/* Top Header Bar */}
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#EAECF0] bg-[#FAFAFC] px-5 py-3.5 sm:px-6">
+                <div className="flex min-w-0 items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsPreviewOpen(false)}
+                    className="flex items-center gap-1.5 rounded-lg border border-[#D0D5DD] bg-white px-3 py-1.5 text-xs font-semibold text-[#344054] shadow-xs hover:bg-[#F9FAFB] transition-colors cursor-pointer"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                    <span>Back to Business Profile</span>
+                  </button>
+
+                  <div className="hidden h-5 w-[1px] bg-[#E4E7EC] sm:block" />
+
+                  <div className="flex min-w-0 items-center gap-2">
+                    <Globe2 className="h-4 w-4 shrink-0 text-[#292D73]" />
+                    <span className="truncate text-sm font-semibold text-[#101828]">
+                      {business.businessWebsiteUrl}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex shrink-0 items-center gap-2">
+                  <a
+                    href={originalUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-1.5 rounded-lg bg-[#EEF1FF] px-3 py-1.5 text-xs font-semibold text-[#292D73] hover:bg-[#E0E5FF] transition-colors"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    <span>Open in New Tab</span>
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const iframe = document.getElementById("public-website-preview-iframe") as HTMLIFrameElement;
+                      if (iframe) iframe.src = embedUrl;
+                    }}
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#D0D5DD] bg-white text-[#475467] hover:bg-[#F9FAFB] transition-colors cursor-pointer"
+                    title="Refresh website"
+                  >
+                    <RotateCw className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsPreviewOpen(false)}
+                    className="flex h-8 w-8 items-center justify-center rounded-lg text-[#667085] hover:bg-[#F2F4F7] hover:text-[#101828] transition-colors cursor-pointer"
+                    title="Close preview"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Security / Info Banner */}
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#B2DDFF] bg-[#EFF8FF] px-5 py-2 text-xs text-[#175CD3] sm:px-6">
+                <div className="flex items-center gap-2">
+                  <ShieldAlert className="h-4 w-4 shrink-0 text-[#175CD3]" />
+                  <span>
+                    {isConvertedYoutube
+                      ? "Converted YouTube video URL to official Embed format for inline playback."
+                      : isYoutubeMain
+                      ? "YouTube main site blocks embedding for security (X-Frame-Options: SAMEORIGIN). Click 'Open in New Tab' to view."
+                      : "If this external site prevents embedding (X-Frame-Options / CSP), click 'Open in New Tab' to view it directly."}
+                  </span>
+                </div>
+              </div>
+
+              {/* Main iFrame Body */}
+              <div className="relative flex-1 w-full bg-[#F8FAFC] min-h-[600px] h-[calc(100vh-260px)]">
+                <iframe
+                  id="public-website-preview-iframe"
+                  src={embedUrl}
+                  title={`${business.businessName || "Business"} Website Preview`}
+                  className="h-full w-full border-0 min-h-[600px]"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                />
+              </div>
+
+              {/* Bottom Footer Bar */}
+              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#EAECF0] bg-[#FAFAFC] px-5 py-3 text-xs text-[#475467] sm:px-6">
+                <div className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="font-medium">Embedded Website Preview</span>
+                  <span>•</span>
+                  <span className="text-[#667085]">{business.businessName}</span>
+                </div>
+                <div className="truncate text-slate-500">
+                  Target URL: <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs text-[#344054]">{embedUrl}</code>
+                </div>
+              </div>
+            </section>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div>
       <main className="bg-[#F5F8F7]">
@@ -466,9 +650,7 @@ const BusinessViewProfileContainer = ({ businessId }: { businessId: string }) =>
               ))}
             </nav>
           </div>
-        </header>
-
-        <section className="container py-10 sm:py-12 lg:py-14">
+        </header>        <section className="container py-10 sm:py-12 lg:py-14">
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-5">
             <div>{activeContent}</div>
             <ContactCard
@@ -476,6 +658,7 @@ const BusinessViewProfileContainer = ({ businessId }: { businessId: string }) =>
               onOpenQuoteModal={openQuoteFlow}
               onOpenReportModal={openReportFlow}
               onOpenMessageFlow={openMessageFlow}
+              onOpenWebsitePreview={() => setIsPreviewOpen(true)}
               onToggleSave={toggleSaveFlow}
               isSaving={toggleSaveMutation.isPending}
               isSaved={isSaved}

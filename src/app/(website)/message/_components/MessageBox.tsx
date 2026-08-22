@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, Suspense } from "react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -37,7 +37,7 @@ interface MessageBoxProps {
   className?: string;
 }
 
-export default function MessageBox({
+function MessageBoxContent({
   mode = "user",
   heightClass = "h-[calc(100vh-160px)]",
   className,
@@ -591,3 +591,18 @@ export default function MessageBox({
     </div>
   );
 }
+
+export default function MessageBox(props: MessageBoxProps) {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-full w-full items-center justify-center p-8 text-slate-400">
+          <Loader2 className="h-6 w-6 animate-spin text-indigo-500" />
+        </div>
+      }
+    >
+      <MessageBoxContent {...props} />
+    </Suspense>
+  );
+}
+
