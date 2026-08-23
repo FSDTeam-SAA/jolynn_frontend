@@ -80,12 +80,13 @@ const excludedStateNames = new Set([
   "armed forces of the americas",
 ]);
 const MESSAGE_LIMIT = 1000;
-const MIN_BUDGET = 10;
+const MIN_BUDGET = 0;
 const MAX_BUDGET = 5_000;
 const BUDGET_STEP = 10;
-const INITIAL_BUDGET_RANGE: [number, number] = [500, 1_000];
+const INITIAL_BUDGET_RANGE: [number, number] = [MIN_BUDGET, 1_000];
 
-const formatBudget = (value: number) => `$${value.toLocaleString("en-US")}`;
+const formatBudget = (value: number) =>
+  value === MIN_BUDGET ? "$0/Barter" : `$${value.toLocaleString("en-US")}`;
 
 const BudgetRange = ({
   value,

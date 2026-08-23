@@ -821,7 +821,7 @@ const JobPostsContainer = () => {
                           className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-primary px-3 text-xs font-bold text-white shadow-[0_5px_12px_rgba(41,45,115,0.18)] transition hover:bg-[#1F2464] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2"
                         >
                           <Mail className="h-4 w-4" />
-                          Get SideQuote
+                          SideQuote
                         </button>
                       </div>
                     </div>
@@ -994,7 +994,7 @@ const JobPostsContainer = () => {
                   className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-5 text-xs font-extrabold text-white shadow-[0_6px_14px_rgba(41,45,115,0.18)] transition hover:bg-[#1F2464]"
                 >
                   <Mail className="h-4 w-4" />
-                  Get SideQuote
+                  SideQuote
                 </button>
                 {isOwnPost(postToView) && (
                   <button

@@ -59,6 +59,36 @@ const formatDate = (value: string) => {
   return Number.isNaN(date.getTime()) ? "" : new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short", year: "numeric" }).format(date);
 };
 
+function GalleryImageCarousel({ item, disabled, onEdit }: { item: GalleryItem; disabled: boolean; onEdit: () => void }) {
+  const [activeImage, setActiveImage] = useState(0);
+  const imageCount = item.images.length;
+  const currentImage = item.images[Math.min(activeImage, Math.max(0, imageCount - 1))];
+  const showControls = imageCount > 1;
+
+  const showPreviousImage = () => setActiveImage((current) => (current - 1 + imageCount) % imageCount);
+  const showNextImage = () => setActiveImage((current) => (current + 1) % imageCount);
+
+  return (
+    <div className="relative aspect-[1.6/1] w-full overflow-hidden bg-[#EAECF0]">
+      {currentImage?.url ? (
+        <Image src={currentImage.url} alt={`${item.title} image ${activeImage + 1}`} fill className="object-cover" />
+      ) : (
+        <div className="flex h-full items-center justify-center"><ImageIcon className="h-8 w-8 text-[#98A2B3]" /></div>
+      )}
+
+      <button type="button" disabled={disabled} onClick={onEdit} aria-label={`Edit ${item.title}`} className="absolute left-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-[#30347F] shadow-sm hover:bg-white disabled:opacity-50"><Pencil className="h-3.5 w-3.5" /></button>
+
+      {showControls && <>
+        <button type="button" onClick={showPreviousImage} aria-label="Previous image" className="absolute left-2 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-black/55 text-white transition hover:bg-black/75"><ChevronLeft className="h-4 w-4" /></button>
+        <button type="button" onClick={showNextImage} aria-label="Next image" className="absolute right-2 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-black/55 text-white transition hover:bg-black/75"><ChevronRight className="h-4 w-4" /></button>
+        <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1.5 rounded-full bg-black/35 px-2 py-1">
+          {item.images.map((image, index) => <button key={image.publicId} type="button" onClick={() => setActiveImage(index)} aria-label={`Show image ${index + 1}`} aria-current={activeImage === index} className={`h-1.5 rounded-full transition-all ${activeImage === index ? "w-4 bg-white" : "w-1.5 bg-white/60 hover:bg-white"}`} />)}
+        </div>
+      </>}
+    </div>
+  );
+}
+
 function MyGallery() {
   const { data: session, status: sessionStatus } = useSession();
   const user = session?.user as { token?: string; accessToken?: string } | undefined;
@@ -205,13 +235,7 @@ function MyGallery() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {filteredGallery.map((item) => (
               <article key={item._id} className="group overflow-hidden rounded-[7px] bg-white transition-shadow hover:shadow-md">
-                <button type="button" disabled={isMutating} onClick={() => openEditModal(item)} className="block w-full text-left">
-                  <div className="relative aspect-[1.6/1] w-full overflow-hidden bg-[#EAECF0]">
-                    {item.images[0]?.url ? <Image src={item.images[0].url} alt={item.title} fill className="object-cover transition-transform duration-300 group-hover:scale-[1.02]" /> : <div className="flex h-full items-center justify-center"><ImageIcon className="h-8 w-8 text-[#98A2B3]" /></div>}
-                    {item.images.length > 1 && <span className="absolute bottom-2 right-2 rounded-full bg-black/65 px-2 py-1 text-[10px] font-medium text-white">+{item.images.length - 1} more</span>}
-                    <span className="absolute left-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-[#30347F] shadow-sm"><Pencil className="h-3.5 w-3.5" /></span>
-                  </div>
-                </button>
+                <GalleryImageCarousel item={item} disabled={isMutating} onEdit={() => openEditModal(item)} />
                 <div className="flex items-center justify-between gap-3 px-3 py-2"><div className="min-w-0"><h2 className="truncate text-xs font-medium text-[#202124]">{item.title}</h2><time className="text-[10px] text-[#858A91]">{formatDate(item.createdAt)} · {item.images.length} image{item.images.length === 1 ? "" : "s"}</time></div><button type="button" disabled={isMutating} aria-label={`Delete ${item.title}`} onClick={() => setItemToDelete(item)} className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#FFF0EF] text-[#FF4D4F] hover:bg-[#FFD9D6] disabled:opacity-50"><Trash2 className="h-4 w-4" /></button></div>
               </article>
             ))}
