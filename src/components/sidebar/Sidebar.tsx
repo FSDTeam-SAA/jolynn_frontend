@@ -16,6 +16,7 @@ import {
   FileUser,
   Settings,
   MessageSquareDashed,
+  Bookmark,
 } from "lucide-react";
 import Image from "next/image";
 import { signOut, useSession } from "next-auth/react";
@@ -56,6 +57,11 @@ const navigation = [
     name: "Quote Request",
     href: "/quote-request",
     icon: FileText,
+  },
+   {
+    name: "Saved Services",
+    href: "/saved-services",
+    icon: Bookmark,
   },
   {
     name: "Message",

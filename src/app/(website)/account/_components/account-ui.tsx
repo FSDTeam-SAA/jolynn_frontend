@@ -307,14 +307,14 @@ export const SavedBusinessGrid = ({
           <div className="flex items-start justify-between gap-3">
             <div className="flex min-w-0 items-start gap-3">
               <div className="relative h-[48px] w-[48px] shrink-0 overflow-hidden rounded-full bg-[#F2F4F7]">
-                {business.service.logo?.url ? <Image src={business.service.logo.url} alt="" fill sizes="48px" className="object-cover" /> : <Bookmark className="absolute inset-0 m-auto h-5 w-5 text-[#98A2B3]" />}
+                {business?.service?.logo?.url ? <Image src={business?.service?.logo?.url} alt="" fill sizes="48px" className="object-cover" /> : <Bookmark className="absolute inset-0 m-auto h-5 w-5 text-[#98A2B3]" />}
               </div>
               <div className="min-w-0">
                 <h3 className="truncate text-[16px] font-extrabold leading-tight text-[#292D73]">
-                  {business.businessName}
+                  {business?.businessName}
                 </h3>
                 <span className="mt-1 inline-flex rounded-[3px] bg-[#DFEEEE] px-2 py-[2px] text-[10px] font-semibold leading-none text-[#426078]">
-                  {business.category}
+                  {business?.category}
                 </span>
               </div>
             </div>
@@ -345,16 +345,16 @@ export const SavedBusinessGrid = ({
 
           <div className="mt-3 flex items-center gap-1 text-[10.5px] font-medium text-[#667085]">
             <MapPin className="h-3.5 w-3.5 text-[#667085]" />
-            <span>{[business.address, business.city, business.state].filter(Boolean).join(", ") || business.serviceArea}</span>
+            <span>{[business?.address, business?.city, business?.state].filter(Boolean).join(", ") || business?.serviceArea}</span>
           </div>
 
           <p className="mt-1.5 min-h-[38px] text-[11px] font-medium leading-[1.35] text-[#667085]">
-            {business.service.description}
+            {business?.service?.description}
           </p>
 
           <div className="mt-4 grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_36px] gap-1.5">
             <Link
-              href={`/services/businesses/${business.businessOwnerId}`}
+              href={`/services/businesses/${business?.businessOwnerId}`}
               className="inline-flex h-[36px] items-center justify-center rounded-[5px] bg-[#292E78] px-3 text-[11px] font-bold text-white transition hover:bg-[#1F2464]"
             >
               View Profile
@@ -363,8 +363,8 @@ export const SavedBusinessGrid = ({
               type="button"
               onClick={() =>
                 setSelectedBusiness({
-                  id: business.businessOwnerId,
-                  name: business.businessName,
+                  id: business?.businessOwnerId,
+                  name: business?.businessName,
                 })
               }
               className="inline-flex h-[36px] items-center justify-center rounded-[5px] bg-[#A7A7A7] px-3 text-[11px] font-bold text-white transition hover:bg-[#8E8E8E]"
@@ -372,9 +372,9 @@ export const SavedBusinessGrid = ({
               Report
             </button>
             <Link
-              href={business.businessWebsiteUrl || `/services/businesses/${business.businessOwnerId}`}
+              href={business?.businessWebsiteUrl || `/services/businesses/${business?.businessOwnerId}`}
               className="inline-flex h-[36px] items-center justify-center rounded-[5px] border border-[#292E78] bg-white text-[#292E78] transition hover:bg-[#292E78] hover:text-white"
-              aria-label={`Visit ${business.businessName}`}
+              aria-label={`Visit ${business?.businessName}`}
             >
               <MessageCircle className="h-[17px] w-[17px]" />
             </Link>

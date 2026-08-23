@@ -42,6 +42,7 @@ type BusinessProfile = {
   bio?: string;
   phoneNumber?: string;
   profilePicture?: string;
+  backgroundImage?: string;
 };
 
 type ProfileResponse = {
@@ -153,6 +154,8 @@ function MyBusiness() {
   const [profileImageFile, setProfileImageFile] = useState<File>();
   const [profileImagePreview, setProfileImagePreview] = useState("");
   const profileInputRef = useRef<HTMLInputElement>(null);
+  const backgroundImageInputRef = useRef<HTMLInputElement>(null);
+  const [backgroundImagePreview, setBackgroundImagePreview] = useState("");
 
   const profileQuery = useQuery<ProfileResponse>({
     queryKey: ["user-profile"],
@@ -203,6 +206,40 @@ function MyBusiness() {
     onError: (error) => toast.error(error.message),
   });
 
+  const updateBackgroundImage = useMutation<
+    ProfileResponse,
+    Error,
+    { file: File; preview: string }
+  >({
+    mutationFn: async ({ file }) => {
+      if (!token) throw new Error("Please sign in to update your cover image.");
+      const formData = new FormData();
+      formData.append("backgroundImage", file, file.name);
+
+      const response = await fetch(`${getApiUrl()}/user/profile`, {
+        method: "PUT",
+        headers: { Accept: "application/json", Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      const result = (await response.json().catch(() => null)) as ProfileResponse | null;
+      if (!response.ok || !result?.success) {
+        throw new Error(result?.message || "Unable to update cover image.");
+      }
+      return result;
+    },
+    onSuccess: async (result, { preview }) => {
+      URL.revokeObjectURL(preview);
+      setBackgroundImagePreview("");
+      toast.success(result.message || "Cover image updated successfully.");
+      await queryClient.invalidateQueries({ queryKey: ["user-profile"] });
+    },
+    onError: (error, { preview }) => {
+      URL.revokeObjectURL(preview);
+      setBackgroundImagePreview("");
+      toast.error(error.message);
+    },
+  });
+
   const openEditor = () => {
     if (business) setDraft(toDraft(business));
     setProfileImageFile(undefined);
@@ -220,6 +257,18 @@ function MyBusiness() {
     reader.onload = () => setProfileImagePreview(String(reader.result));
     reader.readAsDataURL(file);
     event.target.value = "";
+  };
+
+  const handleBackgroundImage = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    if (!file.type.startsWith("image/")) return toast.error("Please select an image file.");
+    if (file.size > 5 * 1024 * 1024) return toast.error("Cover image must be smaller than 5 MB.");
+
+    const preview = URL.createObjectURL(file);
+    setBackgroundImagePreview(preview);
+    updateBackgroundImage.mutate({ file, preview });
   };
 
   const setField = (field: keyof BusinessDraft, value: string) =>
@@ -370,7 +419,24 @@ function MyBusiness() {
     <>
       <section className="overflow-hidden rounded-[12px] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.02)]">
         <div className="relative h-[230px] w-full sm:h-[270px]">
-          <Image src="/assets/images/about_hero.jpg" alt="Business cover" fill priority className="object-cover" />
+          <Image
+            src={backgroundImagePreview || business.backgroundImage || "/assets/images/about_hero.jpg"}
+            alt="Business cover"
+            fill
+            priority
+            unoptimized={Boolean(backgroundImagePreview || business.backgroundImage)}
+            className="object-cover"
+          />
+          <input ref={backgroundImageInputRef} type="file" accept="image/*" className="hidden" onChange={handleBackgroundImage} />
+          <button
+            type="button"
+            onClick={() => backgroundImageInputRef.current?.click()}
+            disabled={updateBackgroundImage.isPending}
+            aria-label="Change business cover image"
+            className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-[#30347F] shadow-sm transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {updateBackgroundImage.isPending ? <RotateCw className="h-4 w-4 animate-spin" /> : <Pencil className="h-4 w-4" />}
+          </button>
         </div>
 
         <div className="relative px-5 pb-5 pt-[86px] sm:px-6 sm:pt-5">

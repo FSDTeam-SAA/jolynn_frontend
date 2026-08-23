@@ -34,16 +34,16 @@ const footerColumns = [
     title: "For Customers",
     links: [
       { label: "Find Services", href: "/services" },
-      { label: "Get Listed", href: "/services/businesses" },
-      { label: "How It Works", href: "/#how_it_works" },
       { label: "Leave a Review", href: "/reviews" },
       { label: "FAQ", href: "/#faq" },
+      { label: "Add Post a Job", href: "/job-posts" },
     ],
   },
   {
-    title: "Corporate Info",
+    title: "For Businesses",
     links: [
       { label: "Get Listed", href: "/services/businesses" },
+      { label: "How It Works", href: "/#how_it_works" },
       { label: "Contact Us", href: "/contact" },
       { label: "FAQ", href: "/#faq" },
 
