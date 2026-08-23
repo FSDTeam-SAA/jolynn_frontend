@@ -21,7 +21,7 @@ import Link from "next/link";
 import Image from "next/image";
 
 const formSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
+  email: z.string().min(1, "Please enter your email or username"),
 });
 type FormValues = z.input<typeof formSchema>;
 
@@ -89,20 +89,20 @@ const ForgotPasswordForm = () => {
         </h3>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pt-5 md:pt-6">
-            {/* Email Field */}
+            {/* Email / Username Field */}
             <FormField
               control={form.control}
               name="email"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="flex items-center gap-1 text-base font-semibold leading-[120%] text-[#4365D0] pb-2">
-                    Email Address
+                    Email / Username
                   </FormLabel>
                   <FormControl>
                     <Input
-                      type="email"
+                      type="text"
                       className="w-full h-[48px] text-base font-medium leading-[120%] text-primary rounded-[8px] p-4 border border-[#F5F3FA] placeholder:text-[#667481] shadow-[0px_0px_10px_0px_#00000026]"
-                      placeholder="Type your Email"
+                      placeholder="Type your Email / Username"
                       {...field}
                     />
                   </FormControl>
