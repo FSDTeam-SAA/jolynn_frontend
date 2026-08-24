@@ -56,7 +56,7 @@ const ChangePasswordBody = () => {
     mutationKey: ["change-password"],
     mutationFn: async (values: {
       newPassword: string;
-      email: string;
+      identifier: string;
       otp: string;
     }) => {
       const res = await fetch(
@@ -87,7 +87,7 @@ const ChangePasswordBody = () => {
   const onSubmit = (values: FormValues) => {
     mutate({
       newPassword: values.newPassword,
-      email: decodedEmail,
+      identifier: decodedEmail,
       otp: decodedOtp,
     });
   };
