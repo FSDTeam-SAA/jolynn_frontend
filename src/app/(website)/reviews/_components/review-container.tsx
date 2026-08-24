@@ -160,9 +160,11 @@ const ReviewContainer = () => {
           <>
             <div className="mx-auto mt-9 grid max-w-[1080px] grid-cols-1 gap-5 sm:grid-cols-2 lg:mt-11 lg:grid-cols-3 lg:gap-x-5 lg:gap-y-10">
               {reviews.map((review, index) => (
-                <article
+                <Link
                   key={review._id}
-                  className={`flex min-h-[190px] flex-col rounded-[7px] px-4 pb-4 pt-3.5 shadow-[0_7px_16px_rgba(30,45,75,0.16)] transition-[transform,box-shadow] duration-500 ease-out hover:-translate-y-1 hover:shadow-[0_14px_26px_rgba(30,45,75,0.2)] motion-reduce:transform-none motion-reduce:transition-none ${
+                  href={`/services/businesses/${encodeURIComponent(review.businessId)}?tab=reviews`}
+                  aria-label={`View reviews for ${review.businessName}`}
+                  className={`flex min-h-[190px] flex-col rounded-[7px] px-4 pb-4 pt-3.5 shadow-[0_7px_16px_rgba(30,45,75,0.16)] transition-[transform,box-shadow] duration-500 ease-out hover:-translate-y-1 hover:shadow-[0_14px_26px_rgba(30,45,75,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2 motion-reduce:transform-none motion-reduce:transition-none ${
                     index % 3 === 1
                       ? "border border-[#315CFF] bg-white"
                       : "border border-[#D9F0F1] bg-[#F0FEFE]"
@@ -214,7 +216,7 @@ const ReviewContainer = () => {
                       </p>
                     </div>
                   </div>
-                </article>
+                </Link>
               ))}
             </div>
 

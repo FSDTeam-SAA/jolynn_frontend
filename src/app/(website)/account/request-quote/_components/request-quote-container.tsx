@@ -124,6 +124,36 @@ const QuoteTableSkeleton = () => (
   </div>
 );
 
+const QuoteDetailsPreview = ({
+  quote,
+  isReplied,
+  token,
+}: {
+  quote: QuoteRequest;
+  isReplied: boolean;
+  token?: string;
+}) => {
+  const { data: repliesResponse } = useQuoteReplies(
+    isReplied ? quote._id : undefined,
+    "user",
+    token,
+  );
+  const latestReply = [...(repliesResponse?.data ?? [])].sort(
+    (first, second) =>
+      new Date(second.createdAt).getTime() - new Date(first.createdAt).getTime(),
+  )[0];
+  const details = latestReply?.description || quote.projectDetails;
+
+  return (
+    <div className="line-clamp-2 px-4 py-5 leading-relaxed">
+      <span className="mb-1 block text-[10px] uppercase tracking-wide text-[#98A2B3] sm:hidden">
+        {latestReply ? "Latest Reply" : "Details"}
+      </span>
+      {details}
+    </div>
+  );
+};
+
 const RequestQuoteContainer = () => {
   const queryClient = useQueryClient();
   const { data: session, status: sessionStatus } = useSession();
@@ -353,36 +383,18 @@ const RequestQuoteContainer = () => {
                         {quote.serviceNeeded}
                       </div>
 
-                      <div className="line-clamp-2 px-4 py-5 leading-relaxed">
-                        <span className="mb-1 block text-[10px] uppercase tracking-wide text-[#98A2B3] sm:hidden">
-                          Details
-                        </span>
-                        {quote.projectDetails}
-                      </div>
+                      <QuoteDetailsPreview
+                        quote={quote}
+                        isReplied={isReplied}
+                        token={token}
+                      />
 
                       {/* Status Column with Notification Dot */}
                       <div className="px-4 py-5 flex items-center justify-center">
                         <span className="mb-2 block text-[10px] uppercase tracking-wide text-[#98A2B3] sm:hidden">
                           Status
                         </span>
-                        {isUnread ? (
-                          <button
-                            type="button"
-                            onClick={() => handleOpenDetails(quote)}
-                            title="Click to view quote details"
-                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold whitespace-nowrap shrink-0 transition-colors cursor-pointer ${
-                              isReplied
-                                ? "bg-indigo-600 text-white shadow-sm hover:bg-indigo-700"
-                                : "bg-blue-600 text-white shadow-sm hover:bg-blue-700"
-                            }`}
-                          >
-                            <span className="relative flex h-2 w-2 shrink-0">
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                              <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
-                            </span>
-                            <span>{isReplied ? "New Reply" : "Submitted"}</span>
-                          </button>
-                        ) : isReplied ? (
+                        {isReplied ? (
                           <button
                             type="button"
                             onClick={() => handleOpenDetails(quote)}
@@ -405,10 +417,10 @@ const RequestQuoteContainer = () => {
                           type="button"
                           onClick={() => openReplyModal(quote)}
                           className="inline-flex h-8 px-2.5 items-center justify-center gap-1 rounded-[4px] bg-[#292D73] text-white font-bold text-[11px] hover:bg-[#20255F] transition-colors shadow-sm whitespace-nowrap shrink-0"
-                          title="Reply to quote"
+                          title={isReplied ? "Edit quote reply" : "Reply to quote"}
                         >
                           <Reply className="h-3.5 w-3.5" />
-                          <span>Reply</span>
+                          <span>{isReplied ? "Replied" : "Reply"}</span>
                         </button>
 
                         {/* View Details */}

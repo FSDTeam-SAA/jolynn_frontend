@@ -56,7 +56,7 @@ const quoteFormContent: {
     },
     {
       name: "phone",
-      label: "Phone Number *",
+      label: "Phone Number (optional)",
       placeholder: "(512) 555-0000",
       type: "tel",
     },
@@ -142,7 +142,7 @@ const RequestAQuoteModal = ({
           businessOwnerId,
           name: values.name.trim(),
           email: values.email.trim(),
-          phoneNumber: values.phone.trim(),
+          ...(values.phone.trim() && { phoneNumber: values.phone.trim() }),
           serviceNeeded: values.service,
           projectDetails: values.details.trim(),
         }),
@@ -194,11 +194,6 @@ const RequestAQuoteModal = ({
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formValues.email.trim())) {
       toast.error("Please enter a valid email address.");
-      return;
-    }
-
-    if (!formValues.phone.trim()) {
-      toast.error("Please enter your phone number.");
       return;
     }
 
@@ -255,7 +250,7 @@ const RequestAQuoteModal = ({
                 onChange={(event) =>
                   updateField(field.name, event.target.value)
                 }
-                aria-required="true"
+                aria-required={field.name !== "phone"}
                 placeholder={field.placeholder}
                 className="mt-2 h-12 w-full rounded-[8px] border border-[#D0D5DD] p-3 text-[16px] font-medium text-[#292D73] outline-none transition placeholder:text-[#7A7F8C] focus:border-[#4365D0] focus:ring-2 focus:ring-[#4365D0]/15"
               />

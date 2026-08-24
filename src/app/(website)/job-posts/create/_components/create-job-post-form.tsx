@@ -20,6 +20,7 @@ import {
   ChevronsUpDown,
   CircleHelp,
   DollarSign,
+  ImageIcon,
   Mail,
   MapPin,
   MessageSquareText,
@@ -28,9 +29,11 @@ import {
   Sparkles,
   UserRound,
   Wrench,
+  X,
   type LucideIcon,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -49,6 +52,11 @@ type FormValues = {
 
 type FormErrors = Partial<Record<keyof FormValues, string>>;
 
+type SelectedImage = {
+  file: File;
+  previewUrl: string;
+};
+
 type HelpWantedPayload = {
   username: string;
   email: string;
@@ -59,17 +67,24 @@ type HelpWantedPayload = {
   budgetRange: string;
   requestedCategory?: string;
   phone?: string;
+  images?: File[];
   message: string;
+};
+
+type HelpWantedImage = {
+  url: string;
+  publicId: string;
 };
 
 type HelpWantedResponse = {
   statusCode: number;
   success: boolean;
   message: string;
-  data: HelpWantedPayload & {
+  data: Omit<HelpWantedPayload, "images"> & {
     _id: string;
     createdAt: string;
     updatedAt: string;
+    images: HelpWantedImage[];
   };
 };
 
@@ -350,7 +365,7 @@ const validateForm = (values: FormValues): FormErrors => {
 };
 
 type FieldProps = {
-  id: keyof FormValues;
+  id: string;
   label: string;
   icon: LucideIcon;
   error?: string;
@@ -402,6 +417,7 @@ const CreateJobPostForm = () => {
   const router = useRouter();
   const { data: session } = useSession();
   const [values, setValues] = useState(initialValues);
+  const [selectedImages, setSelectedImages] = useState<SelectedImage[]>([]);
   const [budgetRange, setBudgetRange] = useState<[number, number]>(
     INITIAL_BUDGET_RANGE,
   );
@@ -411,6 +427,8 @@ const CreateJobPostForm = () => {
   >({});
   const [formMessage, setFormMessage] = useState("");
   const prefilledProfileId = useRef<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const previewUrlsRef = useRef<string[]>([]);
   const sessionUser = session?.user as
     | {
         token?: string;
@@ -487,6 +505,41 @@ const CreateJobPostForm = () => {
     prefilledProfileId.current = profile._id;
   }, [profile]);
 
+  useEffect(() => {
+    return () => {
+      previewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, []);
+
+  const clearSelectedImages = () => {
+    previewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+    previewUrlsRef.current = [];
+    setSelectedImages([]);
+  };
+
+  const addSelectedImages = (files: FileList | null) => {
+    const newImages = Array.from(files ?? []).map((file) => {
+      const previewUrl = URL.createObjectURL(file);
+      previewUrlsRef.current.push(previewUrl);
+      return { file, previewUrl };
+    });
+
+    if (newImages.length) setSelectedImages((current) => [...current, ...newImages]);
+  };
+
+  const removeSelectedImage = (index: number) => {
+    setSelectedImages((current) => {
+      const image = current[index];
+      if (image) {
+        URL.revokeObjectURL(image.previewUrl);
+        previewUrlsRef.current = previewUrlsRef.current.filter(
+          (url) => url !== image.previewUrl,
+        );
+      }
+      return current.filter((_, imageIndex) => imageIndex !== index);
+    });
+  };
+
   const { mutate, isPending } = useMutation<
     HelpWantedResponse,
     Error,
@@ -497,15 +550,31 @@ const CreateJobPostForm = () => {
       const apiUrl =
         process.env.NEXT_PUBLIC_API_URL ||
         "https://api.sidequote.cloud/api/v1";
+      const formData = new FormData();
+
+      formData.append("username", payload.username);
+      formData.append("email", payload.email);
+      formData.append("zipcode", payload.zipcode);
+      formData.append("state", payload.state);
+      formData.append("city", payload.city);
+      formData.append("category", payload.category);
+      formData.append("budgetRange", payload.budgetRange);
+      formData.append("message", payload.message);
+      if (payload.requestedCategory) {
+        formData.append("requestedCategory", payload.requestedCategory);
+      }
+      if (payload.phone) formData.append("phone", payload.phone);
+      payload.images?.forEach((image) => {
+        formData.append("images", image, image.name);
+      });
 
       const response = await fetch(`${apiUrl}/help-wanted`, {
         method: "POST",
         headers: {
           Accept: "*/*",
-          "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify(payload),
+        body: formData,
       });
       const result = (await response.json()) as HelpWantedResponse;
 
@@ -516,6 +585,7 @@ const CreateJobPostForm = () => {
     },
     onSuccess: (result) => {
       setValues(initialValues);
+      clearSelectedImages();
       setBudgetRange(INITIAL_BUDGET_RANGE);
       setErrors({});
       setTouched({});
@@ -618,6 +688,9 @@ const CreateJobPostForm = () => {
         ? { requestedCategory: values.customCategory.trim() }
         : {}),
       ...(values.phone.trim() ? { phone: values.phone.trim() } : {}),
+      ...(selectedImages.length > 0
+        ? { images: selectedImages.map(({ file }) => file) }
+        : {}),
       message: values.message.trim(),
     });
   };
@@ -994,6 +1067,76 @@ const CreateJobPostForm = () => {
 
               <div className="mt-3.5">
                 <BudgetRange value={budgetRange} onChange={setBudgetRange} />
+              </div>
+
+              <div className="mt-3.5">
+                <Field
+                  id="images"
+                  label="Images"
+                  icon={ImageIcon}
+                  hint="Select one or more images to upload with this post."
+                  required={false}
+                >
+                  <input
+                    ref={fileInputRef}
+                    id="images"
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(event) => {
+                      addSelectedImages(event.target.files);
+                      event.target.value = "";
+                      if (formMessage) setFormMessage("");
+                    }}
+                    className="sr-only"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex h-11 w-full items-center gap-3 rounded-[10px] border border-[#D0D5DD] bg-white py-2 pl-11 pr-4 text-left transition hover:border-[#292D73] focus:outline-none focus:ring-4 focus:ring-[#292D73]/10"
+                  >
+                    <span className="rounded-md bg-[#EEF0FF] px-2.5 py-1 text-[12px] font-extrabold text-[#292D73]">
+                      Choose Files
+                    </span>
+                    <span className="truncate text-[13px] font-medium text-[#667085]">
+                      {selectedImages.length
+                        ? `${selectedImages.length} image${selectedImages.length === 1 ? "" : "s"} selected`
+                        : "No files chosen"}
+                    </span>
+                  </button>
+                </Field>
+                {selectedImages.length > 0 && (
+                  <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    {selectedImages.map(({ file, previewUrl }, index) => (
+                      <div
+                        key={`${file.name}-${file.lastModified}-${index}`}
+                        className="group relative overflow-hidden rounded-lg border border-[#EAECF0] bg-[#F8FAFC]"
+                      >
+                        <Image
+                          src={previewUrl}
+                          alt={`Preview of ${file.name}`}
+                          width={160}
+                          height={112}
+                          unoptimized
+                          className="h-24 w-full object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeSelectedImage(index)}
+                          aria-label={`Remove ${file.name}`}
+                          className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-[#D92D20] text-white shadow-sm transition hover:bg-[#B42318] focus:outline-none focus:ring-2 focus:ring-[#D92D20] focus:ring-offset-2"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                        <div className="flex items-center gap-1.5 px-2 py-1.5">
+                          <span className="min-w-0 flex-1 truncate text-[11px] font-medium text-[#475467]">
+                            {file.name}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="mt-3.5">

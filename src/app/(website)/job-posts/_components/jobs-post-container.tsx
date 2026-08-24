@@ -22,6 +22,7 @@ import {
   ChevronDown,
   ChevronRight,
   Flag,
+  ImageIcon,
   LayoutGrid,
   List,
   LogIn,
@@ -49,6 +50,11 @@ type HelpWantedUser = {
   profilePicture?: string;
 };
 
+type HelpWantedImage = {
+  url: string;
+  publicId: string;
+};
+
 type HelpWantedPost = {
   _id: string;
   // Mongoose populate returns null when the referenced user no longer exists.
@@ -63,6 +69,7 @@ type HelpWantedPost = {
   profilePicture: string;
   phone: string;
   message: string;
+  images?: HelpWantedImage[];
   createdAt: string;
   updatedAt: string;
 };
@@ -968,6 +975,44 @@ const JobPostsContainer = () => {
                   {postToView.message}
                 </p>
               </div>
+
+              {postToView.images && postToView.images.length > 0 && (
+                <div className="overflow-hidden rounded-xl border border-[#E1E7EF] bg-white p-4 sm:p-5">
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[#EEF1FF] text-[#4365D0]">
+                      <ImageIcon className="h-4 w-4" />
+                    </span>
+                    <div>
+                      <p className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#667085]">
+                        Uploaded images
+                      </p>
+                      <p className="text-[11px] text-[#98A2B3]">
+                        {postToView.images.length} image{postToView.images.length === 1 ? "" : "s"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    {postToView.images.map((image, index) => (
+                      <a
+                        key={image.publicId || image.url}
+                        href={image.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="group relative aspect-[4/3] overflow-hidden rounded-lg border border-[#D0D5DD] bg-white p-0.5 shadow-sm transition hover:border-[#4365D0] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#4365D0] focus:ring-offset-2"
+                        aria-label={`Open uploaded image ${index + 1} in a new tab`}
+                      >
+                        <Image
+                          src={image.url}
+                          alt={`Uploaded image ${index + 1} for ${postToView.category} request`}
+                          fill
+                          sizes="(max-width: 640px) 45vw, 180px"
+                          className="rounded-[5px] object-cover transition duration-200 group-hover:scale-105"
+                        />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="flex flex-col-reverse gap-2.5 pt-1 sm:flex-row sm:justify-end">
                 <button

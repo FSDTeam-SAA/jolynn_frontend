@@ -318,11 +318,11 @@ function QuateRequest() {
                         <button
                           type="button"
                           onClick={() => openReplyModal(request)}
-                          title="Reply to quote"
+                          title={isReplied ? "Edit quote reply" : "Reply to quote"}
                           className="inline-flex h-8 px-2.5 gap-1 items-center justify-center rounded-lg bg-[#4F59F6] text-white font-semibold text-xs transition-colors hover:bg-[#3D46E0] shadow-sm"
                         >
                           <Reply className="h-3.5 w-3.5" />
-                          <span>Reply</span>
+                          <span>{isReplied ? "Replied" : "Reply"}</span>
                         </button>
 
                         {/* View Details */}

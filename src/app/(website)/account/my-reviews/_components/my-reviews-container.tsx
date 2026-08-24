@@ -21,6 +21,7 @@ import {
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { AccountPageShell, AccountSectionHeader } from "../../_components/account-ui";
@@ -101,6 +102,7 @@ const MyReviewsContainer = () => {
     | { id?: string; token?: string; accessToken?: string }
     | undefined;
   const token = sessionUser?.accessToken ?? sessionUser?.token ?? "";
+  const router = useRouter();
   const queryClient = useQueryClient();
 
   const [page, setPage] = useState(1);
@@ -305,7 +307,22 @@ const MyReviewsContainer = () => {
             {reviews.map((review) => (
               <article
                 key={review._id}
-                className={`relative rounded-[8px] border border-[#E8ECF2] bg-white p-5 shadow-[0_8px_24px_rgba(30,45,75,0.10)] ${
+                role="link"
+                tabIndex={0}
+                onClick={() =>
+                  router.push(
+                    `/services/businesses/${encodeURIComponent(review.businessId)}?tab=reviews`,
+                  )
+                }
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    router.push(
+                      `/services/businesses/${encodeURIComponent(review.businessId)}?tab=reviews`,
+                    );
+                  }
+                }}
+                className={`relative cursor-pointer rounded-[8px] border border-[#E8ECF2] bg-white p-5 shadow-[0_8px_24px_rgba(30,45,75,0.10)] transition-shadow hover:shadow-[0_12px_28px_rgba(30,45,75,0.15)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2 ${
                   viewMode === "list"
                     ? "sm:grid sm:grid-cols-[minmax(0,220px)_minmax(0,1fr)] sm:gap-6"
                     : ""
@@ -315,7 +332,10 @@ const MyReviewsContainer = () => {
                 <div className="absolute right-4 top-4 flex items-center gap-1.5 z-10">
                   <button
                     type="button"
-                    onClick={() => openEditModal(review)}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      openEditModal(review);
+                    }}
                     className="flex h-7 w-7 items-center justify-center rounded-md border border-[#E4E7EC] bg-slate-50 text-slate-600 transition-colors hover:bg-indigo-50 hover:text-[#292D73] hover:border-indigo-200"
                     title="Edit review"
                   >
@@ -323,7 +343,10 @@ const MyReviewsContainer = () => {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setReviewToDelete(review)}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      setReviewToDelete(review);
+                    }}
                     className="flex h-7 w-7 items-center justify-center rounded-md border border-red-100 bg-red-50 text-red-600 transition-colors hover:bg-red-100"
                     title="Delete review"
                   >
