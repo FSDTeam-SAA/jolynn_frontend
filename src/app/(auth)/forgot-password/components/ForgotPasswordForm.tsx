@@ -21,7 +21,7 @@ import Link from "next/link";
 import Image from "next/image";
 
 const formSchema = z.object({
-  email: z.string().min(1, "Please enter your email or username"),
+  identifier: z.string().min(1, "Please enter your email or username"),
 });
 type FormValues = z.input<typeof formSchema>;
 
@@ -30,29 +30,29 @@ const ForgotPasswordForm = () => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: "",
+      identifier: "",
     },
   });
 
   const { mutate, isPending } = useMutation({
     mutationKey: ["forgot-password"],
-    mutationFn: (email: string) =>
+    mutationFn: (identifier: string) =>
       fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/forgot-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ identifier }),
       }).then((res) => res.json()),
 
-    onSuccess: (data, email) => {
+    onSuccess: (data, identifier) => {
       if (!data?.success) {
         toast.error(data?.message || "Something went wrong");
         return;
       }
 
       toast.success(data?.message || "Email sent successfully!");
-      router.push(`/enter-otp?email=${encodeURIComponent(email)}`);
+      router.push(`/enter-otp?email=${encodeURIComponent(identifier)}`);
     },
 
     onError: (error) => {
@@ -65,7 +65,7 @@ const ForgotPasswordForm = () => {
 
 
   const onSubmit = (values: FormValues) => {
-    mutate(values.email);
+    mutate(values.identifier);
   };
 
   return (
@@ -92,7 +92,7 @@ const ForgotPasswordForm = () => {
             {/* Email / Username Field */}
             <FormField
               control={form.control}
-              name="email"
+              name="identifier"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="flex items-center gap-1 text-base font-semibold leading-[120%] text-[#4365D0] pb-2">

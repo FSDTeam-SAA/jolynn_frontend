@@ -51,7 +51,7 @@ export default function OtpForm() {
 
   const { mutate, isPending } = useMutation({
     mutationKey: ["verify-otp"],
-    mutationFn: (values: { otp: string; email: string }) =>
+    mutationFn: (values: { otp: string; identifier: string }) =>
       fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/verify`, {
         method: "POST",
         headers: {
@@ -85,28 +85,28 @@ export default function OtpForm() {
       toast.error("Please enter all 6 digits of the OTP.");
       return;
     }
-    mutate({ otp: otpValue, email: decodedEmail });
+    mutate({ otp: otpValue, identifier: decodedEmail });
   };
 
   const resendOtp = useMutation({
     mutationKey: ["forgot-password"],
-    mutationFn: (email: string) =>
+    mutationFn: (identifier: string) =>
       fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/forgot-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ identifier }),
       }).then((res) => res.json()),
 
-    onSuccess: (data, email) => {
+    onSuccess: (data, identifier) => {
       if (!data?.success) {
         toast.error(data?.message || "Something went wrong");
         return;
       }
 
       toast.success(data?.message || "Email sent successfully!");
-      router.push(`/enter-otp?email=${encodeURIComponent(email)}`);
+      router.push(`/enter-otp?email=${encodeURIComponent(identifier)}`);
     },
 
     onError: (error) => {
