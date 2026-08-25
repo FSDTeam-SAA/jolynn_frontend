@@ -7,6 +7,12 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   useLocationCities,
   useLocationStates,
 } from "@/hooks/use-location-options";
@@ -21,6 +27,7 @@ import {
   CircleHelp,
   DollarSign,
   ImageIcon,
+  LogIn,
   Mail,
   MapPin,
   MessageSquareText,
@@ -34,6 +41,7 @@ import {
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -426,6 +434,7 @@ const CreateJobPostForm = () => {
     Partial<Record<keyof FormValues, boolean>>
   >({});
   const [formMessage, setFormMessage] = useState("");
+  const [isSignInModalOpen, setIsSignInModalOpen] = useState(false);
   const prefilledProfileId = useRef<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const previewUrlsRef = useRef<string[]>([]);
@@ -583,14 +592,15 @@ const CreateJobPostForm = () => {
       }
       return result;
     },
-    onSuccess: (result) => {
+    onSuccess: () => {
+      const successMessage = "Job posted";
       setValues(initialValues);
       clearSelectedImages();
       setBudgetRange(INITIAL_BUDGET_RANGE);
       setErrors({});
       setTouched({});
-      setFormMessage(result.message);
-      toast.success(result.message);
+      setFormMessage(successMessage);
+      toast.success(successMessage);
       router.push("/job-posts");
     },
     onError: (error) => {
@@ -648,6 +658,11 @@ const CreateJobPostForm = () => {
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setFormMessage("");
+
+    if (!token) {
+      setIsSignInModalOpen(true);
+      return;
+    }
 
     const nextErrors = validateForm(values);
     setErrors(nextErrors);
@@ -1213,6 +1228,34 @@ const CreateJobPostForm = () => {
           </div>
         </div>
       </div>
+      <Dialog open={isSignInModalOpen} onOpenChange={setIsSignInModalOpen}>
+        <DialogContent className="w-[calc(100%-2rem)] max-w-[430px] rounded-[16px] border-0 bg-white px-6 py-7 text-center shadow-[0_24px_70px_rgba(16,24,40,0.30)] sm:px-7">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#EEF0FF] text-[#292D73]">
+            <LogIn className="h-6 w-6" aria-hidden="true" />
+          </div>
+          <DialogTitle className="mt-4 text-[22px] font-extrabold text-[#292D73]">
+            Sign in to add a job post
+          </DialogTitle>
+          <DialogDescription className="mx-auto mt-2 max-w-[340px] text-[14px] leading-6 text-[#667085]">
+            You need to sign in before you can create a help wanted post.
+          </DialogDescription>
+          <div className="mt-6 grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => setIsSignInModalOpen(false)}
+              className="h-10 rounded-[6px] border border-[#B8C0CC] text-[13px] font-bold text-[#344054] transition hover:bg-[#F8FAFC] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2"
+            >
+              Cancel
+            </button>
+            <Link
+              href={`/login?callbackUrl=${encodeURIComponent("/job-posts/create")}`}
+              className="inline-flex h-10 items-center justify-center rounded-[6px] bg-[#292D73] text-[13px] font-bold text-white transition hover:bg-[#20245F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2"
+            >
+              Sign In
+            </Link>
+          </div>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 };

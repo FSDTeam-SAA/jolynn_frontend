@@ -34,9 +34,9 @@ const footerColumns = [
     title: "For Customers",
     links: [
       { label: "Find Services", href: "/services" },
-      { label: "Leave a Review", href: "/reviews" },
+      { label: "Reviews", href: "/reviews" },
       { label: "FAQ", href: "/#faq" },
-      { label: "Add Post a Job", href: "/job-posts" },
+      { label: "Post a Job", href: "/job-posts" },
     ],
   },
   {
@@ -96,6 +96,28 @@ const Footer = () => {
             <p className="mt-4 max-w-sm text-sm font-light leading-6 text-white/80">
               The Largest Business Directory and Help Wanted Platform.
             </p>
+            <a
+              href="https://www.tiktok.com/@sidequote0?_r=1&_t=ZT-99AVCBljMjd"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Follow SideQuote on TikTok"
+              className="group mt-5 inline-flex items-center gap-3 rounded-xl border border-white/20 bg-white/10 px-3 py-2.5 text-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-[#ff0050]/80 hover:bg-white/15 hover:shadow-lg hover:shadow-[#12153f]/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#292E78]"
+            >
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#25F4EE] via-white to-[#FE2C55] text-[#171945] transition-transform duration-200 group-hover:scale-110">
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-5 w-5"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d="M16.6 5.82a4.64 4.64 0 0 1-1.15-2.72h-3.1v12.2a2.32 2.32 0 1 1-2.32-2.32c.2 0 .4.03.59.08V9.91a5.47 5.47 0 1 0 4.9 5.44V9.16a7.68 7.68 0 0 0 4.5 1.45V7.54a4.63 4.63 0 0 1-3.42-1.72Z" />
+                </svg>
+              </span>
+              <span className="flex flex-col text-left leading-tight">
+                <span className="text-xs font-semibold">Follow us on TikTok</span>
+                <span className="mt-1 text-[11px] text-white/70">@sidequote0</span>
+              </span>
+            </a>
           </div>
 
           <div className="grid grid-cols-1 gap-x-8 gap-y-8 min-[520px]:col-span-2 min-[520px]:grid-cols-2 md:col-span-3 md:grid-cols-3 lg:contents">

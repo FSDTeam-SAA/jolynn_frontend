@@ -10,9 +10,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, Eye, ImageIcon, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, Eye, ImageIcon, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { ChangeEvent, FormEvent, useMemo, useRef, useState } from "react";
@@ -91,6 +96,7 @@ function Services() {
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [serviceToDelete, setServiceToDelete] = useState<Service | null>(null);
   const [draft, setDraft] = useState<ServiceDraft>(emptyDraft);
+  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
   const [logoFile, setLogoFile] = useState<File>();
   const [logoPreview, setLogoPreview] = useState("");
   const categoriesQuery = useServiceCategories();
@@ -224,6 +230,7 @@ function Services() {
 
   const closeFormModal = () => {
     setIsFormOpen(false);
+    setIsCategoryDropdownOpen(false);
     setEditingService(null);
     setDraft(emptyDraft);
     setLogoFile(undefined);
@@ -339,37 +346,93 @@ function Services() {
             </DialogHeader>
 
             <div className="space-y-4 px-[18px]">
-              <label className="block space-y-2 text-xs font-medium text-[#344054]">
-                <span>Category</span>
-                <select
-                  autoFocus
-                  required
-                  value={draft.category}
-                  onChange={(event) =>
-                    setDraft((current) => ({
-                      ...current,
-                      category: event.target.value,
-                      requestedCategory:
-                        event.target.value === OTHER_CATEGORY
-                          ? current.requestedCategory
-                          : "",
-                    }))
-                  }
-                  className="h-[38px] w-full rounded-[2px] border border-[#B9BEC5] bg-white px-3 text-sm font-normal text-[#344054] outline-none focus:border-[#30347F] focus:ring-1 focus:ring-[#30347F]"
+              <div className="space-y-2 text-xs font-medium text-[#344054]">
+                <span id="service-category-label">Category</span>
+                <Popover
+                  open={isCategoryDropdownOpen}
+                  onOpenChange={setIsCategoryDropdownOpen}
                 >
-                  <option value="">
-                    {categoriesQuery.isPending
-                      ? "Loading categories..."
-                      : "Select a category"}
-                  </option>
-                  {categories.map((category) => (
-                    <option key={category._id} value={category.name.trim()}>
-                      {category.name.trim()}
-                    </option>
-                  ))}
-                  <option value={OTHER_CATEGORY}>Others</option>
-                </select>
-              </label>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      autoFocus
+                      aria-labelledby="service-category-label"
+                      aria-required="true"
+                      disabled={categoriesQuery.isPending}
+                      className="flex h-[38px] w-full items-center justify-between rounded-[2px] border border-[#B9BEC5] bg-white px-3 text-left text-sm font-normal text-[#344054] outline-none transition focus:border-[#30347F] focus:ring-1 focus:ring-[#30347F] disabled:cursor-wait disabled:bg-[#F8FAFC]"
+                    >
+                      <span className="truncate">
+                        {categoriesQuery.isPending
+                          ? "Loading categories..."
+                          : draft.category === OTHER_CATEGORY
+                            ? "Others"
+                            : draft.category || "Select a category"}
+                      </span>
+                      <ChevronDown className="h-4 w-4 shrink-0 text-[#667085]" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="start"
+                    className="max-h-56 w-[var(--radix-popover-trigger-width)] overflow-y-auto p-1"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDraft((current) => ({
+                          ...current,
+                          category: "",
+                          requestedCategory: "",
+                        }));
+                        setIsCategoryDropdownOpen(false);
+                      }}
+                      className="flex w-full items-center rounded px-3 py-2 text-left text-sm text-[#667085] transition hover:bg-[#F2F4F7]"
+                    >
+                      Select a category
+                    </button>
+                    {categories.map((category) => {
+                      const categoryName = category.name.trim();
+                      return (
+                        <button
+                          key={category._id}
+                          type="button"
+                          onClick={() => {
+                            setDraft((current) => ({
+                              ...current,
+                              category: categoryName,
+                              requestedCategory: "",
+                            }));
+                            setIsCategoryDropdownOpen(false);
+                          }}
+                          className={`flex w-full items-center rounded px-3 py-2 text-left text-sm transition hover:bg-[#F2F4F7] ${
+                            draft.category === categoryName
+                              ? "bg-[#EEF1FF] font-semibold text-[#30347F]"
+                              : "text-[#344054]"
+                          }`}
+                        >
+                          {categoryName}
+                        </button>
+                      );
+                    })}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDraft((current) => ({
+                          ...current,
+                          category: OTHER_CATEGORY,
+                        }));
+                        setIsCategoryDropdownOpen(false);
+                      }}
+                      className={`flex w-full items-center rounded px-3 py-2 text-left text-sm transition hover:bg-[#F2F4F7] ${
+                        draft.category === OTHER_CATEGORY
+                          ? "bg-[#EEF1FF] font-semibold text-[#30347F]"
+                          : "text-[#344054]"
+                      }`}
+                    >
+                      Others
+                    </button>
+                  </PopoverContent>
+                </Popover>
+              </div>
 
               {categoriesQuery.isError && (
                 <div className="flex items-center justify-between gap-3 rounded-md bg-amber-50 px-3 py-2 text-[11px] text-amber-700">
