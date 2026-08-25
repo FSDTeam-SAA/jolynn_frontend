@@ -3,7 +3,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight, Star } from "lucide-react";
-import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -35,10 +34,7 @@ type ReviewsResponse = {
 
 const PAGE_LIMIT = 10;
 
-const fetchMyReviews = async (
-  token: string,
-  page: number,
-): Promise<ReviewsResponse> => {
+const fetchReviews = async (page: number): Promise<ReviewsResponse> => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   if (!apiUrl) throw new Error("The reviews service is not configured.");
 
@@ -48,15 +44,12 @@ const fetchMyReviews = async (
     // rating: "5",
   });
   const response = await fetch(`${apiUrl}/reviews?${params}`, {
-    headers: {
-      accept: "*/*",
-      Authorization: `Bearer ${token}`,
-    },
+    headers: { accept: "*/*" },
   });
   const result = (await response.json()) as ReviewsResponse;
 
   if (!response.ok || !result.success || !Array.isArray(result.data)) {
-    throw new Error(result.message || "Unable to load your reviews.");
+    throw new Error(result.message || "Unable to load reviews.");
   }
 
   return result;
@@ -90,17 +83,11 @@ const ReviewsSkeleton = () => (
 );
 
 const ReviewContainer = () => {
-  const { data: session, status } = useSession();
   const [page, setPage] = useState(1);
-  const sessionUser = session?.user as
-    | { token?: string; accessToken?: string }
-    | undefined;
-  const token = sessionUser?.accessToken ?? sessionUser?.token ?? "";
 
   const reviewsQuery = useQuery<ReviewsResponse>({
-    queryKey: ["my-reviews", { page, limit: PAGE_LIMIT, rating: 5 }],
-    queryFn: () => fetchMyReviews(token, page),
-    enabled: Boolean(token),
+    queryKey: ["public-reviews", { page, limit: PAGE_LIMIT }],
+    queryFn: () => fetchReviews(page),
     placeholderData: (previousData) => previousData,
     staleTime: 60 * 1000,
     retry: 1,
@@ -109,7 +96,7 @@ const ReviewContainer = () => {
   const reviews = reviewsQuery.data?.data ?? [];
   const total = reviewsQuery.data?.meta.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_LIMIT));
-  const isLoading = status === "loading" || (Boolean(token) && reviewsQuery.isPending);
+  const isLoading = reviewsQuery.isPending;
 
   return (
     <section className="bg-white px-4 py-12 sm:px-6 md:py-16 lg:px-8 lg:py-20 xl:py-24">
@@ -125,24 +112,12 @@ const ReviewContainer = () => {
 
         {isLoading ? (
           <ReviewsSkeleton />
-        ) : status === "unauthenticated" ? (
-          <div className="mx-auto mt-10 max-w-[620px] rounded-[8px] border border-[#D9F0F1] bg-[#F0FEFE] px-6 py-12 text-center">
-            <p className="text-sm font-semibold text-[#475467]">
-              Please sign in to see your reviews.
-            </p>
-            <Link
-              href="/login"
-              className="mt-5 inline-flex h-10 items-center justify-center rounded-[5px] bg-[#292D73] px-6 text-sm font-bold text-white"
-            >
-              Sign In
-            </Link>
-          </div>
         ) : reviewsQuery.isError ? (
           <div className="mx-auto mt-10 max-w-[620px] rounded-[8px] border border-red-200 bg-red-50 px-6 py-12 text-center">
             <p className="text-sm font-semibold text-red-700">
               {reviewsQuery.error instanceof Error
                 ? reviewsQuery.error.message
-                : "Unable to load your reviews."}
+                : "Unable to load reviews."}
             </p>
             <button
               type="button"
@@ -154,7 +129,7 @@ const ReviewContainer = () => {
           </div>
         ) : reviews.length === 0 ? (
           <div className="mx-auto mt-10 max-w-[620px] rounded-[8px] border border-[#D9F0F1] bg-[#F0FEFE] px-6 py-12 text-center text-sm font-semibold text-[#667085]">
-            You have not submitted any 5-star reviews yet.
+            No reviews have been published yet.
           </div>
         ) : (
           <>

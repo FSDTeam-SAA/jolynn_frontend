@@ -89,8 +89,8 @@ const ReportBusinessModal = ({
 
       return result;
     },
-    onSuccess: (data) => {
-      toast.success(data.message || "Report submitted successfully.");
+    onSuccess: () => {
+      toast.success("Report sent");
       onOpenChange(false);
     },
     onError: (error) => toast.error(error.message),

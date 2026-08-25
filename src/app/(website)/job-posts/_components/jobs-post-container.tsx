@@ -396,10 +396,10 @@ const JobPostsContainer = () => {
       }
       return result;
     },
-    onSuccess: (result) => {
+    onSuccess: () => {
       setSelectedPostId(null);
       setReportMessage("");
-      toast.success(result.message);
+      toast.success("Report sent");
     },
     onError: (error) => toast.error(error.message),
   });
@@ -435,10 +435,10 @@ const JobPostsContainer = () => {
       }
       return result;
     },
-    onSuccess: async (result) => {
+    onSuccess: async () => {
       setPostToDelete(null);
       await queryClient.invalidateQueries({ queryKey: ["help-wanted"] });
-      toast.success(result.message || "Help post deleted successfully.");
+      toast.success("Job post deleted");
     },
     onError: (error) => toast.error(error.message),
   });
@@ -508,6 +508,7 @@ const JobPostsContainer = () => {
     const reset = { category: "", state: "", city: "", budgetRange: "" };
     setDraftFilters(reset);
     setAppliedFilters(reset);
+    setSearchTerm("");
   };
 
   return (
@@ -578,6 +579,19 @@ const JobPostsContainer = () => {
           <aside className="h-fit rounded-[8px] bg-white p-5 shadow-[0_8px_24px_rgba(30,45,75,0.13)] ring-1 ring-[#E8ECF2] lg:sticky lg:top-24">
             <h2 className="text-[16px] font-semibold text-[#111827]">Filter Results</h2>
             <form onSubmit={applyFilters} className="mt-5 space-y-3">
+              <label className="relative block">
+                <span className="sr-only">Search by zipcode</span>
+                <MapPin className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
+                <input
+                  type="search"
+                  name="searchTerm"
+                  value={searchTerm}
+                  onChange={(event) => setSearchTerm(event.target.value)}
+                  placeholder="Search by Zipcode"
+                  autoComplete="postal-code"
+                  className="h-10 w-full rounded-[6px] border border-[#A7A7A7] bg-white py-2 pl-9 pr-3 text-[12px] font-medium text-[#344054] outline-none placeholder:font-normal placeholder:text-[#98A2B3] focus:border-[#292D73] focus:ring-2 focus:ring-[#292D73]/15"
+                />
+              </label>
               <CompactDropdown value={draftFilters.category} options={(categoriesQuery.data?.data ?? []).filter((category) => category.isActive).map((category) => category.name)} placeholder={categoriesQuery.isPending ? "Loading categories..." : "Select Category"} disabled={categoriesQuery.isPending || categoriesQuery.isError} onChange={(category) => updateFilter({ category })} />
               <CompactDropdown value={draftFilters.state} options={states.map((state) => state.name)} placeholder={statesQuery.isPending ? "Loading states..." : "State"} disabled={statesQuery.isPending || statesQuery.isError} onChange={(state) => updateFilter({ state, city: "" })} />
               <CompactDropdown value={draftFilters.city} options={cities} placeholder={!selectedState ? "Select State First" : citiesQuery.isPending ? "Loading cities..." : "City"} disabled={!selectedState || citiesQuery.isPending || citiesQuery.isError} onChange={(city) => updateFilter({ city })} />

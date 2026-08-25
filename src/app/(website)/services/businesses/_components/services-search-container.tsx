@@ -8,9 +8,11 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import {
+  type BusinessOwner,
   type BusinessOwnerFilters,
   useBusinessOwners,
 } from "@/hooks/use-business-owners";
+import { useCreateConversation } from "@/hooks/use-messages";
 import { useServiceCategories } from "@/hooks/use-service-categories";
 import {
   useLocationCities,
@@ -135,7 +137,7 @@ const FilterLocationDropdown = ({
           type="button"
           disabled={disabled || loading}
           aria-expanded={open}
-          className="flex h-11 w-full items-center justify-between gap-2 rounded-[6px] border border-[#A7A7A7] bg-white px-3 text-left text-[12px] font-medium text-[#8A8F99] outline-none transition focus:ring-2 focus:ring-[#292D73]/20 disabled:cursor-not-allowed disabled:bg-[#F8FAFC]"
+          className="flex h-9 md:h-11 w-full items-center justify-between gap-2 rounded-[6px] border border-[#A7A7A7] bg-white px-3 text-left text-[12px] font-medium text-[#8A8F99] outline-none transition focus:ring-2 focus:ring-[#292D73]/20 disabled:cursor-not-allowed disabled:bg-[#F8FAFC]"
         >
           <span
             className="min-w-0 flex-1 truncate"
@@ -257,6 +259,7 @@ const ServicesSearchContainer = ({
       }
     | undefined;
   const token = sessionUser?.accessToken ?? sessionUser?.token;
+  const createConversation = useCreateConversation(token);
   const { data: profileResponse } = useProfileQuery(token);
   const profile = profileResponse?.data;
   const categoriesQuery = useServiceCategories();
@@ -364,10 +367,37 @@ const ServicesSearchContainer = ({
     router.push("/add-your-business");
   };
 
+  const openMessageFlow = (business: BusinessOwner) => {
+    if (!token) {
+      const callbackUrl = `${window.location.pathname}${window.location.search}`;
+      router.push(`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+      return;
+    }
+
+    createConversation.mutate(
+      {
+        businessOwnerId: business.businessOwnerId,
+        subject: `Inquiry for ${business.businessName}`,
+        message: `Hello ${business.businessName}, I would like to inquire about your services.`,
+      },
+      {
+        onSuccess: (resData) => {
+          const conversationId =
+            resData?.conversation?._id || resData?._id;
+          router.push(
+            `/account/message${
+              conversationId ? `?conversationId=${conversationId}` : ""
+            }`,
+          );
+        },
+      },
+    );
+  };
+
   return (
     <div className="mt-10 md:mt-14 lg:mt-16">
       <main className="min-h-screen bg-white">
-        <section className="bg-[#DFF0EE] px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
+        <section className="hidden bg-[#DFF0EE] px-4 py-8 sm:px-6 lg:block lg:px-8 lg:py-10">
           <div className="container">
             <BusinessSearchForm
               initialSearchTerm={initialSearchTerm}
@@ -377,7 +407,7 @@ const ServicesSearchContainer = ({
           </div>
         </section>
 
-        <section className="px-4 py-10 sm:px-6 md:py-12 lg:px-8 lg:py-14">
+        <section className="px-4 py-4 md:py-10 sm:px-6 md:py-12 lg:px-8 lg:py-14">
           <div className="container">
             <div className="grid items-start gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
               <aside className="h-fit rounded-[8px] bg-white p-5 shadow-[0_8px_24px_rgba(30,45,75,0.13)] ring-1 ring-[#E8ECF2] lg:sticky lg:top-24">
@@ -385,7 +415,7 @@ const ServicesSearchContainer = ({
                   Filter Results
                 </h2>
 
-                <form onSubmit={applyFilters} className="mt-5 space-y-3">
+                <form onSubmit={applyFilters} className="mt-5 space-y-2 md:space-y-3">
                   <label className="relative block">
                     <span className="sr-only">Search by service</span>
                     <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8A8F99]" />
@@ -397,7 +427,7 @@ const ServicesSearchContainer = ({
                       }
                       placeholder="Search by Keyword..."
                       autoComplete="off"
-                      className="h-11 w-full rounded-[6px] border border-[#A7A7A7] bg-white pl-10 pr-3 text-[12px] font-medium text-[#344054] outline-none placeholder:text-[#8A8F99] focus:border-[#292D73] focus:ring-2 focus:ring-[#292D73]/15"
+                      className="h-9 md:h-11 w-full rounded-[6px] border border-[#A7A7A7] bg-white pl-10 pr-3 text-[12px] font-medium text-[#344054] outline-none placeholder:text-[#8A8F99] focus:border-[#292D73] focus:ring-2 focus:ring-[#292D73]/15"
                     />
                   </label>
 
@@ -434,7 +464,7 @@ const ServicesSearchContainer = ({
                       onChange={(event) =>
                         updateFilter("minimumRating", event.target.value)
                       }
-                      className="h-11 w-full appearance-none rounded-[6px] border border-[#A7A7A7] bg-white px-3 pr-9 text-[12px] font-medium text-[#8A8F99] focus:outline-none focus:ring-2 focus:ring-[#292D73]/20"
+                      className="h-9 md:h-11 w-full appearance-none rounded-[6px] border border-[#A7A7A7] bg-white px-3 pr-9 text-[12px] font-medium text-[#8A8F99] focus:outline-none focus:ring-2 focus:ring-[#292D73]/20"
                     >
                       <option value="">Minimum Rating</option>
                       {[5, 4, 3, 2, 1].map((rating) => (
@@ -489,14 +519,14 @@ const ServicesSearchContainer = ({
                   <button
                     type="submit"
                     disabled={businessQuery.isFetching}
-                    className="h-11 w-full rounded-[6px] bg-[#292D73] text-[12px] font-extrabold text-white transition hover:bg-[#20255F] disabled:cursor-wait disabled:opacity-60"
+                    className="h-9 md:h-11 w-full rounded-[6px] bg-[#292D73] text-[12px] font-extrabold text-white transition hover:bg-[#20255F] disabled:cursor-wait disabled:opacity-60"
                   >
                     {businessQuery.isFetching ? "Applying..." : "Apply Filters"}
                   </button>
                   <button
                     type="button"
                     onClick={resetFilters}
-                    className="h-11 w-full rounded-[6px] bg-[#EEEEEE] text-[11px] font-extrabold text-[#292D73] transition hover:bg-[#E5E7EB]"
+                    className="h-9 md:h-11 w-full rounded-[6px] bg-[#EEEEEE] text-[11px] font-extrabold text-[#292D73] transition hover:bg-[#E5E7EB]"
                   >
                     Reset
                   </button>
@@ -699,22 +729,19 @@ const ServicesSearchContainer = ({
                                 >
                                   Report
                                 </button>
-                                <Link
-                                  href={
-                                    business?.businessEmail
-                                      ? `mailto:${business?.businessEmail}`
-                                      : "#"
+                                <button
+                                  type="button"
+                                  onClick={() => openMessageFlow(business)}
+                                  disabled={
+                                    createConversation.isPending &&
+                                    createConversation.variables
+                                      ?.businessOwnerId === business.businessOwnerId
                                   }
-                                  className={`inline-flex h-9 min-w-9 items-center justify-center rounded-md border border-[#292E78] bg-white text-[#292E78] transition hover:bg-[#292E78] hover:text-white ${!business.businessEmail ? "pointer-events-none opacity-50" : ""}`}
-                                  aria-label={
-                                    business.businessEmail
-                                      ? `Email ${business.businessName}`
-                                      : `Email unavailable for ${business.businessName}`
-                                  }
-                                  aria-disabled={!business.businessEmail}
+                                  className="inline-flex h-9 min-w-9 items-center justify-center rounded-md border border-[#292E78] bg-white text-[#292E78] transition hover:bg-[#292E78] hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                                  aria-label={`Message ${business.businessName}`}
                                 >
                                   <MessageCircle className="h-4 w-4" />
-                                </Link>
+                                </button>
                               </div>
                             </div>
                           </article>
@@ -826,22 +853,19 @@ const ServicesSearchContainer = ({
                             >
                               Report
                             </button>
-                            <Link
-                              href={
-                                business.businessEmail
-                                  ? `mailto:${business.businessEmail}`
-                                  : "#"
+                            <button
+                              type="button"
+                              onClick={() => openMessageFlow(business)}
+                              disabled={
+                                createConversation.isPending &&
+                                createConversation.variables?.businessOwnerId ===
+                                  business.businessOwnerId
                               }
-                              className={`inline-flex h-8 items-center justify-center rounded-[4px] border border-[#292E78] bg-white text-[#292E78] transition hover:bg-[#292E78] hover:text-white ${!business.businessEmail ? "pointer-events-none opacity-50" : ""}`}
-                              aria-label={
-                                business.businessEmail
-                                  ? `Email ${business.businessName}`
-                                  : `Email unavailable for ${business.businessName}`
-                              }
-                              aria-disabled={!business.businessEmail}
+                              className="inline-flex h-8 items-center justify-center rounded-[4px] border border-[#292E78] bg-white text-[#292E78] transition hover:bg-[#292E78] hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                              aria-label={`Message ${business.businessName}`}
                             >
                               <MessageCircle className="h-4 w-4" />
-                            </Link>
+                            </button>
                           </div>
                         </article>
                       );

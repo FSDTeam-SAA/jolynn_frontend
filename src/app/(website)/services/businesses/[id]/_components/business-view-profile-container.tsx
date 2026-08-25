@@ -250,7 +250,7 @@ const ContactCard = ({
         ) : (
           <Mail className="h-3.5 w-3.5" />
         )}
-        {isCreatingMessage ? "Starting Chat..." : "Email / Message"}
+        {isCreatingMessage ? "Starting Chat..." : "Message"}
       </button>
 
       <button
@@ -484,20 +484,21 @@ const BusinessViewProfileContainer = ({ businessId }: { businessId: string }) =>
           <div className="container">
             <section className="flex min-h-[calc(100vh-180px)] flex-col overflow-hidden rounded-[12px] border border-[#E4E7EC] bg-white shadow-[0_4px_24px_rgba(41,45,115,0.08)]">
               {/* Top Header Bar */}
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#EAECF0] bg-[#FAFAFC] px-5 py-3.5 sm:px-6">
-                <div className="flex min-w-0 items-center gap-3">
+              <div className="flex flex-col gap-3 border-b border-[#EAECF0] bg-[#FAFAFC] px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-3.5">
+                <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
                   <button
                     type="button"
                     onClick={() => setIsPreviewOpen(false)}
-                    className="flex items-center gap-1.5 rounded-lg border border-[#D0D5DD] bg-white px-3 py-1.5 text-xs font-semibold text-[#344054] shadow-xs hover:bg-[#F9FAFB] transition-colors cursor-pointer"
+                    className="flex h-10 w-full items-center justify-center gap-1.5 rounded-lg border border-[#D0D5DD] bg-white px-3 text-xs font-semibold text-[#344054] shadow-xs transition-colors hover:bg-[#F9FAFB] sm:h-auto sm:w-auto sm:py-1.5 cursor-pointer"
                   >
                     <ArrowLeft className="h-4 w-4" />
-                    <span>Back to Business Profile</span>
+                    <span className="sm:hidden">Back to Profile</span>
+                    <span className="hidden sm:inline">Back to Business Profile</span>
                   </button>
 
                   <div className="hidden h-5 w-[1px] bg-[#E4E7EC] sm:block" />
 
-                  <div className="flex min-w-0 items-center gap-2">
+                  <div className="flex min-w-0 items-center gap-2 rounded-lg bg-white px-3 py-2 sm:bg-transparent sm:px-0 sm:py-0">
                     <Globe2 className="h-4 w-4 shrink-0 text-[#292D73]" />
                     <span className="truncate text-sm font-semibold text-[#101828]">
                       {business.businessWebsiteUrl}
@@ -505,15 +506,15 @@ const BusinessViewProfileContainer = ({ businessId }: { businessId: string }) =>
                   </div>
                 </div>
 
-                <div className="flex shrink-0 items-center gap-2">
+                <div className="grid grid-cols-[minmax(0,1fr)_32px_32px] items-center gap-2 sm:flex sm:shrink-0">
                   <a
                     href={originalUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center gap-1.5 rounded-lg bg-[#EEF1FF] px-3 py-1.5 text-xs font-semibold text-[#292D73] hover:bg-[#E0E5FF] transition-colors"
+                    className="flex h-10 min-w-0 items-center justify-center gap-1.5 rounded-lg bg-[#EEF1FF] px-3 text-xs font-semibold text-[#292D73] transition-colors hover:bg-[#E0E5FF] sm:h-auto sm:py-1.5"
                   >
-                    <ExternalLink className="h-3.5 w-3.5" />
-                    <span>Open in New Tab</span>
+                    <ExternalLink className="h-3.5 w-3.5 shrink-0" />
+                    <span className="truncate">Open in New Tab</span>
                   </a>
                   <button
                     type="button"

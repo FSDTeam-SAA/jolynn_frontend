@@ -45,12 +45,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import AccountCreatedSuccessfulModal from "@/components/shared/account-created-successful-modal";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
@@ -98,7 +92,7 @@ const textFields: TextFieldConfig[] = [
   },
   {
     name: "businessWebsiteUrl",
-    label: "Business Website URL*",
+    label: "Business Website URL (Optional)",
     placeholder: "https://mybusiness.com",
     type: "url",
   },
@@ -123,7 +117,14 @@ const createFormSchema = (isExistingUser: boolean) =>
     businessEmail: z
       .string()
       .email("Please enter a valid business email address."),
-    businessWebsiteUrl: z.string().url("Please enter a valid website URL."),
+    businessWebsiteUrl: z
+      .string()
+      .trim()
+      .refine(
+        (value) =>
+          value === "" || z.string().url().safeParse(value).success,
+        "Please enter a valid website URL.",
+      ),
     address: z.string(),
     serviceArea: z.string(),
     bio: z.string(),
@@ -188,34 +189,32 @@ const createFormSchema = (isExistingUser: boolean) =>
 
 type FormValues = z.infer<ReturnType<typeof createFormSchema>>;
 
-const PasswordInfoTooltip = () => (
-  <TooltipProvider delayDuration={150}>
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <button
-          type="button"
-          aria-label="Show password requirements"
-          className="inline-flex rounded-full text-[#292D73] outline-none transition-colors hover:text-[#4365D0] focus-visible:ring-2 focus-visible:ring-[#4365D0] focus-visible:ring-offset-2"
-        >
-          <Info className="h-4 w-4" aria-hidden="true" />
-        </button>
-      </TooltipTrigger>
-      <TooltipContent
-        side="top"
-        align="start"
-        className="max-w-[280px] px-4 py-3 text-left text-sm"
+const PasswordInfoPopover = () => (
+  <Popover>
+    <PopoverTrigger asChild>
+      <button
+        type="button"
+        aria-label="Show password requirements"
+        className="inline-flex rounded-full text-[#292D73] outline-none transition-colors hover:text-[#4365D0] focus-visible:ring-2 focus-visible:ring-[#4365D0] focus-visible:ring-offset-2"
       >
-        <p className="mb-1.5 font-semibold">Password must include:</p>
-        <ul className="list-disc space-y-1 pl-4">
-          <li>At least 8 characters</li>
-          <li>One uppercase letter (A–Z)</li>
-          <li>One lowercase letter (a–z)</li>
-          <li>One number (0–9)</li>
-          <li>One special character (e.g. !, @, #, $)</li>
-        </ul>
-      </TooltipContent>
-    </Tooltip>
-  </TooltipProvider>
+        <Info className="h-4 w-4" aria-hidden="true" />
+      </button>
+    </PopoverTrigger>
+    <PopoverContent
+      side="top"
+      align="start"
+      className="max-w-[280px] border-[#3E469B] bg-[#292D73] px-4 py-3 text-left text-sm text-white shadow-lg shadow-[#292D73]/25"
+    >
+      <p className="mb-1.5 font-semibold">Password must include:</p>
+      <ul className="list-disc space-y-1 pl-4">
+        <li>At least 8 characters</li>
+        <li>One uppercase letter (A–Z)</li>
+        <li>One lowercase letter (a–z)</li>
+        <li>One number (0–9)</li>
+        <li>One special character (e.g. !, @, #, $)</li>
+      </ul>
+    </PopoverContent>
+  </Popover>
 );
 
 type SearchableDropdownProps = {
@@ -434,11 +433,12 @@ const AddYourBusinessContainer = () => {
         values.category === OTHER_CATEGORY
           ? values.requestedCategory?.trim()
           : undefined;
+      const businessWebsiteUrl = values.businessWebsiteUrl.trim() || undefined;
       const payload = isExistingUser
         ? {
             businessName: values.businessName,
             businessEmail: values.businessEmail,
-            businessWebsiteUrl: values.businessWebsiteUrl,
+            businessWebsiteUrl,
             address: values.address,
             serviceArea: values.serviceArea,
             bio: values.bio,
@@ -449,6 +449,7 @@ const AddYourBusinessContainer = () => {
           }
         : {
             ...values,
+            businessWebsiteUrl,
             category,
             requestedCategory,
           };
@@ -878,7 +879,7 @@ const AddYourBusinessContainer = () => {
                     <FormItem>
                       <FormLabel className={labelClassName}>
                         Password
-                        <PasswordInfoTooltip />
+                        <PasswordInfoPopover />
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
@@ -914,7 +915,7 @@ const AddYourBusinessContainer = () => {
                     <FormItem>
                       <FormLabel className={labelClassName}>
                         Confirm Password
-                        <PasswordInfoTooltip />
+                        <PasswordInfoPopover />
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
@@ -970,7 +971,7 @@ const AddYourBusinessContainer = () => {
                       >
                         I agree to the{" "}
                         <Link
-                          href="/terms-and-conditions"
+                          href="/terms-and-condition"
                           className="font-semibold text-primary"
                         >
                           Terms and Conditions
