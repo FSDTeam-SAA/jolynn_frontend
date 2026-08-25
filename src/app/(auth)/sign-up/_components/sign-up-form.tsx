@@ -30,12 +30,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { useMutation } from "@tanstack/react-query";
 import AccountCreatedSuccessfulModal from "@/components/shared/account-created-successful-modal";
 
@@ -102,33 +96,31 @@ const formSchema = z
 type FormValues = z.infer<typeof formSchema>;
 
 const PasswordInfoTooltip = () => (
-  <TooltipProvider delayDuration={150}>
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <button
-          type="button"
-          aria-label="Show password requirements"
-          className="inline-flex rounded-full text-[#4365D0] outline-none transition-colors hover:text-[#2949b2] focus-visible:ring-2 focus-visible:ring-[#4365D0] focus-visible:ring-offset-2"
-        >
-          <Info size={16} aria-hidden="true" />
-        </button>
-      </TooltipTrigger>
-      <TooltipContent
-        side="top"
-        align="start"
-        className="max-w-[280px] px-4 py-3 text-left text-sm"
+  <Popover>
+    <PopoverTrigger asChild>
+      <button
+        type="button"
+        aria-label="Show password requirements"
+        className="inline-flex rounded-full text-[#4365D0] outline-none transition-colors hover:text-[#2949b2] focus-visible:ring-2 focus-visible:ring-[#4365D0] focus-visible:ring-offset-2"
       >
-        <p className="mb-1.5 font-semibold">Password must include :</p>
-        <ul className="list-disc space-y-1 pl-4">
-          <li>At least 8 characters</li>
-          <li>One uppercase letter (A–Z)</li>
-          <li>One lowercase letter (a–z)</li>
-          <li>One number (0–9)</li>
-          <li>One special character (e.g. !, @, #, $)</li>
-        </ul>
-      </TooltipContent>
-    </Tooltip>
-  </TooltipProvider>
+        <Info size={16} aria-hidden="true" />
+      </button>
+    </PopoverTrigger>
+    <PopoverContent
+      side="top"
+      align="start"
+      className="max-w-[280px] border-primary bg-primary px-4 py-3 text-left text-sm text-primary-foreground"
+    >
+      <p className="mb-1.5 font-semibold">Password must include:</p>
+      <ul className="list-disc space-y-1 pl-4">
+        <li>At least 8 characters</li>
+        <li>One uppercase letter (A-Z)</li>
+        <li>One lowercase letter (a-z)</li>
+        <li>One number (0-9)</li>
+        <li>One special character (e.g. !, @, #, $)</li>
+      </ul>
+    </PopoverContent>
+  </Popover>
 );
 
 type SearchableDropdownProps = {
