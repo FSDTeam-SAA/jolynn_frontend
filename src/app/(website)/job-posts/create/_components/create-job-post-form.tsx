@@ -69,8 +69,8 @@ type HelpWantedPayload = {
   username: string;
   email: string;
   zipcode: string;
-  state: string;
-  city: string;
+  state: string | null;
+  city: string | null;
   category: string;
   budgetRange: string;
   requestedCategory?: string;
@@ -97,6 +97,7 @@ type HelpWantedResponse = {
 };
 
 const OTHER_CATEGORY = "__other__";
+const VIRTUAL_STATE = "Virtual";
 const excludedStateNames = new Set([
   "armed forces europe",
   "armed forces pacific",
@@ -322,6 +323,7 @@ const validateField = (
       if (!value) return "Please select your state.";
       return undefined;
     case "city":
+      if (values.state === VIRTUAL_STATE) return undefined;
       if (!value) return "Please select your city.";
       return undefined;
     case "category":
@@ -458,7 +460,9 @@ const CreateJobPostForm = () => {
   const states = (statesQuery.data?.data ?? []).filter(
     (state) => !excludedStateNames.has(state.name.trim().toLowerCase()),
   );
+  const stateOptions = [VIRTUAL_STATE, ...states.map((state) => state.name)];
   const selectedState = states.find((state) => state.name === values.state);
+  const isVirtualLocation = values.state === VIRTUAL_STATE;
   const citiesQuery = useLocationCities(selectedState);
   const cities = citiesQuery.data?.data.cities ?? [];
   const categoryOptions = useMemo(() => {
@@ -564,8 +568,8 @@ const CreateJobPostForm = () => {
       formData.append("username", payload.username);
       formData.append("email", payload.email);
       formData.append("zipcode", payload.zipcode);
-      formData.append("state", payload.state);
-      formData.append("city", payload.city);
+      formData.append("state", payload.state ?? "null");
+      formData.append("city", payload.city ?? "null");
       formData.append("category", payload.category);
       formData.append("budgetRange", payload.budgetRange);
       formData.append("message", payload.message);
@@ -695,7 +699,7 @@ const CreateJobPostForm = () => {
       email: values.email.trim().toLowerCase(),
       zipcode: values.zipCode.trim(),
       state: values.state,
-      city: values.city,
+      city: isVirtualLocation ? null : values.city,
       category:
         values.category === OTHER_CATEGORY ? "Other" : values.category.trim(),
       budgetRange: `${formatBudget(budgetRange[0])} - ${formatBudget(budgetRange[1])}`,
@@ -921,7 +925,7 @@ const CreateJobPostForm = () => {
                   <LocationDropdown
                     id="state"
                     value={values.state}
-                    options={states.map((state) => state.name)}
+                    options={stateOptions}
                     placeholder={
                       statesQuery.isError ? "States unavailable" : "Select state"
                     }
@@ -954,16 +958,19 @@ const CreateJobPostForm = () => {
                     value={values.city}
                     options={cities}
                     placeholder={
-                      !selectedState
-                        ? "Select a state first"
-                        : citiesQuery.isError
-                          ? "Cities unavailable"
-                          : "Select city"
+                      isVirtualLocation
+                        ? "Not required for Virtual"
+                        : !selectedState
+                          ? "Select a state first"
+                          : citiesQuery.isError
+                            ? "Cities unavailable"
+                            : "Select city"
                     }
                     searchPlaceholder="Search cities..."
                     emptyMessage="No city found."
                     loading={Boolean(selectedState) && citiesQuery.isPending}
                     disabled={
+                      isVirtualLocation ||
                       !selectedState ||
                       citiesQuery.isError ||
                       (!citiesQuery.isPending && cities.length === 0)

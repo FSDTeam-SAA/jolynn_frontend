@@ -31,6 +31,8 @@ import { toast } from "sonner";
 
 type BusinessProfile = {
   _id: string;
+  firstName?: string;
+  lastName?: string;
   businessName?: string;
   businessEmail?: string;
   businessWebsiteUrl?: string;
@@ -145,7 +147,14 @@ const getEmbeddableUrl = (
 
 function MyBusiness() {
   const { data: session, status: sessionStatus } = useSession();
-  const user = session?.user as { token?: string; accessToken?: string } | undefined;
+  const user = session?.user as
+    | {
+        token?: string;
+        accessToken?: string;
+        firstName?: string;
+        lastName?: string;
+      }
+    | undefined;
   const token = user?.accessToken ?? user?.token;
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState<BusinessDraft>(emptyDraft);
@@ -419,14 +428,22 @@ function MyBusiness() {
     <>
       <section className="overflow-hidden rounded-[12px] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.02)]">
         <div className="relative h-[230px] w-full sm:h-[270px]">
-          <Image
-            src={backgroundImagePreview || business.backgroundImage || "/assets/images/about_hero.jpg"}
-            alt="Business cover"
-            fill
-            priority
-            unoptimized={Boolean(backgroundImagePreview || business.backgroundImage)}
-            className="object-cover"
-          />
+          {backgroundImagePreview || business.backgroundImage ? (
+            <Image
+              src={backgroundImagePreview || business.backgroundImage!}
+              alt="Business cover"
+              fill
+              priority
+              unoptimized
+              className="object-cover"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center bg-[#EEF1FF] px-6 text-center">
+              <span className="text-2xl font-bold text-[#30347F] sm:text-3xl">
+                No cover image available yet
+              </span>
+            </div>
+          )}
           <input ref={backgroundImageInputRef} type="file" accept="image/*" className="hidden" onChange={handleBackgroundImage} />
           <button
             type="button"
@@ -442,13 +459,22 @@ function MyBusiness() {
         <div className="relative px-5 pb-5 pt-[86px] sm:px-6 sm:pt-5">
           <div className="absolute -top-[70px] left-5 sm:left-6">
             <div className="relative h-[140px] w-[140px] overflow-hidden rounded-full border-4 border-white bg-[#F2F4F7] shadow-sm">
-              <Image
-                src={business.profilePicture || "/assets/images/review1.png"}
-                alt={business.businessName || "Business profile"}
-                fill
-                unoptimized={Boolean(business.profilePicture)}
-                className="object-cover"
-              />
+              {business?.profilePicture ? (
+                <Image
+                  src={business.profilePicture}
+                  alt={business?.businessName || "Business profile"}
+                  fill
+                  unoptimized
+                  className="object-cover"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-4xl font-bold uppercase text-[#30347F]">
+                  {[business?.firstName, business?.lastName]
+                    .filter(Boolean)
+                    .map((name) => name!.charAt(0))
+                    .join("") || business?.businessName?.charAt(0) || business?.lastName?.charAt(0) || "N/A"}
+                </div>
+              )}
             </div>
           </div>
 
@@ -543,7 +569,7 @@ function MyBusiness() {
                 <span className="text-sm font-medium text-[#344054]">Business profile image</span>
                 <div className="flex items-center gap-4">
                   <div className="relative h-16 w-16 overflow-hidden rounded-full bg-[#F2F4F7]">
-                    <Image src={profileImagePreview || "/assets/images/review1.png"} alt="Business profile preview" fill unoptimized={profileImagePreview.startsWith("data:") || Boolean(business.profilePicture)} className="object-cover" />
+                    <Image src={profileImagePreview || "/assets/images/no-user.jpeg"} alt="Business profile preview" fill unoptimized={profileImagePreview.startsWith("data:") || Boolean(business.profilePicture)} className="object-cover" />
                   </div>
                   <input ref={profileInputRef} type="file" accept="image/*" className="hidden" onChange={handleProfileImage} />
                   <button type="button" onClick={() => profileInputRef.current?.click()} className="rounded-lg border border-[#D0D5DD] px-4 py-2 text-sm font-medium text-[#344054] hover:bg-[#F9FAFB]">Choose image</button>

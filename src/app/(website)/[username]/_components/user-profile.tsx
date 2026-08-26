@@ -288,11 +288,11 @@ const UserProfile = ({ username }: { username: string }) => {
               )}
               {profile.businessEmail && (
                 <Link
-                  href={`mailto:${profile.businessEmail}`}
+                  href="/account/message"
                   className="inline-flex h-11 items-center justify-center gap-2 rounded-[6px] border border-[#292D73] bg-white px-5 text-sm font-bold text-[#292D73] transition hover:bg-[#F2F5FF]"
                 >
                   <Mail className="h-4 w-4" />
-                  Send Email
+                  Message
                 </Link>
               )}
             </div>

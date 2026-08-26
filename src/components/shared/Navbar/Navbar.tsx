@@ -11,10 +11,12 @@ import { useProfileQuery } from "@/hooks/APicalling";
 import { LayoutDashboard, LogOut, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import MobileNavbar from "./MobileNavbar";
 import Image from "next/image";
 import { signOut, useSession } from "next-auth/react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 const navItems = [
   { label: "Home", href: "/" },
@@ -27,8 +29,10 @@ const navItems = [
 
 const Navbar = () => {
   const pathname = usePathname();
-  const { data: session, status } = useSession();
+  const { data: session, status, update: updateSession } = useSession();
+  const router = useRouter();
   const [isLogoutOpen, setIsLogoutOpen] = useState(false);
+  const [switchingRole, setSwitchingRole] = useState<string | null>(null);
 
 
   const sessionUser = session?.user as
@@ -46,11 +50,13 @@ const Navbar = () => {
 
 
     // console.log(sessionUser?.role)
-  const { data: profileResponse } = useProfileQuery(
+  const { data: profileResponse, refetch: refetchProfile } = useProfileQuery(
     sessionUser?.accessToken ?? sessionUser?.token,
   );
   const profile = profileResponse?.data;
   const userName = profile?.username || "N/A";
+
+  console.log("profile?.role", profile);
   const profileImage =
     profile?.profilePicture ??
     sessionUser?.profilePicture ??
@@ -61,6 +67,58 @@ const Navbar = () => {
       .join(" ") || sessionUser?.email || "Account";
   const isAuthenticated = status === "authenticated";
   const effectiveRole = profile?.role ?? sessionUser?.role;
+  const profileRoles: ("user" | "businessOwner")[] = profile?.roles?.filter(
+    (role): role is "user" | "businessOwner" =>
+      role === "user" || role === "businessOwner",
+  ) ?? (effectiveRole === "user" || effectiveRole === "businessOwner"
+    ? [effectiveRole]
+    : []);
+
+  const switchProfile = async (
+    targetRole: "user" | "businessOwner",
+    href: string,
+  ) => {
+    const token = sessionUser?.accessToken ?? sessionUser?.token;
+    if (!token || switchingRole) return;
+
+    setSwitchingRole(targetRole);
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
+      if (!apiUrl) throw new Error("The authentication service is not configured.");
+
+      const response = await fetch(`${apiUrl}/auth/switch-profile`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ targetRole }),
+      });
+      const result = await response.json().catch(() => null);
+      if (!response.ok || !result?.success) {
+        throw new Error(result?.message || "Unable to switch profile.");
+      }
+
+      const switchedData = result.data ?? result;
+      const switchedToken = switchedData.accessToken ?? switchedData.token;
+      await updateSession({
+        user: {
+          ...(switchedData.user ?? {}),
+          role: targetRole,
+          token: switchedToken ?? token,
+          accessToken: switchedToken ?? token,
+        },
+      });
+      await refetchProfile();
+      router.push(href);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to switch profile.");
+    } finally {
+      setSwitchingRole(null);
+    }
+  };
+
 
   const confirmLogout = async () => {
     setIsLogoutOpen(false);
@@ -118,8 +176,9 @@ const Navbar = () => {
             <div className="h-10 w-10 animate-pulse rounded-full bg-white/70" />
           ) : isAuthenticated ? (
             <DropdownMenu modal={false}>
+              {userName}
               
-                <Link href={`/${userName}`} target="_blank">{userName}</Link>
+                {/* <Link href={`/${userName}`} target="_blank">{userName}</Link> */}
               <DropdownMenuTrigger asChild className="">
                 <button type="button" className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border-2 border-[#22245F] bg-white text-[#22245F] outline-none focus-visible:ring-2 focus-visible:ring-[#22245F] focus-visible:ring-offset-2" aria-label={`Open ${displayName} menu`}>
                   {profileImage ? <Image src={profileImage} alt={displayName} fill sizes="40px" className="object-cover" /> : <User className="h-5 w-5" />}
@@ -131,9 +190,32 @@ const Navbar = () => {
                 sideOffset={8}
                 className="w-44 bg-white p-1.5"
               >
-                <DropdownMenuItem asChild className="cursor-pointer py-2.5">
-                  <Link href={effectiveRole === "businessOwner" ? "/overview" : "/account/profile"}><LayoutDashboard className="h-4 w-4" />Profile</Link>
-                </DropdownMenuItem>
+                {profileRoles.includes("user") && (
+                  <DropdownMenuItem asChild className="cursor-pointer py-2.5">
+                    <button
+                      type="button"
+                      disabled={Boolean(switchingRole)}
+                      onClick={() => switchProfile("user", "/account/profile")}
+                      className="flex w-full items-center gap-2 disabled:cursor-wait disabled:opacity-60"
+                    >
+                      <User className="h-4 w-4" />
+                      My Profile
+                    </button>
+                  </DropdownMenuItem>
+                )}
+                {profileRoles.includes("businessOwner") && (
+                  <DropdownMenuItem asChild className="cursor-pointer py-2.5">
+                    <button
+                      type="button"
+                      disabled={Boolean(switchingRole)}
+                      onClick={() => switchProfile("businessOwner", "/my-business")}
+                      className="flex w-full items-center gap-2 disabled:cursor-wait disabled:opacity-60"
+                    >
+                      <LayoutDashboard className="h-4 w-4" />
+                      My Business
+                    </button>
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem onSelect={() => setIsLogoutOpen(true)} className="cursor-pointer py-2.5 text-red-600 focus:text-red-600">
                   <LogOut className="h-4 w-4" />Logout
                 </DropdownMenuItem>
@@ -155,7 +237,7 @@ const Navbar = () => {
         </div>
 
         <div className="flex justify-end lg:hidden">
-          <MobileNavbar navItems={navItems} isAuthenticated={isAuthenticated} isAuthLoading={status === "loading"} profileImage={profileImage} displayName={displayName} role={effectiveRole} onLogout={() => setIsLogoutOpen(true)} />
+          <MobileNavbar navItems={navItems} isAuthenticated={isAuthenticated} isAuthLoading={status === "loading"} profileImage={profileImage} displayName={displayName} profileRoles={profileRoles} onProfileSwitch={switchProfile} onLogout={() => setIsLogoutOpen(true)} />
         </div>
       </div>
     </header>

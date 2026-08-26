@@ -33,6 +33,8 @@ import { Label } from "@/components/ui/label";
 import { useMutation } from "@tanstack/react-query";
 import AccountCreatedSuccessfulModal from "@/components/shared/account-created-successful-modal";
 
+const VIRTUAL_STATE = "Virtual";
+
 const formSchema = z
   .object({
     firstName: z
@@ -64,7 +66,7 @@ const formSchema = z
         { message: "Enter a valid phone number or leave this field blank." },
       ),
     state: z.string().min(1, { message: "Please select your state." }),
-    city: z.string().min(1, { message: "Please select your city." }),
+    city: z.string(),
     password: z
       .string()
       .min(1, { message: "Please create a password." })
@@ -91,6 +93,10 @@ const formSchema = z
   .refine((data) => data.password === data.confirmPassword, {
     message: "The passwords do not match. Please enter the same password in both fields.",
     path: ["confirmPassword"],
+  })
+  .refine((data) => data.state === VIRTUAL_STATE || Boolean(data.city.trim()), {
+    message: "Please select your city unless the location is Virtual.",
+    path: ["city"],
   });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -242,6 +248,8 @@ const SignupForm = () => {
   const selectedState = states.find(
     (state) => state.name === selectedStateName,
   );
+  const stateOptions = [VIRTUAL_STATE, ...states.map((state) => state.name)];
+  const isVirtualLocation = selectedStateName === VIRTUAL_STATE;
   const citiesQuery = useLocationCities(selectedState);
   const cities = citiesQuery.data?.data.cities ?? [];
 
@@ -253,6 +261,8 @@ const SignupForm = () => {
       const { phoneNumber, ...requiredValues } = values;
       const payload = {
         ...requiredValues,
+        state: values.state,
+        city: values.state === VIRTUAL_STATE ? null : values.city,
         ...(phoneNumber ? { phoneNumber } : {}),
       };
       const res = await fetch(`${apiUrl}/auth/register/user`, {
@@ -437,7 +447,7 @@ const SignupForm = () => {
                     <FormControl>
                       <SearchableDropdown
                         value={field.value}
-                        options={states.map((state) => state.name)}
+                        options={stateOptions}
                         placeholder={
                           statesQuery.isError
                             ? "States unavailable"
@@ -481,16 +491,19 @@ const SignupForm = () => {
                         value={field.value}
                         options={cities}
                         placeholder={
-                          !selectedState
-                            ? "Select a state first"
-                            : citiesQuery.isError
-                              ? "Cities unavailable"
-                              : "Select city"
+                          isVirtualLocation
+                            ? "Not required for Virtual"
+                            : !selectedState
+                              ? "Select a state first"
+                              : citiesQuery.isError
+                                ? "Cities unavailable"
+                                : "Select city"
                         }
                         searchPlaceholder="Search cities..."
                         emptyMessage="No city found."
                         loading={Boolean(selectedState) && citiesQuery.isPending}
                         disabled={
+                          isVirtualLocation ||
                           !selectedState ||
                           citiesQuery.isError ||
                           (!citiesQuery.isPending && cities.length === 0)

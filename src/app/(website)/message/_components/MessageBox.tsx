@@ -197,7 +197,7 @@ function MessageBoxContent({
         `${b?.firstName || ""} ${b?.lastName || ""}`.trim() ||
         b?.username ||
         "Business Owner";
-      const avatar = b?.profilePicture || "/assets/images/no-image.jpg";
+      const avatar = b?.profilePicture || "/assets/images/no-user.jpeg";
       const unread = c.unreadForUser || 0;
       return { name, avatar, unread };
     } else {
@@ -207,7 +207,7 @@ function MessageBoxContent({
         u?.username ||
         u?.email ||
         "Customer";
-      const avatar = u?.profilePicture || "/assets/images/no-image.jpg";
+      const avatar = u?.profilePicture || "/assets/images/no-user.jpeg";
       const unread = c.unreadForBusinessOwner || 0;
       return { name, avatar, unread };
     }
@@ -215,7 +215,7 @@ function MessageBoxContent({
 
   const activeContactInfo = activeConversation
     ? getContactInfo(activeConversation)
-    : { name: "Select a conversation", avatar: "/assets/images/no-image.jpg", unread: 0 };
+    : { name: "Select a conversation", avatar: "/assets/images/no-user.jpeg", unread: 0 };
 
   return (
     <div
@@ -261,7 +261,7 @@ function MessageBoxContent({
         </div>
 
         {/* Contact List */}
-        <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar message-scrollbar-hidden">
           {activeConversationsQuery.isPending ? (
             <div className="flex flex-col items-center justify-center h-48 space-y-2 text-slate-400">
               <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
@@ -404,7 +404,7 @@ function MessageBoxContent({
             {/* Message Stream */}
             <div
               ref={chatStreamRef}
-              className="flex-1 p-4 md:p-6 overflow-y-auto bg-[#FAFCFF] space-y-5 custom-scrollbar"
+              className="flex-1 p-4 md:p-6 overflow-y-auto bg-[#FAFCFF] space-y-5 custom-scrollbar message-scrollbar-hidden"
             >
               {activeMessagesQuery.isPending ? (
                 <div className="flex flex-col items-center justify-center h-full space-y-2 text-slate-400">
@@ -439,7 +439,7 @@ function MessageBoxContent({
                         src={
                           isUser
                             ? profileResponse?.data?.profilePicture ||
-                            "/assets/images/no-image.jpg"
+                            "/assets/images/no-user.jpeg"
                             : activeContactInfo.avatar
                         }
                         alt="Avatar"
@@ -588,6 +588,16 @@ function MessageBoxContent({
           </>
         )}
       </div>
+      <style jsx>{`
+        .message-scrollbar-hidden {
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+        }
+
+        .message-scrollbar-hidden::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
     </div>
   );
 }
@@ -605,4 +615,3 @@ export default function MessageBox(props: MessageBoxProps) {
     </Suspense>
   );
 }
-

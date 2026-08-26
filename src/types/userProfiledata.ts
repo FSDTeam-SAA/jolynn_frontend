@@ -17,6 +17,8 @@ export interface UserResponse {
     gender: "male" | "female"
     username: string
     role: string
+    roles?: string[]
+    defaultRole?: string
     status: string
     tag: string
     createdAt: string
