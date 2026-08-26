@@ -19,11 +19,12 @@ type MobileNavbarProps = {
   isAuthLoading: boolean;
   profileImage?: string;
   displayName: string;
-  role?: string;
+  profileRoles: string[];
+  onProfileSwitch: (targetRole: "user" | "businessOwner", href: string) => void;
   onLogout: () => void;
 };
 
-const MobileNavbar = ({ navItems, isAuthenticated, isAuthLoading, profileImage, displayName, role, onLogout }: MobileNavbarProps) => {
+const MobileNavbar = ({ navItems, isAuthenticated, isAuthLoading, profileImage, displayName, profileRoles, onProfileSwitch, onLogout }: MobileNavbarProps) => {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -94,9 +95,16 @@ const MobileNavbar = ({ navItems, isAuthenticated, isAuthLoading, profileImage, 
                   </div>
                   <span className="min-w-0 truncate text-sm font-semibold text-[#22245F]">{displayName}</span>
                 </div>
-                <Link href={role === "businessOwner" ? "/overview" : "/account/profile"} onClick={closeSheet} className="flex h-12 items-center gap-3 rounded-[5px] border border-[#22245F] px-4 text-base font-semibold text-[#22245F] transition hover:bg-white/60">
-                  <LayoutDashboard className="h-5 w-5" />Dashboard
-                </Link>
+                {profileRoles.includes("user") && (
+                  <button type="button" onClick={() => { closeSheet(); onProfileSwitch("user", "/account/profile"); }} className="flex h-12 w-full items-center gap-3 rounded-[5px] border border-[#22245F] px-4 text-left text-base font-semibold text-[#22245F] transition hover:bg-white/60">
+                    <User className="h-5 w-5" />My Profile
+                  </button>
+                )}
+                {profileRoles.includes("businessOwner") && (
+                  <button type="button" onClick={() => { closeSheet(); onProfileSwitch("businessOwner", "/my-business"); }} className="flex h-12 w-full items-center gap-3 rounded-[5px] border border-[#22245F] px-4 text-left text-base font-semibold text-[#22245F] transition hover:bg-white/60">
+                    <LayoutDashboard className="h-5 w-5" />My Business
+                  </button>
+                )}
                 <button type="button" onClick={() => { closeSheet(); onLogout(); }} className="flex h-12 w-full items-center gap-3 rounded-[5px] border border-red-500 px-4 text-base font-semibold text-red-600 transition hover:bg-red-50">
                   <LogOut className="h-5 w-5" />Logout
                 </button>
