@@ -592,11 +592,11 @@ const BusinessViewProfileContainer = ({ businessId }: { businessId: string }) =>
               <div className="flex items-center justify-start gap-2 md:gap-3 lg:gap-4">
                 <div>
                   <Image
-                    src={business?.profilePicture || "/assets/images/no-image.jpg"}
+                    src={business?.profilePicture || "/assets/images/no-user.jpeg"}
                     alt={business?.businessName}
                     width={200}
                     height={200}
-                    className="w-14 h-14 rounded-[12px]"
+                    className="w-14 h-14 object-cover rounded-[12px]"
                   />
                 </div>
                 <div>

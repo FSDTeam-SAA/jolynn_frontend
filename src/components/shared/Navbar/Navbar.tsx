@@ -51,6 +51,8 @@ const Navbar = () => {
   );
   const profile = profileResponse?.data;
   const userName = profile?.username || "N/A";
+
+  console.log("profile?.role", profile);
   const profileImage =
     profile?.profilePicture ??
     sessionUser?.profilePicture ??
@@ -61,6 +63,7 @@ const Navbar = () => {
       .join(" ") || sessionUser?.email || "Account";
   const isAuthenticated = status === "authenticated";
   const effectiveRole = profile?.role ?? sessionUser?.role;
+
 
   const confirmLogout = async () => {
     setIsLogoutOpen(false);
@@ -118,8 +121,9 @@ const Navbar = () => {
             <div className="h-10 w-10 animate-pulse rounded-full bg-white/70" />
           ) : isAuthenticated ? (
             <DropdownMenu modal={false}>
+              {userName}
               
-                <Link href={`/${userName}`} target="_blank">{userName}</Link>
+                {/* <Link href={`/${userName}`} target="_blank">{userName}</Link> */}
               <DropdownMenuTrigger asChild className="">
                 <button type="button" className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border-2 border-[#22245F] bg-white text-[#22245F] outline-none focus-visible:ring-2 focus-visible:ring-[#22245F] focus-visible:ring-offset-2" aria-label={`Open ${displayName} menu`}>
                   {profileImage ? <Image src={profileImage} alt={displayName} fill sizes="40px" className="object-cover" /> : <User className="h-5 w-5" />}

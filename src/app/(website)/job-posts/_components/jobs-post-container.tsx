@@ -21,6 +21,8 @@ import {
   CalendarDays,
   ChevronDown,
   ChevronRight,
+  Check,
+  Copy,
   Flag,
   ImageIcon,
   LayoutGrid,
@@ -57,6 +59,7 @@ type HelpWantedImage = {
 
 type HelpWantedPost = {
   _id: string;
+  jobId?: string;
   // Mongoose populate returns null when the referenced user no longer exists.
   userId?: string | HelpWantedUser | null;
   username: string;
@@ -174,6 +177,12 @@ const getPopulatedUser = (post: HelpWantedPost): HelpWantedUser | undefined =>
 const getPostUserId = (post: HelpWantedPost) =>
   typeof post.userId === "string" ? post.userId : getPopulatedUser(post)?._id;
 
+const isAvailableLocationValue = (value?: string) =>
+  Boolean(value?.trim() && value.trim().toLowerCase() !== "null");
+
+const getLocationLabel = (...values: (string | undefined)[]) =>
+  values.filter(isAvailableLocationValue).join(", ");
+
 const fetchJobPosts = async (
   page: number,
   searchTerm: string,
@@ -290,6 +299,7 @@ const JobPostsContainer = () => {
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [postToView, setPostToView] = useState<HelpWantedPost | null>(null);
+  const [copiedJobId, setCopiedJobId] = useState<string | null>(null);
   const [postToDelete, setPostToDelete] = useState<HelpWantedPost | null>(null);
   const [reportMessage, setReportMessage] = useState("");
   const [signInIntent, setSignInIntent] = useState<SignInIntent | null>(null);
@@ -369,6 +379,17 @@ const JobPostsContainer = () => {
     : "";
   const viewedPostProfileImage =
     postToView?.profilePicture || viewedPostUser?.profilePicture;
+
+  const copyJobId = async (jobId: string) => {
+    try {
+      await navigator.clipboard.writeText(jobId);
+      setCopiedJobId(jobId);
+      toast.success("Job ID copied to clipboard.");
+      window.setTimeout(() => setCopiedJobId(null), 2000);
+    } catch {
+      toast.error("Unable to copy the Job ID. Please copy it manually.");
+    }
+  };
 
   const reportMutation = useMutation<
     JobReportResponse,
@@ -688,10 +709,10 @@ const JobPostsContainer = () => {
                             <p className="text-xs font-medium text-[#344054]">
                               Looking for {post.category} service
                             </p>
-                            {(post.city || post.state || post.zipcode) && (
+                            {getLocationLabel(post.city, post.state, post.zipcode) && (
                               <p className="mt-0.5 flex items-center gap-1 text-[11px] font-medium text-[#667481]">
                                 <MapPin className="h-3 w-3 shrink-0 text-[#292D73]" />
-                                {[post.city, post.state, post.zipcode].filter(Boolean).join(", ")}
+                                {getLocationLabel(post.city, post.state, post.zipcode)}
                               </p>
                             )}
                           </div>
@@ -788,11 +809,11 @@ const JobPostsContainer = () => {
                           Zip code :{" "}
                           <span className="text-primary">{post.zipcode}</span>
                         </p>
-                        {(post.city || post.state) && (
+                        {getLocationLabel(post.city, post.state) && (
                           <p className="inline-flex items-center gap-1">
                             <MapPin className="h-3.5 w-3.5 text-[#292D73]" />
                             <span className="text-primary">
-                              {[post.city, post.state].filter(Boolean).join(", ")}
+                              {getLocationLabel(post.city, post.state)}
                             </span>
                           </p>
                         )}
@@ -931,6 +952,31 @@ const JobPostsContainer = () => {
               >
                 Looking for {postToView.category} service
               </h2>
+
+              <div className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-[#D9DDF2] bg-[#F8F9FF] px-3 py-2.5 sm:px-4">
+                <div className="min-w-0">
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#667085]">
+                    Job ID
+                  </p>
+                  <p className="mt-0.5 truncate font-mono text-sm font-bold text-[#292D73]">
+                    {postToView.jobId || "Not available"}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => postToView.jobId && copyJobId(postToView.jobId)}
+                  disabled={!postToView.jobId}
+                  className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border border-[#292D73] bg-white px-3 text-[11px] font-bold text-[#292D73] transition hover:bg-[#EEF1FF] disabled:cursor-not-allowed disabled:opacity-50"
+                  aria-label={postToView.jobId ? "Copy Job ID" : "Job ID unavailable"}
+                >
+                  {copiedJobId === postToView.jobId ? (
+                    <Check className="h-3.5 w-3.5" />
+                  ) : (
+                    <Copy className="h-3.5 w-3.5" />
+                  )}
+                  {copiedJobId === postToView.jobId ? "Copied" : "Copy ID"}
+                </button>
+              </div>
             </div>
 
             <div className="min-w-0 space-y-4 bg-[#F8FAFC] p-4 sm:p-6">

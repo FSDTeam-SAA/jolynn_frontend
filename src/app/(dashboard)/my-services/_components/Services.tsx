@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronDown, ChevronLeft, ChevronRight, Eye, ImageIcon, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, Eye, ImageIcon, Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { ChangeEvent, FormEvent, useMemo, useRef, useState } from "react";
@@ -30,6 +30,7 @@ type Service = {
   ownerId: string;
   title: string;
   description: string;
+  keywords?: string[];
   logo?: { url: string; publicId: string };
   status: ServiceStatus;
   viewCount: number;
@@ -55,6 +56,7 @@ type ServiceResponse = {
 type ServiceDraft = {
   category: string;
   requestedCategory: string;
+  keywords: string[];
   description: string;
   status: ServiceStatus;
 };
@@ -64,6 +66,7 @@ const OTHER_CATEGORY = "__other__";
 const emptyDraft: ServiceDraft = {
   category: "",
   requestedCategory: "",
+  keywords: [],
   description: "",
   status: "active",
 };
@@ -96,6 +99,7 @@ function Services() {
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [serviceToDelete, setServiceToDelete] = useState<Service | null>(null);
   const [draft, setDraft] = useState<ServiceDraft>(emptyDraft);
+  const [keywordInput, setKeywordInput] = useState("");
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
   const [logoFile, setLogoFile] = useState<File>();
   const [logoPreview, setLogoPreview] = useState("");
@@ -158,6 +162,9 @@ function Services() {
       if (draft.category === OTHER_CATEGORY) {
         formData.append("requestedCategory", draft.requestedCategory.trim());
       }
+      if (draft.keywords.length > 0) {
+        formData.append("keywords", draft.keywords.join(","));
+      }
       formData.append("description", draft.description.trim());
       formData.append("status", draft.status);
       if (logoFile) formData.append("logo", logoFile, logoFile.name);
@@ -204,6 +211,7 @@ function Services() {
     setDraft(emptyDraft);
     setLogoFile(undefined);
     setLogoPreview("");
+    setKeywordInput("");
     setIsFormOpen(true);
   };
 
@@ -220,11 +228,13 @@ function Services() {
     setDraft({
       category: matchingCategory?.name.trim() || OTHER_CATEGORY,
       requestedCategory: matchingCategory ? "" : service.title,
+      keywords: service.keywords || [],
       description: service.description,
       status: service.status || "active",
     });
     setLogoFile(undefined);
     setLogoPreview(service.logo?.url || "");
+    setKeywordInput("");
     setIsFormOpen(true);
   };
 
@@ -235,6 +245,34 @@ function Services() {
     setDraft(emptyDraft);
     setLogoFile(undefined);
     setLogoPreview("");
+    setKeywordInput("");
+  };
+
+  const addKeyword = () => {
+    const keyword = keywordInput.trim().replace(/,$/, "");
+    if (!keyword) return;
+    if (draft.keywords.some((item) => item.toLowerCase() === keyword.toLowerCase())) {
+      setKeywordInput("");
+      return;
+    }
+    setDraft((current) => ({ ...current, keywords: [...current.keywords, keyword] }));
+    setKeywordInput("");
+  };
+
+  const handleKeywordInput = (value: string) => {
+    if (value.includes(",")) {
+      const parts = value.split(",");
+      const finalPart = parts.pop() || "";
+      parts.forEach((part) => {
+        const keyword = part.trim();
+        if (keyword && !draft.keywords.some((item) => item.toLowerCase() === keyword.toLowerCase())) {
+          setDraft((current) => ({ ...current, keywords: [...current.keywords, keyword] }));
+        }
+      });
+      setKeywordInput(finalPart);
+      return;
+    }
+    setKeywordInput(value);
   };
 
   const handleLogo = (event: ChangeEvent<HTMLInputElement>) => {
@@ -257,6 +295,9 @@ function Services() {
       !draft.requestedCategory.trim()
     ) {
       return toast.error("Please enter your required category.");
+    }
+    if (draft.keywords.length < 3) {
+      return toast.error("Please add at least 3 keywords.");
     }
     if (!draft.description.trim()) return toast.error("Service description is required.");
     if (draft.requestedCategory.trim().length > 120) return toast.error("Category cannot exceed 120 characters.");
@@ -373,7 +414,11 @@ function Services() {
                   </PopoverTrigger>
                   <PopoverContent
                     align="start"
-                    className="max-h-56 w-[var(--radix-popover-trigger-width)] overflow-y-auto p-1"
+                    onWheel={(event) => {
+                      event.preventDefault();
+                      event.currentTarget.scrollTop += event.deltaY;
+                    }}
+                    className="max-h-56 w-[var(--radix-popover-trigger-width)] overflow-y-auto overscroll-contain p-1"
                   >
                     <button
                       type="button"
@@ -468,6 +513,49 @@ function Services() {
                   </span>
                 </label>
               )}
+              <div className="space-y-2 text-xs font-medium text-[#344054]">
+                <span>Keywords <span className="font-normal text-[#98A2B3]">(minimum 3)</span></span>
+                <div className="rounded-md border border-[#B9BEC5] bg-white p-2 focus-within:border-[#30347F] focus-within:ring-1 focus-within:ring-[#30347F]">
+                  <div className="flex flex-wrap gap-2">
+                    {draft.keywords.map((keyword) => (
+                      <span key={keyword} className="inline-flex items-center gap-1 rounded-full bg-[#EEF1FF] px-3 py-1 text-xs font-medium text-[#30347F]">
+                        {keyword}
+                        <button
+                          type="button"
+                          aria-label={`Remove ${keyword}`}
+                          onClick={() => setDraft((current) => ({ ...current, keywords: current.keywords.filter((item) => item !== keyword) }))}
+                          className="rounded-full p-0.5 hover:bg-[#D9DDF2]"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                  <div className="mt-1 flex items-center gap-2">
+                    <input
+                      value={keywordInput}
+                      onChange={(event) => handleKeywordInput(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                          event.preventDefault();
+                          addKeyword();
+                        }
+                      }}
+                      placeholder="Add a keyword"
+                      className="h-7 min-w-0 flex-1 px-1 text-sm font-normal text-[#344054] outline-none placeholder:text-[#98A2B3]"
+                    />
+                    <button
+                      type="button"
+                      onClick={addKeyword}
+                      disabled={!keywordInput.trim()}
+                      className="h-7 rounded-md bg-[#30347F] px-3 text-xs font-semibold text-white transition hover:bg-[#252966] disabled:cursor-not-allowed disabled:bg-[#98A2B3]"
+                    >
+                      Add
+                    </button>
+                  </div>
+                </div>
+                <p className="text-[10px] font-normal text-[#667085]">Press Enter or comma to add a keyword.</p>
+              </div>
               <label className="block space-y-2 text-xs font-medium text-[#344054]"><span>Description</span><textarea required maxLength={1000} rows={4} value={draft.description} onChange={(event) => setDraft((current) => ({ ...current, description: event.target.value }))} placeholder="Describe your Service..." className="min-h-[88px] w-full resize-none rounded-[2px] border border-[#B9BEC5] px-3 py-3 text-sm font-normal text-[#344054] outline-none placeholder:text-[#98A2B3] focus:border-[#30347F] focus:ring-1 focus:ring-[#30347F]" /></label>
               {editingService && (
                 <label className="block space-y-2 text-xs font-medium text-[#344054]"><span>Status</span><select value={draft.status} onChange={(event) => setDraft((current) => ({ ...current, status: event.target.value as ServiceStatus }))} className="h-[38px] w-full rounded-[2px] border border-[#B9BEC5] bg-white px-3 text-sm font-normal text-[#344054] outline-none focus:border-[#30347F]"><option value="active">Active</option><option value="inactive">Inactive</option></select></label>

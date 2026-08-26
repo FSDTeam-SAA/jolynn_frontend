@@ -50,6 +50,7 @@ import Image from "next/image";
 import { useSession } from "next-auth/react";
 
 const OTHER_CATEGORY = "__other__";
+const VIRTUAL_STATE = "Virtual";
 const excludedStateNames = new Set([
   "armed forces europe",
   "armed forces pacific",
@@ -131,7 +132,7 @@ const createFormSchema = (isExistingUser: boolean) =>
     category: z.string().min(1, "Category is required."),
     requestedCategory: z.string().optional(),
     state: z.string().min(1, "State is required."),
-    city: z.string().min(1, "City is required."),
+    city: z.string(),
     password: z.string(),
     confirmPassword: z.string(),
     agreementAccepted: z
@@ -183,6 +184,14 @@ const createFormSchema = (isExistingUser: boolean) =>
         code: "custom",
         message: "Please enter the category your business needs.",
         path: ["requestedCategory"],
+      });
+    }
+
+    if (data.state !== VIRTUAL_STATE && !data.city.trim()) {
+      context.addIssue({
+        code: "custom",
+        message: "City is required unless the location is Virtual.",
+        path: ["city"],
       });
     }
   });
@@ -410,6 +419,8 @@ const AddYourBusinessContainer = () => {
   const selectedState = states.find(
     (state) => state.name === selectedStateName,
   );
+  const stateOptions = [VIRTUAL_STATE, ...states.map((state) => state.name)];
+  const isVirtualLocation = selectedStateName === VIRTUAL_STATE;
   const citiesQuery = useLocationCities(selectedState);
   const cities = citiesQuery.data?.data.cities ?? [];
 
@@ -445,13 +456,15 @@ const AddYourBusinessContainer = () => {
             category,
             requestedCategory,
             state: values.state,
-            city: values.city,
+            city: values.state === VIRTUAL_STATE ? null : values.city,
           }
         : {
             ...values,
             businessWebsiteUrl,
             category,
             requestedCategory,
+            state: values.state,
+            city: values.state === VIRTUAL_STATE ? null : values.city,
           };
       const endpoint = isExistingUser
         ? "/auth/register/business-owner/existing-user"
@@ -783,7 +796,7 @@ const AddYourBusinessContainer = () => {
                       <FormControl>
                         <SearchableDropdown
                           value={field.value}
-                          options={states.map((state) => state.name)}
+                          options={stateOptions}
                           placeholder={
                             statesQuery.isError
                               ? "States unavailable"
@@ -827,8 +840,10 @@ const AddYourBusinessContainer = () => {
                           value={field.value}
                           options={cities}
                           placeholder={
-                            !selectedState
-                              ? "Select a state first"
+                            isVirtualLocation
+                              ? "Not required for Virtual"
+                              : !selectedState
+                                ? "Select a state first"
                               : citiesQuery.isError
                                 ? "Cities unavailable"
                                 : "Select city"
@@ -837,6 +852,7 @@ const AddYourBusinessContainer = () => {
                           emptyMessage="No city found."
                           loading={Boolean(selectedState) && citiesQuery.isPending}
                           disabled={
+                            isVirtualLocation ||
                             !selectedState ||
                             citiesQuery.isError ||
                             (!citiesQuery.isPending && cities.length === 0)
