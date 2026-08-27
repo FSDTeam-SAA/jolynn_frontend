@@ -21,3 +21,21 @@ export const normalizePublicUsername = (value: string) =>
 
 export const isValidPublicUsername = (value: string) =>
   PUBLIC_USERNAME_PATTERN.test(normalizePublicUsername(value));
+
+export const createServiceSlug = (title: string) =>
+  title
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+export const buildPublicServiceUrl = (username: string, serviceTitle: string) => {
+  const serviceSlug = createServiceSlug(serviceTitle);
+  const profilePath = `/${encodeURIComponent(normalizePublicUsername(username))}`;
+
+  return serviceSlug
+    ? `${profilePath}?service=${encodeURIComponent(serviceSlug)}`
+    : profilePath;
+};

@@ -2,6 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 
 export type BusinessOwner = {
   businessOwnerId: string;
+  username?: string;
+  profileUrl?: string;
   businessName: string;
   category: string;
   city: string;

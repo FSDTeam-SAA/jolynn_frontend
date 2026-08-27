@@ -295,7 +295,13 @@ const ContactCard = ({
   </aside>
 );
 
-const BusinessViewProfileContainer = ({ businessId }: { businessId: string }) => {
+const BusinessViewProfileContainer = ({
+  businessId,
+  publicProfilePath,
+}: {
+  businessId: string;
+  publicProfilePath?: string;
+}) => {
   const router = useRouter();
   const { data: session } = useSession();
   const queryClient = useQueryClient();
@@ -368,9 +374,11 @@ const BusinessViewProfileContainer = ({ businessId }: { businessId: string }) =>
 
   const redirectToLogin = () => {
     const currentQuery = searchParams.toString();
-    const callbackUrl = `/services/businesses/${businessId}${
-      currentQuery ? `?${currentQuery}` : ""
-    }`;
+    const callbackUrl =
+      publicProfilePath ||
+      `/services/businesses/${businessId}${
+        currentQuery ? `?${currentQuery}` : ""
+      }`;
     router.push(`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
   };
 
