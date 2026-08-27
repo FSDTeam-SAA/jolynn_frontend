@@ -43,6 +43,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import BusinessSearchForm from "./business-search-form";
 import NoBusinessResults from "./no-business-results";
 import ReportBusinessModal from "./report-business-modal";
+import { buildPublicServiceUrl } from "@/lib/public-username";
 
 type ServicesSearchContainerProps = {
   initialSearchTerm?: string;
@@ -626,9 +627,14 @@ const ServicesSearchContainer = ({
                     }`}
                   >
                     {businesses?.map((business) => {
-                      const profileHref = business.service?.id
-                        ? `/services/businesses/${business.businessOwnerId}?serviceId=${encodeURIComponent(business.service.id)}`
-                        : `/services/businesses/${business.businessOwnerId}`;
+                      const profileHref =
+                        business.username && business.service?.title
+                          ? buildPublicServiceUrl(
+                              business.username,
+                              business.service.title,
+                            )
+                          : business.profileUrl ||
+                            `/services/businesses/${business.businessOwnerId}`;
                       const serviceTitle =
                         business.service?.title ||
                         business.category ||
