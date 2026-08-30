@@ -324,7 +324,7 @@ const ServicesSearchContainer = ({
     [businessQuery.data?.data],
   );
 
-  console.log("businessQuery", businesses);
+  // console.log("businessQuery", businesses);
   const total = businessQuery.data?.meta.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / 10));
 
