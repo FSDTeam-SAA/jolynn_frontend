@@ -56,7 +56,7 @@ const Navbar = () => {
   const profile = profileResponse?.data;
   const userName = profile?.username || "N/A";
 
-  console.log("profile?.role", profile);
+  // console.log("profile?.role", profile);
   const profileImage =
     profile?.profilePicture ??
     sessionUser?.profilePicture ??

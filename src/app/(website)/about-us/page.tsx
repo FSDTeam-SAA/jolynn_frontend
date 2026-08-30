@@ -11,9 +11,9 @@ const AboutUsPage = () => {
       <HeroSection
         title="About Us"
         desc="SideQuote is a B2C platform designed to bridge the gap between skilled independent service providers and consumer needs. The platform serves as a comprehensive commercial ecosystem. It empowers micro-entrepreneurs while providing consumers with streamlined access to specialized local talent. "
-        image="/assets/images/about_hero.jpg"
+        image="/assets/images/about_hero.jpeg"
         compact
-        imagePosition="center 30%"
+        // imagePosition="center 30%"
       />
       <OurMission />
       <ValueAndCapabilities />
