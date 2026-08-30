@@ -109,6 +109,37 @@ const MAX_BUDGET = 5_000;
 const BUDGET_STEP = 10;
 const INITIAL_BUDGET_RANGE: [number, number] = [MIN_BUDGET, 1_000];
 
+const SEXUAL_CONTENT_PATTERNS = [
+  /\bsex(?:ual(?:ly)?|y|ting)?\b/i,
+  /\bporn(?:ography|ographic)?\b/i,
+  /\bnud(?:e|es|ity)\b/i,
+  /\bnaked\b/i,
+  /\berotic(?:a)?\b/i,
+  /\bescort(?:s|ing)?\b/i,
+  /\bhook[\s-]?up(?:s)?\b/i,
+  /\badult[\s-]?(?:service|services|content|entertainment)\b/i,
+  /\bfetish(?:es)?\b/i,
+  /\bintercourse\b/i,
+  /\b(?:blow|hand)[\s-]?job(?:s)?\b/i,
+  /\bmasturbat(?:e|es|ion|ing)\b/i,
+  /\bgenitals?\b/i,
+  /\bpenis(?:es)?\b/i,
+  /\bvaginas?\b/i,
+  /\banal\b/i,
+  /\borgasms?\b/i,
+  /\bxxx\b/i,
+  /\bonly[\s-]?fans\b/i,
+  /\b(?:boob|boobs|tits?)\b/i,
+  /\b(?:jouno|joubon|nogno)\b/i,
+  /(?:সেক্স|যৌন|পর্ন|পর্নোগ্রাফি|নগ্ন)/,
+];
+
+const containsSexualContent = (value: string) =>
+  SEXUAL_CONTENT_PATTERNS.some((pattern) => pattern.test(value));
+
+const SEXUAL_CONTENT_ERROR =
+  "Sexual or adult content is not allowed in this field.";
+
 const formatBudget = (value: number) =>
   value === MIN_BUDGET ? "$0/Barter" : `$${value.toLocaleString("en-US")}`;
 
@@ -334,6 +365,7 @@ const validateField = (
       if (!value) return "Please enter the service category you need.";
       if (value.length < 2) return "Category must be at least 2 characters.";
       if (value.length > 80) return "Category must be 80 characters or fewer.";
+      if (containsSexualContent(value)) return SEXUAL_CONTENT_ERROR;
       return undefined;
     case "phone": {
       if (!value) return undefined;
@@ -350,6 +382,7 @@ const validateField = (
         return "Please add at least 20 characters so providers can understand your request.";
       if (value.length > MESSAGE_LIMIT)
         return `Message must be ${MESSAGE_LIMIT} characters or fewer.`;
+      if (containsSexualContent(value)) return SEXUAL_CONTENT_ERROR;
       return undefined;
   }
 };
