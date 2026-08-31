@@ -2,13 +2,22 @@
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { useBusinessServices } from "@/hooks/use-business-profile-sections";
-import { AlertCircle, Layers3 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { AlertCircle, Eye, Layers3 } from "lucide-react";
 import Image from "next/image";
+import { useState } from "react";
 
 const BusinessServices = ({ businessId }: { businessId: string }) => {
   const { data, isPending, isError, error, refetch, isFetching } =
     useBusinessServices(businessId);
   const services = data?.data ?? [];
+  const [selectedService, setSelectedService] = useState<(typeof services)[number] | null>(null);
 
   return (
     <article className="rounded-[8px] border border-[#E1E7EC] bg-white px-5 py-5 shadow-[0_1px_2px_rgba(17,24,39,0.03)]">
@@ -63,11 +72,49 @@ const BusinessServices = ({ businessId }: { businessId: string }) => {
               {service.logo?.url && (
                 <Image src={service.logo.url} alt="" width={24} height={24} className="h-6 w-6 object-contain" />
               )}
-              {service.title}
+              <span className="min-w-0 flex-1 truncate">{service.title}</span>
+              <button
+                type="button"
+                onClick={() => setSelectedService(service)}
+                aria-label={`View subcategories for ${service.title}`}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#292E78] transition-colors hover:bg-white/70 focus:outline-none focus:ring-2 focus:ring-[#292E78]/40"
+              >
+                <Eye className="h-[18px] w-[18px]" aria-hidden="true" />
+              </button>
             </div>
           ))}
         </div>
       )}
+
+      <Dialog open={Boolean(selectedService)} onOpenChange={(open) => !open && setSelectedService(null)}>
+        <DialogContent className="w-[calc(100%-32px)] max-w-[430px] rounded-[14px] border-0 bg-white p-6 shadow-xl">
+          <DialogHeader className="text-left">
+            <DialogTitle className="text-[20px] font-extrabold text-[#111827]">
+              {selectedService?.title} Subcategories
+            </DialogTitle>
+            <DialogDescription className="text-sm text-[#667085]">
+              Explore the specific services offered in this category.
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedService?.subcategories?.length ? (
+            <ul className="mt-2 space-y-2" aria-label={`${selectedService.title} subcategories`}>
+              {selectedService.subcategories.map((item) => (
+                <li
+                  key={item._id}
+                  className="rounded-[8px] bg-[#F4F7F9] px-4 py-3 text-sm font-medium text-[#263B4A]"
+                >
+                  {item.subcategory}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-2 rounded-[8px] bg-[#F4F7F9] px-4 py-4 text-center text-sm text-[#667085]">
+              No subcategories available for this service.
+            </p>
+          )}
+        </DialogContent>
+      </Dialog>
     </article>
   );
 };

@@ -31,7 +31,7 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
   const token = sessionUser?.accessToken ?? sessionUser?.token;
   const { data: profileResponse } = useProfileQuery(token);
   const profile = profileResponse?.data;
-  console.log("profileResponse", profile);
+  // console.log("profileResponse", profile);
   const displayName = profile?.username || sessionUser?.username || "User";
   const email = profile?.email || sessionUser?.email || "";
   const initials = displayName
