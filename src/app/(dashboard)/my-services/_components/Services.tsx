@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronDown, ChevronLeft, ChevronRight, Eye, ImageIcon, Pencil, Plus, Search, Trash2, X } from "lucide-react";
+import { CalendarDays, ChevronDown, ChevronLeft, ChevronRight, Eye, FolderTree, ImageIcon, Pencil, Plus, Search, Tag, Trash2, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { ChangeEvent, FormEvent, useMemo, useRef, useState } from "react";
@@ -31,6 +31,13 @@ type Service = {
   title: string;
   description: string;
   keywords?: string[];
+  serviceCategoryId?: string;
+  requestedCategory?: string | null;
+  subcategories?: Array<{
+    _id: string;
+    subcategory: string;
+    serviceId: string;
+  }>;
   logo?: { url: string; publicId: string };
   status: ServiceStatus;
   viewCount: number;
@@ -97,6 +104,7 @@ function Services() {
   const [search, setSearch] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
+  const [viewingService, setViewingService] = useState<Service | null>(null);
   const [serviceToDelete, setServiceToDelete] = useState<Service | null>(null);
   const [draft, setDraft] = useState<ServiceDraft>(emptyDraft);
   const [keywordInput, setKeywordInput] = useState("");
@@ -143,6 +151,19 @@ function Services() {
   });
 
   const services = useMemo(() => servicesQuery.data?.data ?? [], [servicesQuery.data?.data]);
+  const serviceDetailsQuery = useQuery<ServiceResponse>({
+    queryKey: ["my-service-details", viewingService?._id],
+    queryFn: async () => {
+      if (!token || !viewingService) throw new Error("Service details could not be loaded.");
+      const response = await fetch(`${getApiUrl()}/service/my-services/${encodeURIComponent(viewingService._id)}`, {
+        headers: { Accept: "application/json", Authorization: `Bearer ${token}` },
+      });
+      return readResponse<ServiceResponse>(response);
+    },
+    enabled: Boolean(token && viewingService),
+    staleTime: 30 * 1000,
+  });
+  const serviceDetails = serviceDetailsQuery.data?.data ?? viewingService;
   const total = servicesQuery.data?.meta.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_LIMIT));
   const filteredServices = useMemo(() => {
@@ -356,6 +377,7 @@ function Services() {
                     <Eye className="h-4 w-4" aria-hidden="true" />
                     <span>{service.viewCount ?? 0}</span>
                   </div>
+                  <button type="button" aria-label={`View details for ${service.title}`} onClick={() => setViewingService(service)} className="flex h-8 w-8 items-center justify-center rounded-full bg-[#EEF1FF] text-[#30347F] transition-colors hover:bg-[#DDE2FF]"><Eye className="h-4 w-4" /></button>
                   <button type="button" disabled={isMutating} aria-label={`Delete ${service.title}`} onClick={() => setServiceToDelete(service)} className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FFF0EF] text-[#FF4D4F] transition-colors hover:bg-[#FFD9D6] disabled:opacity-50"><Trash2 className="h-4 w-4" /></button>
                   <button type="button" disabled={isMutating || categoriesQuery.isPending} aria-label={`Edit ${service.title}`} onClick={() => openEditModal(service)} className="flex h-8 w-8 items-center justify-center rounded-full bg-[#EAF9F0] text-[#20BF6B] transition-colors hover:bg-[#D7F3E2] disabled:opacity-50"><Pencil className="h-4 w-4" /></button>
                 </div>
@@ -377,6 +399,72 @@ function Services() {
           </div>
         )}
       </section>
+
+      <Dialog open={Boolean(viewingService)} onOpenChange={(open) => !open && setViewingService(null)}>
+        <DialogContent className="w-[calc(100%-32px)] max-w-[560px] gap-0 overflow-hidden rounded-[16px] border-0 bg-white p-0 shadow-2xl [&>button]:right-4 [&>button]:top-4 [&>button]:z-10 [&>button]:rounded-full [&>button]:bg-white/90 [&>button]:p-1.5 [&>button]:text-[#30347F] [&>button]:opacity-100">
+          {serviceDetails && (
+            <>
+              <div className="h-24 bg-gradient-to-r from-[#30347F] to-[#555AA5]" />
+              <div className="px-5 pb-6 sm:px-7">
+                <div className="-mt-10 flex items-end justify-between gap-4">
+                  <div className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-[14px] border-4 border-white bg-[#F2F4F7] shadow-sm">
+                    {serviceDetails.logo?.url ? <Image src={serviceDetails.logo.url} alt={`${serviceDetails.title} logo`} fill className="object-cover" /> : <ImageIcon className="h-7 w-7 text-[#98A2B3]" />}
+                  </div>
+                  <span className={`mb-1 rounded-full px-3 py-1 text-xs font-semibold capitalize ${serviceDetails.status === "active" ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600"}`}>{serviceDetails.status}</span>
+                </div>
+
+                <DialogHeader className="mt-4 text-left">
+                  <DialogTitle className="text-[24px] font-semibold leading-8 text-[#263B4A]">{serviceDetails.title}</DialogTitle>
+                  <DialogDescription className="text-sm leading-6 text-[#667085]">Complete information about this service.</DialogDescription>
+                </DialogHeader>
+
+                <div className="mt-5 space-y-5">
+                  {serviceDetailsQuery.isFetching && <Skeleton className="h-1.5 w-full rounded-full" />}
+                  {serviceDetailsQuery.isError && <div className="rounded-md bg-red-50 px-3 py-2 text-xs text-red-600">{serviceDetailsQuery.error.message}</div>}
+                  <div className="rounded-[10px] bg-[#F8F9FC] p-4">
+                    <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#30347F]">Description</h3>
+                    <p className="whitespace-pre-wrap text-sm leading-6 text-[#475467]">{serviceDetails.description || "No description provided."}</p>
+                  </div>
+
+                  <div>
+                    <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#30347F]"><Tag className="h-4 w-4" /> Keywords</div>
+                    {serviceDetails.keywords?.length ? (
+                      <div className="flex flex-wrap gap-2">{serviceDetails.keywords.map((keyword) => <span key={keyword} className="rounded-full bg-[#EEF1FF] px-3 py-1.5 text-xs font-medium text-[#30347F]">{keyword}</span>)}</div>
+                    ) : <p className="text-sm text-[#98A2B3]">No keywords added.</p>}
+                  </div>
+
+                  <div>
+                    <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#30347F]"><FolderTree className="h-4 w-4" /> Sub Categories</div>
+                    {serviceDetails.subcategories?.length ? (
+                      <div className="flex flex-wrap gap-2">{serviceDetails.subcategories.map((item) => <span key={item._id} className="rounded-full bg-[#EAF9F0] px-3 py-1.5 text-xs font-medium text-[#17864A]">{item.subcategory}</span>)}</div>
+                    ) : <p className="text-sm text-[#98A2B3]">No sub categories added.</p>}
+                  </div>
+
+                  {serviceDetails.requestedCategory && (
+                    <div className="rounded-[10px] border border-amber-200 bg-amber-50 px-4 py-3">
+                      <p className="text-[11px] font-medium text-amber-700">Requested Category</p>
+                      <p className="mt-1 text-sm font-semibold text-amber-900">{serviceDetails.requestedCategory}</p>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <div className="flex items-center gap-3 rounded-[10px] border border-[#EAECF0] p-3">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#EEF1FF] text-[#30347F]"><Eye className="h-4 w-4" /></div>
+                      <div><p className="text-[11px] text-[#667085]">Total Views</p><p className="text-sm font-semibold text-[#344054]">{serviceDetails.viewCount ?? 0}</p></div>
+                    </div>
+                    <div className="flex items-center gap-3 rounded-[10px] border border-[#EAECF0] p-3">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#FFF7E8] text-[#B7791F]"><CalendarDays className="h-4 w-4" /></div>
+                      <div><p className="text-[11px] text-[#667085]">Created On</p><p className="text-sm font-semibold text-[#344054]">{serviceDetails.createdAt ? new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(serviceDetails.createdAt)) : "Not available"}</p></div>
+                    </div>
+                  </div>
+                </div>
+
+                <button type="button" onClick={() => setViewingService(null)} className="mt-6 h-[40px] w-full rounded-[7px] bg-[#30347F] text-sm font-medium text-white transition-colors hover:bg-[#252966]">Close</button>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={isFormOpen} onOpenChange={(open) => open ? setIsFormOpen(true) : !saveMutation.isPending && closeFormModal()}>
         <DialogContent className="w-[calc(100%-32px)] max-w-[470px] gap-0 rounded-[12px] border-0 bg-white p-0 shadow-xl [&>button]:right-0 [&>button]:top-0 [&>button]:flex [&>button]:h-9 [&>button]:w-9 [&>button]:items-center [&>button]:justify-center [&>button]:rounded-none [&>button]:rounded-bl-[8px] [&>button]:bg-[#30347F] [&>button]:text-white [&>button]:opacity-100 [&>button_svg]:h-5 [&>button_svg]:w-5">
