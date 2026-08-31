@@ -38,6 +38,11 @@ const navigation = [
     href: "/my-services",
     icon: Rows2,
   },
+   {
+    name: "Sub Category",
+    href: "/sub-category",
+    icon: Rows2,
+  },
   {
     name: "My Gallery",
     href: "/my-gallery",
