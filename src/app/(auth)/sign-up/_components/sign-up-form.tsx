@@ -31,9 +31,6 @@ import Image from "next/image";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useMutation } from "@tanstack/react-query";
-import AccountCreatedSuccessfulModal from "@/components/shared/account-created-successful-modal";
-
-const VIRTUAL_STATE = "Virtual";
 
 const formSchema = z
   .object({
@@ -94,8 +91,8 @@ const formSchema = z
     message: "The passwords do not match. Please enter the same password in both fields.",
     path: ["confirmPassword"],
   })
-  .refine((data) => data.state === VIRTUAL_STATE || Boolean(data.city.trim()), {
-    message: "Please select your city unless the location is Virtual.",
+  .refine((data) => Boolean(data.city.trim()), {
+    message: "Please select your city.",
     path: ["city"],
   });
 
@@ -224,8 +221,6 @@ const SearchableDropdown = ({
 const SignupForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [successEmail, setSuccessEmail] = useState("");
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -248,8 +243,7 @@ const SignupForm = () => {
   const selectedState = states.find(
     (state) => state.name === selectedStateName,
   );
-  const stateOptions = [VIRTUAL_STATE, ...states.map((state) => state.name)];
-  const isVirtualLocation = selectedStateName === VIRTUAL_STATE;
+  const stateOptions = states.map((state) => state.name);
   const citiesQuery = useLocationCities(selectedState);
   const cities = citiesQuery.data?.data.cities ?? [];
 
@@ -262,7 +256,7 @@ const SignupForm = () => {
       const payload = {
         ...requiredValues,
         state: values.state,
-        city: values.state === VIRTUAL_STATE ? null : values.city,
+        city: values.city,
         ...(phoneNumber ? { phoneNumber } : {}),
       };
       const res = await fetch(`${apiUrl}/auth/register/user`, {
@@ -287,10 +281,8 @@ const SignupForm = () => {
 
       return data;
     },
-    onSuccess: (data, values) => {
-      // toast.success(data?.message || "User registered successfully");
-      setSuccessEmail(values.email);
-      setShowSuccessModal(true);
+    onSuccess: (data) => {
+      toast.success(data?.message || "Account created successfully.");
       form.reset();
     },
     onError: (error) => {
@@ -491,9 +483,7 @@ const SignupForm = () => {
                         value={field.value}
                         options={cities}
                         placeholder={
-                          isVirtualLocation
-                            ? "Not required for Virtual"
-                            : !selectedState
+                          !selectedState
                               ? "Select a state first"
                               : citiesQuery.isError
                                 ? "Cities unavailable"
@@ -503,7 +493,6 @@ const SignupForm = () => {
                         emptyMessage="No city found."
                         loading={Boolean(selectedState) && citiesQuery.isPending}
                         disabled={
-                          isVirtualLocation ||
                           !selectedState ||
                           citiesQuery.isError ||
                           (!citiesQuery.isPending && cities.length === 0)
@@ -640,10 +629,6 @@ const SignupForm = () => {
           </form>
         </Form>
       </div>
-      <AccountCreatedSuccessfulModal
-        open={showSuccessModal}
-        email={successEmail}
-      />
     </div>
   );
 };
