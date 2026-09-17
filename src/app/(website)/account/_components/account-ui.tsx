@@ -1,5 +1,6 @@
 "use client";
 
+import DeleteAccountButton from "@/components/shared/DeleteAccountButton";
 import LogoutModal from "@/components/modals/LogoutModal";
 import { useProfileQuery, useProfileUpdate } from "@/hooks/APicalling";
 import type { SavedBusiness } from "@/hooks/use-saved-businesses";
@@ -131,10 +132,12 @@ const AccountSidebar = ({ active }: { active: AccountSection }) => {
           </Link>
         </div>
 
+        <DeleteAccountButton className="lg:mt-auto" />
+
         <button
           type="button"
           onClick={() => setIsLogoutOpen(true)}
-          className="group flex h-11 shrink-0 items-center gap-2.5 rounded-xl px-3 text-[13px] font-semibold text-[#EF4444] transition-all duration-200 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 lg:mt-auto lg:h-12 lg:w-full lg:text-[14px]"
+          className="group flex h-11 shrink-0 items-center gap-2.5 rounded-xl px-3 text-[13px] font-semibold text-[#EF4444] transition-all duration-200 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 lg:h-12 lg:w-full lg:text-[14px]"
         >
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[7px] bg-red-50 transition-colors group-hover:bg-white">
             <LogOut className="h-[17px] w-[17px]" />

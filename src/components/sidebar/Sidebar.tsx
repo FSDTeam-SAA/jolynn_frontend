@@ -22,6 +22,7 @@ import Image from "next/image";
 import { signOut, useSession } from "next-auth/react";
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import DeleteAccountButton from "@/components/shared/DeleteAccountButton";
 import LogoutModal from "@/components/modals/LogoutModal";
 import { useProfileQuery } from "@/hooks/APicalling";
 
@@ -204,6 +205,8 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
               </p>
             </div>
           </div>
+
+          <DeleteAccountButton business className="mb-2 w-full justify-center" />
 
           <button
             type="button"
