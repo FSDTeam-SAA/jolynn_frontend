@@ -346,6 +346,7 @@ const validateField = (
         return "Please enter a valid email address.";
       return undefined;
     case "zipCode":
+      if (!value && values.state === VIRTUAL_STATE) return undefined;
       if (!value) return "Please enter your zip or postal code.";
       if (!/^[A-Za-z0-9][A-Za-z0-9 -]{1,10}[A-Za-z0-9]$/.test(value))
         return "Please enter a valid zip or postal code.";
@@ -672,6 +673,9 @@ const CreateJobPostForm = () => {
       ...(touched.state || errors.state
         ? { state: validateField("state", nextValues) }
         : {}),
+      ...(touched.zipCode || errors.zipCode
+        ? { zipCode: validateField("zipCode", nextValues) }
+        : {}),
       ...(touched.city || errors.city
         ? { city: validateField("city", nextValues) }
         : {}),
@@ -933,10 +937,12 @@ const CreateJobPostForm = () => {
                   label="Zip / postal code"
                   icon={MapPin}
                   error={errors.zipCode}
+                  required={!isVirtualLocation}
                 >
                   <input
                     id="zipCode"
                     autoComplete="postal-code"
+                    required={!isVirtualLocation}
                     maxLength={12}
                     value={values.zipCode}
                     onChange={(event) =>
@@ -985,6 +991,7 @@ const CreateJobPostForm = () => {
                   label="City"
                   icon={MapPin}
                   error={errors.city}
+                  required={!isVirtualLocation}
                 >
                   <LocationDropdown
                     id="city"

@@ -69,6 +69,7 @@ type HelpWantedPost = {
   city?: string;
   category: string;
   budgetRange?: string;
+  isReported?: boolean;
   profilePicture: string;
   phone: string;
   message: string;
@@ -420,6 +421,7 @@ const JobPostsContainer = () => {
     onSuccess: () => {
       setSelectedPostId(null);
       setReportMessage("");
+      void queryClient.invalidateQueries({ queryKey: ["help-wanted"] });
       toast.success("Report sent");
     },
     onError: (error) => toast.error(error.message),
@@ -676,7 +678,7 @@ const JobPostsContainer = () => {
                   return (
                     <article
                       key={post._id}
-                      className="rounded-lg border border-[#E3E8EF] bg-white transition-colors hover:border-[#B9C9DC] hover:bg-[#FCFDFE]"
+                      className={`rounded-lg border bg-white transition-colors hover:bg-[#FCFDFE] ${post.isReported ? "border-red-300 hover:border-red-400" : "border-[#E3E8EF] hover:border-[#B9C9DC]"}`}
                     >
                       <div className="flex flex-col gap-2.5 p-3 sm:flex-row sm:items-center">
                         <div className="flex min-w-0 flex-1 items-center gap-3">
@@ -740,7 +742,7 @@ const JobPostsContainer = () => {
                 return (
                   <article
                     key={post._id}
-                    className="group flex h-full flex-col overflow-hidden rounded-xl border border-[#D4E6E8] bg-[#F0FEFE] shadow-[0_7px_18px_rgba(19,35,68,0.10)] transition-[transform,box-shadow,border-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-[#A9E1E5] hover:shadow-[0_16px_32px_rgba(19,35,68,0.16)] motion-reduce:transform-none motion-reduce:transition-none"
+                    className={`group flex h-full flex-col overflow-hidden rounded-xl border bg-[#F0FEFE] shadow-[0_7px_18px_rgba(19,35,68,0.10)] transition-[transform,box-shadow,border-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:shadow-[0_16px_32px_rgba(19,35,68,0.16)] motion-reduce:transform-none motion-reduce:transition-none ${post.isReported ? "border-red-300 hover:border-red-400" : "border-[#D4E6E8] hover:border-[#A9E1E5]"}`}
                   >
                     <div className="flex h-full flex-col px-4 pb-4 pt-4 sm:px-5 sm:pb-5">
                       <div className="flex items-start justify-between gap-2.5">
@@ -776,7 +778,7 @@ const JobPostsContainer = () => {
                           <button
                             type="button"
                             onClick={() => openReportForm(post._id)}
-                            className="inline-flex h-7 items-center justify-center gap-1 rounded-md border border-[#D0D5DD] bg-white px-2 text-[10px] font-bold text-[#667085] transition hover:bg-[#F2F4F7]"
+                            className={`inline-flex h-7 items-center justify-center gap-1 rounded-md border px-2 text-[10px] font-bold transition ${post.isReported ? "border-red-300 bg-red-50 text-red-600 hover:bg-red-100" : "border-[#D0D5DD] bg-white text-[#667085] hover:bg-[#F2F4F7]"}`}
                           >
                             <Flag className="h-3 w-3" />
                             Report
