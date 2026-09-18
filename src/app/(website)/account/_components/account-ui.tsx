@@ -54,7 +54,10 @@ export const AccountPageShell = ({
   return (
     <section className="min-h-[calc(100vh-80px)] bg-[radial-gradient(circle_at_top_left,_#eef8f8_0,_transparent_32%),linear-gradient(180deg,#f8fafc_0%,#ffffff_38%)] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
       <div className="container max-w-[1440px]">
-        <div className="grid items-start gap-5 lg:grid-cols-[248px_minmax(0,1fr)] lg:gap-6">
+        <div className={cn(
+          "grid items-start gap-5 lg:grid-cols-[248px_minmax(0,1fr)] lg:gap-6",
+          active === "profile" && "xl:items-stretch",
+        )}>
           <AccountSidebar active={active} />
           <div
             className={cn(
@@ -63,7 +66,10 @@ export const AccountPageShell = ({
             )}
           >
             {showProfileCard ? <ProfileSummaryCard /> : null}
-            <div className="min-w-0">{children}</div>
+            <div className={cn(
+              "min-w-0",
+              active === "profile" && "xl:[&>article]:h-full",
+            )}>{children}</div>
           </div>
         </div>
       </div>
@@ -82,7 +88,10 @@ const AccountSidebar = ({ active }: { active: AccountSection }) => {
   return (
     <>
       <aside
-        className="scrollbar-hide sticky top-2 z-20 flex gap-2 overflow-x-auto rounded-xl border border-[#e6eaf0] bg-white/95 p-2 shadow-[0_10px_35px_rgba(30,45,75,0.08)] backdrop-blur lg:top-24 lg:min-h-[620px] lg:flex-col lg:gap-1.5 lg:overflow-visible lg:rounded-2xl lg:p-3"
+        className={cn(
+          "scrollbar-hide sticky top-2 z-20 flex gap-2 overflow-x-auto rounded-xl border border-[#e6eaf0] bg-white/95 p-2 shadow-[0_10px_35px_rgba(30,45,75,0.08)] backdrop-blur lg:top-24 lg:min-h-[620px] lg:flex-col lg:gap-1.5 lg:overflow-visible lg:rounded-2xl lg:p-3",
+          active === "profile" && "xl:static",
+        )}
         aria-label="Account navigation"
       >
         <div className="hidden px-3 pb-2 pt-1 lg:block">
@@ -171,21 +180,12 @@ export const ProfileSummaryCard = () => {
     .filter(Boolean)
     .join(" ");
   const location = [
-    // profile?.address,
-    // profile?.city,
-    // profile?.state,
-    profile?.country,
+    profile?.city,
+    profile?.state,
     profile?.postcode,
   ]
     .filter(Boolean)
     .join(", ");
-  const memberSince = profile?.createdAt
-    ? new Intl.DateTimeFormat("en-GB", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-      }).format(new Date(profile.createdAt))
-    : "—";
 
   const handlePictureChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -272,10 +272,6 @@ export const ProfileSummaryCard = () => {
         <div>
           <dt className="inline font-extrabold">Location : </dt>
           <dd className="inline text-[#667085]">{location || "N/A"}</dd>
-        </div>
-        <div>
-          <dt className="inline font-extrabold">Since : </dt>
-          <dd className="inline text-[#667085]">{memberSince}</dd>
         </div>
       </dl>
     </article>
