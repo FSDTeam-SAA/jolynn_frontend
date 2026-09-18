@@ -14,6 +14,11 @@ export type BusinessService = {
   description?: string;
   status: "active" | "inactive";
   logo?: { url: string; publicId: string };
+  subcategories?: Array<{
+    _id: string;
+    subcategory: string;
+    serviceId: string;
+  }>;
 };
 
 export type BusinessGalleryItem = {

@@ -64,7 +64,7 @@ const OurMission = () => {
           <div className="mx-auto w-full max-w-[700px]">
             <div className="relative aspect-[4/3] overflow-hidden rounded-[16px] sm:aspect-[6/5] lg:aspect-auto lg:h-[560px]">
               <Image
-                src="/assets/images/our-mission.png"
+                src="/assets/images/about_hero.jpeg"
                 alt="Home service professional helping a customer"
                 fill
                 sizes="(min-width: 1024px) 50vw, 100vw"

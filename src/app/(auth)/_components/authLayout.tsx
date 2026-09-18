@@ -11,11 +11,7 @@ const AuthLayoutDesign = ({
 }) => {
   return (
     <div
-      className={`relative min-h-dvh bg-[linear-gradient(180deg,_#292D73_0%,_#91C7D9_50%,_#CBE4E3_100%),_linear-gradient(0deg,_rgba(0,0,0,0.2),_rgba(0,0,0,0.2))] ${
-        preventPageScroll
-          ? "min-h-dvh lg:h-dvh lg:overflow-hidden"
-          : ""
-      }`}
+      className="relative min-h-dvh bg-[linear-gradient(180deg,_#292D73_0%,_#91C7D9_50%,_#CBE4E3_100%),_linear-gradient(0deg,_rgba(0,0,0,0.2),_rgba(0,0,0,0.2))]"
     >
       <Link
         href="/"
