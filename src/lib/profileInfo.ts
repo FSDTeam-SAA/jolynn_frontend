@@ -63,6 +63,7 @@ export type UpdateProfilePayload = {
   email: string;
   phoneNumber: string;
   address: string;
+  city?: string;
   state: string;
   country: string;
   postcode: string;
@@ -87,6 +88,7 @@ export async function updateProfile(
   const formData = new FormData();
 
   Object.entries(payload).forEach(([key, value]) => {
+    if (value === undefined) return;
     if (value instanceof File) {
       formData.append(key, value);
       return;

@@ -19,6 +19,7 @@ const emptyProfile: ProfileFormValues = {
   email: "",
   phoneNumber: "",
   address: "",
+  city: "",
   state: "",
   country: "",
   postcode: "",
@@ -30,7 +31,8 @@ const profileFields = [
   { id: "lastName", label: "Last Name", type: "text", wide: false },
   { id: "email", label: "Email Address", type: "email", wide: false },
   { id: "phoneNumber", label: "Phone Number", type: "tel", wide: false },
-  { id: "country", label: "Location", type: "text", wide: false },
+  { id: "city", label: "City", type: "text", wide: false },
+  { id: "state", label: "State", type: "text", wide: false },
   { id: "postcode", label: "Postal Code", type: "text", wide: false },
 ] as const;
 
@@ -50,10 +52,9 @@ const ProfileContainer = () => {
       email: profile?.email ?? "",
       phoneNumber: profile?.phoneNumber ?? "",
       address: profile?.address ?? "",
+      city: profile?.city ?? "",
       state: profile?.state ?? "",
-      country: [profile?.city, profile?.state, profile?.country]
-        .filter(Boolean)
-        .join(", "),
+      country: profile?.country ?? "",
       postcode: profile?.postcode ?? "",
       gender: profile?.gender ?? "male",
     }),
@@ -87,6 +88,7 @@ const ProfileContainer = () => {
       email: updated.email ?? current.email,
       phoneNumber: updated.phoneNumber ?? current.phoneNumber,
       address: updated.address ?? current.address,
+      city: updated.city ?? current.city,
       state: updated.state ?? current.state,
       country: updated.country ?? current.country,
       postcode: updated.postcode ?? current.postcode,
@@ -160,7 +162,7 @@ const ProfileContainer = () => {
             ))}
           </div>
 
-          <div className="flex flex-col-reverse gap-3 border-t border-[#EAECF0] pt-5 sm:flex-row sm:justify-end">
+          <div className="flex flex-col-reverse gap-3 pt-5 sm:flex-row sm:justify-end">
             <button
               type="button"
               onClick={discardChanges}
