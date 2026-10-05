@@ -20,6 +20,8 @@ import {
 } from "@/hooks/use-location-options";
 import {
   AlertCircle,
+  ArrowRight,
+  BadgeCheck,
   BriefcaseBusiness,
   Check,
   ChevronDown,
@@ -32,6 +34,7 @@ import {
   MapPin,
   MessageCircle,
   Search,
+  ShieldCheck,
   Star,
   X,
 } from "lucide-react";
@@ -70,6 +73,20 @@ const excludedStateNames = new Set([
   "armed forces pacific",
   "armed forces of the americas",
 ]);
+
+const referralBusiness = {
+  businessName: "BrightPath Home Services",
+  businessEmail: "hello@brightpathhomeservices.com",
+  phoneNumber: "(512) 555-0148",
+  category: "Home Improvement",
+  city: "Austin",
+  state: "Texas",
+  rating: 5,
+  referrerName: "Sarah Williams",
+  referrerUsername: "sarah.williams",
+  review:
+    "BrightPath completed our kitchen repair on time and kept us informed throughout the project. I would gladly recommend them.",
+};
 
 const formatRelativeTime = (dateString: string) => {
   const date = new Date(dateString);
@@ -245,6 +262,110 @@ const BusinessCardsSkeleton = () => (
   </div>
 );
 
+function ReferralBusinessCard({
+  viewMode,
+  onClaim,
+}: {
+  viewMode: ViewMode;
+  onClaim: () => void;
+}) {
+  const isListView = viewMode === "list";
+
+  return (
+    <article
+      className={`group relative flex h-full flex-col overflow-hidden rounded-xl border border-[#C7D2FE] bg-[#F8F9FF] shadow-[0_6px_18px_rgba(41,45,115,0.12)] transition duration-300 hover:-translate-y-0.5 hover:border-[#9EADF5] hover:shadow-[0_14px_30px_rgba(41,45,115,0.17)] ${
+        isListView ? "" : "p-4 pl-5"
+      }`}
+    >
+      <div className="absolute inset-y-0 left-0 w-1 bg-[linear-gradient(180deg,#292D73,#5962B8)]" />
+      <div
+        className={`relative flex-1 ${
+          isListView
+            ? "flex flex-col gap-4 p-4 pl-5 sm:pl-6 lg:flex-row lg:items-center lg:gap-5"
+            : "flex flex-col"
+        }`}
+      >
+        <div
+          className={`flex min-w-0 ${
+            isListView ? "flex-1 items-start sm:items-center" : "items-start"
+          } gap-3.5`}
+        >
+          <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-white bg-white shadow-sm ring-1 ring-[#D9DDF2]">
+            <Image
+              src="/assets/images/no-image.jpg"
+              alt={`${referralBusiness.businessName} business image`}
+              fill
+              sizes="56px"
+              className="object-cover"
+            />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="truncate text-[15px] font-extrabold leading-tight text-[#292D73] sm:text-base">
+                {referralBusiness.businessName}
+              </h3>
+              <span className="inline-flex items-center gap-1 rounded-full bg-[#E0E7FF] px-2 py-1 text-[10px] font-extrabold text-[#3730A3]">
+                <BadgeCheck className="h-3.5 w-3.5" aria-hidden="true" />
+                Referred business
+              </span>
+            </div>
+            <div className="mt-1.5 flex flex-wrap items-center gap-2">
+              <span className="rounded-full bg-[#E6F3F2] px-2.5 py-1 text-[10px] font-semibold leading-none text-[#426078]">
+                {referralBusiness.category}
+              </span>
+              <div className="flex items-center gap-1" aria-label="5 out of 5 stars">
+                <Star className="h-3.5 w-3.5 fill-[#FFB800] text-[#FFB800]" />
+                <span className="text-[11px] font-bold text-[#292E78]">{referralBusiness.rating.toFixed(1)}</span>
+              </div>
+              <span className="inline-flex items-center gap-1 text-[11px] text-[#667085]">
+                <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
+                {referralBusiness.city}, {referralBusiness.state}
+              </span>
+            </div>
+            <p className="mt-2 text-xs leading-5 text-[#52606D]">{referralBusiness.review}</p>
+            <p className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-medium text-[#667085]">
+              <BadgeCheck className="h-4 w-4 text-[#5962B8]" aria-hidden="true" />
+              Referred by
+              <Link
+                href={`/${referralBusiness.referrerUsername}`}
+                className="font-bold text-[#292D73] underline-offset-2 hover:underline"
+              >
+                {referralBusiness.referrerName}
+              </Link>
+            </p>
+          </div>
+        </div>
+
+        <div
+          className={
+            isListView
+              ? "flex shrink-0 border-t border-[#DDE5F5] pt-4 sm:flex-row sm:items-center sm:justify-end lg:border-l lg:border-t-0 lg:border-[#DDE5F5] lg:pl-5 lg:pt-0"
+              : "mt-auto w-full border-t border-[#DDE5F5] pt-3.5"
+          }
+        >
+          <button
+            type="button"
+            onClick={onClaim}
+            className={`group/btn inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#292D73] px-5 text-xs font-bold text-white shadow-[0_2px_8px_rgba(41,45,115,0.18)] transition-all duration-200 hover:bg-[#1E235E] hover:shadow-[0_4px_14px_rgba(41,45,115,0.28)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2 active:scale-[0.98] ${
+              isListView ? "w-full sm:w-auto" : "w-full"
+            }`}
+          >
+            <ShieldCheck
+              className="h-4 w-4 shrink-0 text-[#C7D2FE] transition-colors duration-200 group-hover/btn:text-white"
+              aria-hidden="true"
+            />
+            <span>Claim this Business</span>
+            <ArrowRight
+              className="h-3.5 w-3.5 shrink-0 text-[#C7D2FE] transition-transform duration-200 group-hover/btn:translate-x-0.5 group-hover/btn:text-white"
+              aria-hidden="true"
+            />
+          </button>
+        </div>
+      </div>
+    </article>
+  );
+}
+
 const ServicesSearchContainer = ({
   initialSearchTerm = "",
   initialState = "",
@@ -323,9 +444,34 @@ const ServicesSearchContainer = ({
     () => businessQuery.data?.data ?? [],
     [businessQuery.data?.data],
   );
-
-  // console.log("businessQuery", businesses);
-  const total = businessQuery.data?.meta.total ?? 0;
+  const referralSearchText = [
+    referralBusiness.businessName,
+    referralBusiness.category,
+    referralBusiness.city,
+    referralBusiness.state,
+    referralBusiness.referrerName,
+    referralBusiness.referrerUsername,
+    referralBusiness.review,
+    "referred business",
+    "business referral",
+    "user referral",
+  ]
+    .join(" ")
+    .toLowerCase();
+  const referralMatchesSearch = referralSearchText.includes(
+    appliedFilters.searchTerm.trim().toLowerCase(),
+  );
+  const referralMatchesFilters =
+    (!appliedFilters.category ||
+      appliedFilters.category === referralBusiness.category) &&
+    (!appliedFilters.state || appliedFilters.state === referralBusiness.state) &&
+    (!appliedFilters.city || appliedFilters.city === referralBusiness.city) &&
+    (!appliedFilters.minimumRating ||
+      referralBusiness.rating >= Number(appliedFilters.minimumRating));
+  const shouldShowReferral =
+    page === 1 && referralMatchesSearch && referralMatchesFilters;
+  const businessTotal = businessQuery.data?.meta.total ?? 0;
+  const total = businessTotal + (shouldShowReferral ? 1 : 0);
   const totalPages = Math.max(1, Math.ceil(total / 10));
 
   const updateFilters = (changes: Partial<DraftFilters>) => {
@@ -366,6 +512,26 @@ const ServicesSearchContainer = ({
     }
 
     router.push("/add-your-business");
+  };
+
+  const openReferralClaim = () => {
+    const claimParams = new URLSearchParams({
+      claim: "referral",
+      businessName: referralBusiness.businessName,
+      businessEmail: referralBusiness.businessEmail,
+      phoneNumber: referralBusiness.phoneNumber,
+      category: referralBusiness.category,
+      state: referralBusiness.state,
+      city: referralBusiness.city,
+    });
+    const claimUrl = `/add-your-business?${claimParams.toString()}`;
+
+    if (!token) {
+      router.push(`/sign-up?callbackUrl=${encodeURIComponent(claimUrl)}`);
+      return;
+    }
+
+    router.push(claimUrl);
   };
 
   const openMessageFlow = (business: BusinessOwner) => {
@@ -616,7 +782,7 @@ const ServicesSearchContainer = ({
                       Try again
                     </button>
                   </div>
-                ) : businesses.length === 0 ? (
+                ) : businesses.length === 0 && !shouldShowReferral ? (
                   <div className="rounded-xl border border-[#E3E8EF] bg-white shadow-[0_6px_18px_rgba(30,45,75,0.08)]">
                     <NoBusinessResults />
                   </div>
@@ -626,6 +792,12 @@ const ServicesSearchContainer = ({
                       viewMode === "grid" ? "xl:grid-cols-2" : ""
                     }`}
                   >
+                    {shouldShowReferral && (
+                      <ReferralBusinessCard
+                        viewMode={viewMode}
+                        onClaim={openReferralClaim}
+                      />
+                    )}
                     {businesses?.map((business) => {
                       const profileHref =
                         business.username && business.service?.title

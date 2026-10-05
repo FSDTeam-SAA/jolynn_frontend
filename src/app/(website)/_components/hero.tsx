@@ -31,6 +31,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
+import ReferBusinessDialog from "@/components/shared/refer-business-dialog";
 
 type HeroSlide = {
   id: number;
@@ -617,14 +618,21 @@ const Hero = () => {
                 ) : (
                   activeSlide.action && ActiveActionIcon && (
                     <>
-                      <Link
-                        href={activeSlide.action.href}
-                        className="mt-7 inline-flex h-12 items-center justify-center gap-2.5 rounded-xl bg-[#292D73] px-6 text-sm font-bold text-white shadow-[0_12px_28px_rgba(41,45,115,0.24)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#1f2464] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4365D0] focus-visible:ring-offset-2"
-                      >
-                        <ActiveActionIcon className="h-5 w-5" />
-                        {activeSlide.action.label}
-                        <ArrowRight className="h-4 w-4" />
-                      </Link>
+                      <div className="mt-7 flex flex-wrap items-center gap-3">
+                        <Link
+                          href={activeSlide.action.href}
+                          className="inline-flex h-12 shrink-0 items-center justify-center gap-2.5 rounded-xl bg-[#292D73] px-5 sm:px-6 text-sm font-bold text-white shadow-[0_12px_28px_rgba(41,45,115,0.24)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#1f2464] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4365D0] focus-visible:ring-offset-2"
+                        >
+                          <ActiveActionIcon className="h-5 w-5" />
+                          {activeSlide.action.label}
+                          <ArrowRight className="h-4 w-4" />
+                        </Link>
+                        {activeSlide.id === 2 && (
+                          <ReferBusinessDialog
+                            triggerClassName="inline-flex h-12 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-[#292D73] bg-[#EEF0FF] px-5 sm:px-6 text-sm font-bold text-[#292D73] shadow-sm transition duration-300 hover:-translate-y-0.5 hover:bg-[#E0E4FF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2"
+                          />
+                        )}
+                      </div>
                       <SlidePreviewCarousel slideId={activeSlide.id} />
                     </>
                   )

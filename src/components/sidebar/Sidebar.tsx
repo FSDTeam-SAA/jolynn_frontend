@@ -24,6 +24,7 @@ import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import DeleteAccountButton from "@/components/shared/DeleteAccountButton";
 import LogoutModal from "@/components/modals/LogoutModal";
+import ReferBusinessDialog from "@/components/shared/refer-business-dialog";
 import { useProfileQuery } from "@/hooks/APicalling";
 
 const navigation = [
@@ -180,6 +181,9 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
               </Link>
             );
           })}
+          <div className="w-full shrink-0 py-3">
+            <ReferBusinessDialog />
+          </div>
         </nav>
 
         {/* User profile and logout */}

@@ -275,6 +275,7 @@ const JobPostsContainer = () => {
   };
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [zipcodeSearchTerm, setZipcodeSearchTerm] = useState("");
   const [draftFilters, setDraftFilters] = useState<JobPostFilters>({
     category: "",
     state: "",
@@ -307,6 +308,7 @@ const JobPostsContainer = () => {
   const [showExistingBusinessNotice, setShowExistingBusinessNotice] =
     useState(false);
   const loadMoreRef = useRef<HTMLDivElement>(null);
+  const activePostSearchTerm = zipcodeSearchTerm.trim() || searchTerm;
   const jobPostsQuery = useInfiniteQuery<
     HelpWantedResponse,
     Error,
@@ -317,7 +319,7 @@ const JobPostsContainer = () => {
     queryKey: [
       "help-wanted",
       PAGE_LIMIT,
-      searchTerm,
+      activePostSearchTerm,
       appliedFilters.category,
       appliedFilters.state,
       appliedFilters.city,
@@ -326,7 +328,7 @@ const JobPostsContainer = () => {
     queryFn: ({ pageParam }) =>
       fetchJobPosts(
         pageParam,
-        searchTerm,
+        activePostSearchTerm,
         appliedFilters.category,
         appliedFilters.state,
         appliedFilters.city,
@@ -532,6 +534,7 @@ const JobPostsContainer = () => {
     setDraftFilters(reset);
     setAppliedFilters(reset);
     setSearchTerm("");
+    setZipcodeSearchTerm("");
   };
 
   return (
@@ -541,11 +544,13 @@ const JobPostsContainer = () => {
           <p className="order-1 shrink-0 text-sm font-semibold text-[#667481]" aria-live="polite">
             {jobPostsQuery.isPending ? "Finding job posts..." : `${total} job post${total === 1 ? "" : "s"} found`}
           </p>
-          <label className="order-2 flex h-10 w-full items-center gap-2 rounded-lg border border-[#D8DEE8] bg-white px-3 sm:mx-auto sm:max-w-md">
-            <Search className="h-4 w-4 shrink-0 text-[#667085]" />
-            <span className="sr-only">Global search job posts</span>
-            <input type="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Search job posts..." className="min-w-0 flex-1 bg-transparent text-sm font-medium text-[#344054] outline-none placeholder:text-[#98A2B3]" />
-          </label>
+          <div className="order-2 w-full sm:mx-auto sm:max-w-md">
+            <label className="flex h-10 w-full items-center gap-2 rounded-lg border border-[#D8DEE8] bg-white px-3">
+              <Search className="h-4 w-4 shrink-0 text-[#667085]" />
+              <span className="sr-only">Search Help Wanted posts</span>
+              <input type="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Search Help Wanted..." className="min-w-0 flex-1 bg-transparent text-sm font-medium text-[#344054] outline-none placeholder:text-[#98A2B3]" />
+            </label>
+          </div>
           <div className="order-3 flex flex-wrap items-center justify-start gap-2 sm:justify-end">
           <button
             type="button"
@@ -608,8 +613,8 @@ const JobPostsContainer = () => {
                 <input
                   type="search"
                   name="searchTerm"
-                  value={searchTerm}
-                  onChange={(event) => setSearchTerm(event.target.value)}
+                  value={zipcodeSearchTerm}
+                  onChange={(event) => setZipcodeSearchTerm(event.target.value)}
                   placeholder="Search by Zipcode"
                   autoComplete="postal-code"
                   className="h-10 w-full rounded-[6px] border border-[#A7A7A7] bg-white py-2 pl-9 pr-3 text-[12px] font-medium text-[#344054] outline-none placeholder:font-normal placeholder:text-[#98A2B3] focus:border-[#292D73] focus:ring-2 focus:ring-[#292D73]/15"
@@ -652,7 +657,9 @@ const JobPostsContainer = () => {
         ) : posts.length === 0 ? (
           <div className="flex min-h-[280px] items-center justify-center rounded-[8px] border border-[#D4F0F1] bg-[#F0FEFE] text-center">
             <p className="text-sm font-semibold text-[#667481]">
-              {searchTerm.trim() || Object.values(appliedFilters).some(Boolean)
+              {searchTerm.trim() ||
+              zipcodeSearchTerm.trim() ||
+              Object.values(appliedFilters).some(Boolean)
                 ? "No job posts match your filters."
                 : "No job posts are available yet."}
             </p>

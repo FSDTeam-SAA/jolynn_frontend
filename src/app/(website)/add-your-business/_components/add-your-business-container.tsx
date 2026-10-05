@@ -17,7 +17,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -318,6 +318,15 @@ type RegisterBusinessOwnerResponse = {
   data: Record<string, unknown>;
 };
 
+type ReferralClaimPrefill = {
+  isReferralClaim: boolean;
+  businessName: string;
+  businessEmail: string;
+  category: string;
+  state: string;
+  city: string;
+};
+
 const BusinessListedSuccessModal = ({ open }: { open: boolean }) => {
   if (!open) return null;
 
@@ -362,7 +371,11 @@ const BusinessListedSuccessModal = ({ open }: { open: boolean }) => {
   );
 };
 
-const AddYourBusinessContainer = () => {
+const AddYourBusinessContainer = ({
+  claimPrefill,
+}: {
+  claimPrefill?: ReferralClaimPrefill;
+}) => {
   const queryClient = useQueryClient();
   const categoriesQuery = useServiceCategories();
   const categories = categoriesQuery.data?.data ?? [];
@@ -379,6 +392,12 @@ const AddYourBusinessContainer = () => {
     | undefined;
   const token = sessionUser?.accessToken ?? sessionUser?.token;
   const isExistingUser = Boolean(token);
+  const isReferralClaim = claimPrefill?.isReferralClaim ?? false;
+  const claimBusinessName = claimPrefill?.businessName.trim() ?? "";
+  const claimBusinessEmail = claimPrefill?.businessEmail.trim() ?? "";
+  const claimCategory = claimPrefill?.category.trim() ?? "";
+  const claimState = claimPrefill?.state.trim() ?? "";
+  const claimCity = claimPrefill?.city.trim() ?? "";
   const formSchema = useMemo(
     () => createFormSchema(isExistingUser),
     [isExistingUser],
@@ -404,6 +423,27 @@ const AddYourBusinessContainer = () => {
       agreementAccepted: false,
     },
   });
+
+  useEffect(() => {
+    if (!isReferralClaim) return;
+
+    form.reset({
+      ...form.getValues(),
+      businessName: claimBusinessName,
+      businessEmail: claimBusinessEmail,
+      category: claimCategory,
+      state: claimState,
+      city: claimCity,
+    });
+  }, [
+    claimBusinessEmail,
+    claimBusinessName,
+    claimCategory,
+    claimCity,
+    claimState,
+    form,
+    isReferralClaim,
+  ]);
   const selectedCategory = form.watch("category");
   const selectedStateName = form.watch("state");
   const states = statesQuery.data?.data ?? [];

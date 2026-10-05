@@ -28,6 +28,7 @@ import { toast } from "sonner";
 import { Check, ChevronsUpDown, Eye, EyeOff, Info, Search } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useMutation } from "@tanstack/react-query";
@@ -219,6 +220,8 @@ const SearchableDropdown = ({
 };
 
 const SignupForm = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -246,6 +249,14 @@ const SignupForm = () => {
   const stateOptions = states.map((state) => state.name);
   const citiesQuery = useLocationCities(selectedState);
   const cities = citiesQuery.data?.data.cities ?? [];
+  const callbackUrl = searchParams.get("callbackUrl");
+  const safeCallbackUrl =
+    callbackUrl?.startsWith("/") && !callbackUrl.startsWith("//")
+      ? callbackUrl
+      : null;
+  const loginHref = safeCallbackUrl
+    ? `/login?callbackUrl=${encodeURIComponent(safeCallbackUrl)}`
+    : "/login";
 
   const { mutate, isPending } = useMutation({
     mutationKey: ["register-user"],
@@ -283,6 +294,10 @@ const SignupForm = () => {
     },
     onSuccess: (data) => {
       toast.success(data?.message || "Account created successfully.");
+      if (safeCallbackUrl) {
+        router.push(loginHref);
+        return;
+      }
       form.reset();
     },
     onError: (error) => {
@@ -622,7 +637,7 @@ const SignupForm = () => {
 
             <p className="text-sm md:text-base text-[#1A1A2E] font-normal text-center pt-1 leading-[120%] ">
               Already have an account?{" "}
-              <Link className="text-[#23547B] underline" href="/login">
+              <Link className="text-[#23547B] underline" href={loginHref}>
                 Log In
               </Link>
             </p>

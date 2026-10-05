@@ -29,6 +29,7 @@ import {
   type AccountSection,
 } from "./account-data";
 import ReportBusinessModal from "../../services/businesses/_components/report-business-modal";
+import ReferBusinessDialog from "@/components/shared/refer-business-dialog";
 
 const navIcons = {
   profile: User,
@@ -131,7 +132,8 @@ const AccountSidebar = ({ active }: { active: AccountSection }) => {
           );
         })}
 
-        <div className="shrink-0 lg:border-y lg:border-[#e7e9f4] lg:py-4">
+        <div className="flex shrink-0 flex-col gap-2 lg:border-y lg:border-[#e7e9f4] lg:py-4">
+          <ReferBusinessDialog />
            <Link
             href="/add-your-business"
             className="inline-flex h-11 w-full items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-[#22245F] px-3 text-[13px] font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#17194D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22245F] focus-visible:ring-offset-2 lg:px-4"
