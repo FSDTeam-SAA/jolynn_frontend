@@ -5,6 +5,7 @@ export type AccountSection =
   | "request-quote"
   | "help-wanted"
   | "my-reviews"
+  | "referrals"
   | "message";
 
 export const accountNavItems = [
@@ -37,6 +38,11 @@ export const accountNavItems = [
     id: "my-reviews",
     label: "My Reviews",
     href: "/account/my-reviews",
+  },
+  {
+    id: "referrals",
+    label: "Reviews / Referrals",
+    href: "/account/referrals",
   },
   {
     id: "message",

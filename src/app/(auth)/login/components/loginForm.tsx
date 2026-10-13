@@ -51,6 +51,12 @@ const formSchema = z.object({
 const LoginForm = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl");
+  const referralCallback = callbackUrl?.startsWith("/business-referrals/claim?") ||
+    callbackUrl === "/account/profile?referBusiness=1";
+  const signupHref = referralCallback
+    ? `/sign-up?callbackUrl=${encodeURIComponent(callbackUrl!)}`
+    : "/sign-up";
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const inputClassName =
@@ -214,7 +220,7 @@ const LoginForm = () => {
               {isLoading ? "Signing In..." : "Sign In"}
             </Button>
 
-             <p className="text-sm md:text-base text-[#1A1A2E] font-normal text-center pt-1 leading-[120%] ">Don’t Have an account? <Link className="text-[#23547B] underline" href="/sign-up">Sign up</Link></p>
+             <p className="text-sm md:text-base text-[#1A1A2E] font-normal text-center pt-1 leading-[120%] ">Don’t Have an account? <Link className="text-[#23547B] underline" href={signupHref}>Sign up</Link></p>
           </form>
         </Form>
       </div>
