@@ -404,6 +404,7 @@ const AddYourBusinessContainer = () => {
       agreementAccepted: false,
     },
   });
+
   const selectedCategory = form.watch("category");
   const selectedStateName = form.watch("state");
   const states = statesQuery.data?.data ?? [];

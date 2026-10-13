@@ -20,6 +20,8 @@ import {
 } from "@/hooks/use-location-options";
 import {
   AlertCircle,
+  ArrowRight,
+  BadgeCheck,
   BriefcaseBusiness,
   Check,
   ChevronDown,
@@ -32,6 +34,7 @@ import {
   MapPin,
   MessageCircle,
   Search,
+  ShieldCheck,
   Star,
   X,
 } from "lucide-react";
@@ -57,6 +60,8 @@ type DraftFilters = {
   minimumRating: string;
   state: string;
   city: string;
+  listingType: "all" | "registered" | "referred";
+  claimStatus: "" | "unclaimed" | "claimed";
 };
 
 type ViewMode = "list" | "grid";
@@ -95,6 +100,9 @@ const formatRelativeTime = (dateString: string) => {
   const value = Math.floor(secondsAgo / interval.seconds);
   return `${value} ${interval.label}${value === 1 ? "" : "s"} ago`;
 };
+
+const normalizeBusinessEmail = (business: BusinessOwner) =>
+  (business.businessEmail ?? business.email)?.trim().toLowerCase();
 
 type FilterLocationDropdownProps = {
   value: string;
@@ -245,6 +253,170 @@ const BusinessCardsSkeleton = () => (
   </div>
 );
 
+function ReferralBusinessCard({
+  business,
+  viewMode,
+  onClaim,
+}: {
+  business: BusinessOwner;
+  viewMode: ViewMode;
+  onClaim: (business: BusinessOwner) => void;
+}) {
+  const isListView = viewMode === "list";
+  const rating = Number(business.rating || 0);
+  const locationLabel =
+    [business.city, business.state].filter(Boolean).join(", ") ||
+    business.address ||
+    business.serviceArea;
+
+  const referrerProfileHref =
+    business.referredBy?.profileUrl ||
+    (business.referredBy?.username
+      ? `/${encodeURIComponent(business.referredBy.username)}`
+      : business.referredBy?.id
+        ? `/services/businesses/${encodeURIComponent(business.referredBy.id)}`
+        : undefined);
+
+  return (
+    <article
+      className="group flex h-full flex-col overflow-hidden rounded-xl border border-[#E3E8EF] bg-white p-5 shadow-[0_6px_18px_rgba(30,45,75,0.1)] transition duration-300 hover:-translate-y-0.5 hover:border-[#B9C9DC] hover:shadow-[0_12px_30px_rgba(30,45,75,0.15)]"
+    >
+      <div
+        className={`flex flex-1 ${
+          isListView
+            ? "flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-6"
+            : "flex-col"
+        }`}
+      >
+        <div className="flex min-w-0 flex-1 items-start gap-4">
+          <div className={`relative shrink-0 overflow-hidden rounded-2xl border border-white bg-[linear-gradient(145deg,#F7F9FF_0%,#E9F2F4_100%)] shadow-[0_7px_18px_rgba(41,46,120,0.13)] ring-1 ring-[#DDE5F0] ${
+            isListView ? "h-14 w-14 sm:h-[72px] sm:w-[72px]" : "h-14 w-14"
+          }`}>
+            <Image
+              src={business.image || "/assets/images/no-image.jpg"}
+              alt={`${business.businessName} image`}
+              fill
+              sizes={isListView ? "(min-width: 640px) 72px, 56px" : "56px"}
+              className="object-cover"
+            />
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center justify-between gap-2">
+              <Link
+                href={business.profileUrl}
+                className="truncate text-base font-extrabold leading-tight text-[#292D73] transition-colors hover:text-[#1E235E] hover:underline sm:text-[17px]"
+              >
+                {business.businessName}
+              </Link>
+              <span
+                className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold ${
+                  business.claimStatus === "claimed"
+                    ? "border border-[#A6F4C5] bg-[#ECFDF3] text-[#027A48]"
+                    : "border border-[#FECDCA] bg-[#FFF6ED] text-[#C4320A]"
+                }`}
+              >
+                <span
+                  className={`h-1.5 w-1.5 rounded-full ${
+                    business.claimStatus === "claimed"
+                      ? "bg-[#12B76A]"
+                      : "bg-[#F04438]"
+                  }`}
+                />
+                {business.claimStatus === "claimed"
+                  ? "Verified owner"
+                  : "Unclaimed"}
+              </span>
+            </div>
+
+            <div className="mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
+              <span className="rounded-full bg-[#E6F3F2] px-2.5 py-1 text-[10px] font-semibold leading-none text-[#426078]">
+                {business.category || "Local service"}
+              </span>
+
+              <div
+                className="flex items-center gap-1 text-[11px] font-bold text-[#292E78]"
+                aria-label={`${rating} out of 5 stars`}
+              >
+                <Star className="h-3.5 w-3.5 fill-[#FFB800] text-[#FFB800]" />
+                <span>{rating.toFixed(1)}</span>
+                {business.totalReviews ? (
+                  <span className="font-normal text-[#667085]">
+                    ({business.totalReviews})
+                  </span>
+                ) : null}
+              </div>
+
+              {locationLabel && (
+                <span className="inline-flex items-center gap-1 text-[11px] text-[#667085]">
+                  <MapPin className="h-3.5 w-3.5 shrink-0 text-[#98A2B3]" aria-hidden="true" />
+                  <span className="truncate max-w-[130px] sm:max-w-xs">
+                    {locationLabel}
+                  </span>
+                </span>
+              )}
+            </div>
+
+            {business.review ? (
+              <p className="mt-3 line-clamp-2 text-xs leading-5 text-[#667085]">
+                {business.review}
+              </p>
+            ) : null}
+
+            <div className="mt-3 flex flex-wrap items-center gap-1.5 text-xs">
+              <span className="font-medium text-[#667085]">Referred by</span>
+              {referrerProfileHref ? (
+                <Link
+                  href={referrerProfileHref}
+                  className="font-extrabold text-[#292D73] transition-colors hover:text-[#1E235E] hover:underline"
+                >
+                  {business.referredBy?.name || "Community member"}
+                </Link>
+              ) : (
+                <span className="font-extrabold text-[#292D73]">
+                  {business.referredBy?.name || "Community member"}
+                </span>
+              )}
+              <span className="inline-flex items-center gap-1 rounded-full border border-[#C7D2FE] bg-[#E0E7FF] px-2 py-0.5 text-[10px] font-bold text-[#3730A3]">
+                <BadgeCheck className="h-3 w-3 text-[#4F46E5]" aria-hidden="true" />
+                Verified Referrer
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {business.isClaimable ? (
+          <div
+            className={
+              isListView
+                ? "flex shrink-0 border-t border-[#EDF0F4] pt-4 sm:flex-row sm:items-center sm:justify-end lg:border-l lg:border-t-0 lg:border-[#EDF0F4] lg:pl-5 lg:pt-0"
+                : "mt-5 w-full border-t border-[#EDF0F4] pt-4"
+            }
+          >
+            <button
+              type="button"
+              onClick={() => onClaim(business)}
+              className={`group/btn inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#292E78] px-5 text-xs font-bold text-white shadow-[0_2px_8px_rgba(41,45,115,0.16)] transition hover:bg-[#1F2464] hover:shadow-[0_4px_14px_rgba(41,45,115,0.24)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2 ${
+                isListView ? "w-full sm:w-auto" : "w-full"
+              }`}
+            >
+              <ShieldCheck
+                className="h-4 w-4 shrink-0 text-[#C7D2FE] transition-colors duration-200 group-hover/btn:text-white"
+                aria-hidden="true"
+              />
+              <span>Claim this Business</span>
+              <ArrowRight
+                className="h-3.5 w-3.5 shrink-0 text-[#C7D2FE] transition-transform duration-200 group-hover/btn:translate-x-0.5 group-hover/btn:text-white"
+                aria-hidden="true"
+              />
+            </button>
+          </div>
+        ) : null}
+      </div>
+    </article>
+  );
+}
+
 const ServicesSearchContainer = ({
   initialSearchTerm = "",
   initialState = "",
@@ -276,6 +448,8 @@ const ServicesSearchContainer = ({
     minimumRating: "",
     state: initialState,
     city: initialCity,
+    listingType: "all",
+    claimStatus: "",
   });
   const [appliedFilters, setAppliedFilters] = useState<DraftFilters>({
     searchTerm: initialSearchTerm,
@@ -283,11 +457,15 @@ const ServicesSearchContainer = ({
     minimumRating: "",
     state: initialState,
     city: initialCity,
+    listingType: "all",
+    claimStatus: "",
   });
   const [page, setPage] = useState(1);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [selectedBusiness, setSelectedBusiness] =
     useState<SelectedBusiness | null>(null);
+  const [claimInstructionsBusiness, setClaimInstructionsBusiness] =
+    useState<BusinessOwner | null>(null);
   const [showExistingBusinessNotice, setShowExistingBusinessNotice] =
     useState(false);
   const selectedDraftState = states.find(
@@ -303,6 +481,8 @@ const ServicesSearchContainer = ({
       minimumRating: "",
       state: initialState,
       city: initialCity,
+      listingType: "all",
+      claimStatus: "",
     };
     setDraftFilters(syncedFilters);
     setAppliedFilters(syncedFilters);
@@ -317,16 +497,38 @@ const ServicesSearchContainer = ({
     minimumRating: appliedFilters.minimumRating,
     state: appliedFilters.state,
     city: appliedFilters.city,
+    listingType: appliedFilters.listingType,
+    claimStatus: appliedFilters.claimStatus,
   };
   const businessQuery = useBusinessOwners(queryFilters);
-  const businesses = useMemo(
-    () => businessQuery.data?.data ?? [],
+  const { businesses, hiddenDuplicateCount } = useMemo(
+    () => {
+      const results = businessQuery.data?.data ?? [];
+      const claimedEmails = new Set(
+        results
+          .filter((business) => business.claimStatus === "claimed")
+          .map(normalizeBusinessEmail)
+          .filter((email): email is string => Boolean(email)),
+      );
+      const visibleBusinesses = results.filter((business) => {
+        const email = normalizeBusinessEmail(business);
+        return (
+          business.claimStatus === "claimed" ||
+          !email ||
+          !claimedEmails.has(email)
+        );
+      });
+
+      return {
+        businesses: visibleBusinesses,
+        hiddenDuplicateCount: results.length - visibleBusinesses.length,
+      };
+    },
     [businessQuery.data?.data],
   );
-
-  // console.log("businessQuery", businesses);
-  const total = businessQuery.data?.meta.total ?? 0;
-  const totalPages = Math.max(1, Math.ceil(total / 10));
+  const apiTotal = businessQuery.data?.meta.total ?? 0;
+  const total = Math.max(0, apiTotal - hiddenDuplicateCount);
+  const totalPages = Math.max(1, Math.ceil(apiTotal / 10));
 
   const updateFilters = (changes: Partial<DraftFilters>) => {
     setDraftFilters((current) => ({ ...current, ...changes }));
@@ -351,6 +553,8 @@ const ServicesSearchContainer = ({
       minimumRating: "",
       state: "",
       city: "",
+      listingType: "all",
+      claimStatus: "",
     };
     setDraftFilters(reset);
     setAppliedFilters(reset);
@@ -377,7 +581,7 @@ const ServicesSearchContainer = ({
 
     createConversation.mutate(
       {
-        businessOwnerId: business.businessOwnerId,
+        businessOwnerId: business.businessOwnerId ?? business.listingId,
         subject: `Inquiry for ${business.businessName}`,
         message: `Hello ${business.businessName}, I would like to inquire about your services.`,
       },
@@ -431,6 +635,41 @@ const ServicesSearchContainer = ({
                       className="h-9 md:h-11 w-full rounded-[6px] border border-[#A7A7A7] bg-white pl-10 pr-3 text-[12px] font-medium text-[#344054] outline-none placeholder:text-[#8A8F99] focus:border-[#292D73] focus:ring-2 focus:ring-[#292D73]/15"
                     />
                   </label>
+
+                  <label className="relative block">
+                    <span className="sr-only">Business listing type</span>
+                    <select
+                      value={draftFilters.listingType}
+                      onChange={(event) =>
+                        updateFilters({
+                          listingType: event.target.value as DraftFilters["listingType"],
+                          claimStatus: "",
+                        })
+                      }
+                      className="h-9 md:h-11 w-full appearance-none rounded-[6px] border border-[#A7A7A7] bg-white px-3 pr-9 text-[12px] font-medium text-[#8A8F99] focus:outline-none focus:ring-2 focus:ring-[#292D73]/20"
+                    >
+                      <option value="all">All Businesses</option>
+                      <option value="registered">Registered Businesses</option>
+                      <option value="referred">Referred Businesses</option>
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8A8F99]" />
+                  </label>
+
+                  {draftFilters.listingType === "referred" && (
+                    <label className="relative block">
+                      <span className="sr-only">Referral claim status</span>
+                      <select
+                        value={draftFilters.claimStatus}
+                        onChange={(event) => updateFilter("claimStatus", event.target.value)}
+                        className="h-9 md:h-11 w-full appearance-none rounded-[6px] border border-[#A7A7A7] bg-white px-3 pr-9 text-[12px] font-medium text-[#8A8F99] focus:outline-none focus:ring-2 focus:ring-[#292D73]/20"
+                      >
+                        <option value="">All Referral Statuses</option>
+                        <option value="unclaimed">Unclaimed</option>
+                        <option value="claimed">Verified Owner</option>
+                      </select>
+                      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8A8F99]" />
+                    </label>
+                  )}
 
                   {categoriesQuery.isPending ? (
                     <Skeleton className="h-10 w-full" />
@@ -542,7 +781,9 @@ const ServicesSearchContainer = ({
                   >
                     {businessQuery.isPending
                       ? "Finding businesses..."
-                      : `${total} business${total === 1 ? "" : "es"} found`}
+                      : businessQuery.isError
+                        ? "Search unavailable"
+                        : `${total} ${businessQuery.data?.registeredOnly ? "registered " : ""}business${total === 1 ? "" : "es"} found`}
                   </p>
                   <div className="flex flex-wrap items-center gap-4">
                     <button
@@ -592,6 +833,12 @@ const ServicesSearchContainer = ({
                   </div>
                 </div>
 
+                {businessQuery.data?.registeredOnly && !businessQuery.isError ? (
+                  <p role="status" className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                    Showing registered businesses. Referred listings are temporarily unavailable.
+                  </p>
+                ) : null}
+
                 {businessQuery.isPending ? (
                   <BusinessCardsSkeleton />
                 ) : businessQuery.isError ? (
@@ -627,6 +874,17 @@ const ServicesSearchContainer = ({
                     }`}
                   >
                     {businesses?.map((business) => {
+                      if (business.listingType === "referred") {
+                        return (
+                          <ReferralBusinessCard
+                            key={`referred:${business.listingId}`}
+                            business={business}
+                            viewMode={viewMode}
+                            onClaim={setClaimInstructionsBusiness}
+                          />
+                        );
+                      }
+
                       const profileHref =
                         business.username && business.service?.title
                           ? buildPublicServiceUrl(
@@ -639,7 +897,7 @@ const ServicesSearchContainer = ({
                         business.service?.title ||
                         business.category ||
                         "Local service";
-                      const serviceLogoUrl = business.service?.logo?.url;
+                      const serviceLogoUrl = business.service?.logo?.url || (business.referredBy ? business.image || business.profilePicture : undefined);
                       const rating =
                         typeof business.rating === "number"
                           ? business.rating
@@ -649,14 +907,14 @@ const ServicesSearchContainer = ({
                         business.service?.description ||
                         business.bio ||
                         "Contact this business to learn more about its services.";
-                      const createdAtLabel = formatRelativeTime(
-                        business.createdAt,
-                      );
+                      const createdAtLabel = business.createdAt
+                        ? formatRelativeTime(business.createdAt)
+                        : null;
 
                       if (viewMode === "list") {
                         return (
                           <article
-                            key={business.businessOwnerId}
+                            key={`registered:${business.listingId}`}
                             className="group relative overflow-hidden rounded-xl border border-[#E3E8EF] bg-white shadow-[0_4px_16px_rgba(30,45,75,0.07)] transition duration-300 hover:-translate-y-0.5 hover:border-[#B9C9DC] hover:shadow-[0_12px_30px_rgba(30,45,75,0.13)]"
                           >
                             <div className="absolute inset-y-0 left-0 w-1 bg-[linear-gradient(180deg,#292D73,#0082D7)]" />
@@ -707,6 +965,11 @@ const ServicesSearchContainer = ({
                                       </time>
                                     )}
                                   </div>
+                                  {business.referredBy && business.referralProfileUrl ? (
+                                    <Link href={business.referralProfileUrl} className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#5962B8] hover:underline">
+                                      <BadgeCheck className="h-3.5 w-3.5" /> Referred by {business.referredBy.name}
+                                    </Link>
+                                  ) : null}
                                 </div>
                               </div>
 
@@ -718,7 +981,7 @@ const ServicesSearchContainer = ({
                                   View Profile
                                 </Link>
                                 <Link
-                                  href={`/services/businesses/${business.businessOwnerId}?tab=reviews`}
+                                  href={`/services/businesses/${business.businessOwnerId ?? business.listingId}?tab=reviews`}
                                   className="inline-flex h-9 items-center justify-center rounded-md border border-[#F2C66D] bg-[#FFF8E8] px-3.5 text-[11px] font-semibold text-[#C96800] transition hover:border-[#F8AA18] hover:bg-[#FFF2CC]"
                                 >
                                   Review
@@ -727,7 +990,7 @@ const ServicesSearchContainer = ({
                                   type="button"
                                   onClick={() =>
                                     setSelectedBusiness({
-                                      id: business.businessOwnerId,
+                                      id: business.businessOwnerId ?? business.listingId,
                                       name: business.businessName,
                                     })
                                   }
@@ -741,7 +1004,7 @@ const ServicesSearchContainer = ({
                                   disabled={
                                     createConversation.isPending &&
                                     createConversation.variables
-                                      ?.businessOwnerId === business.businessOwnerId
+                                      ?.businessOwnerId === (business.businessOwnerId ?? business.listingId)
                                   }
                                   className="inline-flex h-9 min-w-9 items-center justify-center rounded-md border border-[#292E78] bg-white text-[#292E78] transition hover:bg-[#292E78] hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
                                   aria-label={`Message ${business.businessName}`}
@@ -756,7 +1019,7 @@ const ServicesSearchContainer = ({
 
                       return (
                         <article
-                          key={business.businessOwnerId}
+                          key={`registered:${business.listingId}`}
                           className="group rounded-[8px] bg-white p-4 shadow-[0_6px_18px_rgba(30,45,75,0.14)] ring-1 ring-[#E8ECF2] transition duration-200 hover:-translate-y-1"
                         >
                           <div className="flex items-start justify-between gap-4">
@@ -781,10 +1044,15 @@ const ServicesSearchContainer = ({
                                 <span className="mt-1 inline-flex rounded-[3px] bg-[#DFEEEE] px-2 py-0.5 text-[11px] font-semibold leading-none text-[#426078]">
                                   {business.category || serviceTitle}
                                 </span>
+                                {business.referredBy && business.referralProfileUrl ? (
+                                  <Link href={business.referralProfileUrl} className="mt-1.5 flex items-center gap-1 text-[10px] font-semibold text-[#5962B8] hover:underline">
+                                    <BadgeCheck className="h-3 w-3" /> Referred by {business.referredBy.name}
+                                  </Link>
+                                ) : null}
                               </div>
                             </div>
                             <Link
-                              href={`/services/businesses/${business.businessOwnerId}?tab=reviews`}
+                              href={`/services/businesses/${business.businessOwnerId ?? business.listingId}?tab=reviews`}
                               className="inline-flex h-9 shrink-0 items-center justify-center rounded-[5px] border border-[#F8AA18] bg-[#FFF6D8] px-4 text-xs font-medium text-[#E56D00] transition hover:bg-[#F8AA18] hover:text-white"
                             >
                               Review
@@ -851,7 +1119,7 @@ const ServicesSearchContainer = ({
                               type="button"
                               onClick={() =>
                                 setSelectedBusiness({
-                                  id: business.businessOwnerId,
+                                  id: business.businessOwnerId ?? business.listingId,
                                   name: business.businessName,
                                 })
                               }
@@ -865,7 +1133,7 @@ const ServicesSearchContainer = ({
                               disabled={
                                 createConversation.isPending &&
                                 createConversation.variables?.businessOwnerId ===
-                                  business.businessOwnerId
+                                  (business.businessOwnerId ?? business.listingId)
                               }
                               className="inline-flex h-8 items-center justify-center rounded-[4px] border border-[#292E78] bg-white text-[#292E78] transition hover:bg-[#292E78] hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
                               aria-label={`Message ${business.businessName}`}
@@ -935,6 +1203,30 @@ const ServicesSearchContainer = ({
           if (!open) setSelectedBusiness(null);
         }}
       />
+
+      {claimInstructionsBusiness && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[#101828]/60 px-4 py-6 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="claim-instructions-title"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setClaimInstructionsBusiness(null);
+          }}
+        >
+          <div className="relative w-full max-w-[470px] rounded-2xl border border-white/70 bg-white p-6 shadow-[0_24px_70px_rgba(16,24,40,0.28)] sm:p-8">
+            <button type="button" onClick={() => setClaimInstructionsBusiness(null)} className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#E1E7EF] bg-[#F8FAFC] text-[#667085] hover:text-[#292D73]" aria-label="Close claim instructions"><X className="h-4 w-4" /></button>
+            <span className="flex h-14 w-14 items-center justify-center rounded-xl bg-[#EEF1FF] text-[#292D73]"><ShieldCheck className="h-7 w-7" /></span>
+            <h2 id="claim-instructions-title" className="mt-5 pr-8 text-xl font-extrabold text-[#171A3A]">Claim {claimInstructionsBusiness.businessName}</h2>
+            <p className="mt-3 text-sm leading-6 text-[#667085]">A secure claim link was sent to the business email supplied by the referrer. The owner must open that email, use the secure link, and sign in with the same verified email address.</p>
+            <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-900">For security, a public directory visitor cannot start the claim without the private email token.</p>
+            <div className="mt-6 grid gap-2 sm:grid-cols-2">
+              <button type="button" onClick={() => setClaimInstructionsBusiness(null)} className="h-11 rounded-lg border border-[#D0D5DD] text-xs font-bold text-[#475467] hover:bg-[#F8FAFC]">Close</button>
+              <Link href={claimInstructionsBusiness.profileUrl} className="inline-flex h-11 items-center justify-center rounded-lg bg-[#292D73] px-4 text-xs font-bold text-white hover:bg-[#20255F]">View Referral</Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showExistingBusinessNotice && (
         <div

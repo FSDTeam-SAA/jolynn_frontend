@@ -12,6 +12,7 @@ export type ServiceCategory = {
   status: "approved";
   isActive: boolean;
   sortOrder: number;
+  businessOwnerCount?: number;
 };
 
 type ServiceCategoriesResponse = {
@@ -26,7 +27,7 @@ type ServiceCategoriesResponse = {
   data: ServiceCategory[];
 };
 
-const fetchServiceCategories = async (): Promise<ServiceCategoriesResponse> => {
+const fetchServiceCategories = async (limit: number): Promise<ServiceCategoriesResponse> => {
   const apiUrl = (
     process.env.NEXT_PUBLIC_API_URL ??
     process.env.NEXT_PUBLIC_BACKEND_API_URL
@@ -35,7 +36,7 @@ const fetchServiceCategories = async (): Promise<ServiceCategoriesResponse> => {
 
   const params = new URLSearchParams({
     sortBy: "sortOrder",
-    limit: "50",
+    limit: String(limit),
     page: "1",
   });
   const response = await fetch(`${apiUrl}/service-categories/public?${params}`, {
@@ -50,13 +51,13 @@ const fetchServiceCategories = async (): Promise<ServiceCategoriesResponse> => {
   return result;
 };
 
-export const useServiceCategories = () =>
+export const useServiceCategories = (limit = 50) =>
   useQuery<ServiceCategoriesResponse>({
     queryKey: [
       "public-service-categories",
-      { sortBy: "sortOrder", limit: 50, page: 1 },
+      { sortBy: "sortOrder", limit, page: 1 },
     ],
-    queryFn: fetchServiceCategories,
+    queryFn: () => fetchServiceCategories(limit),
     staleTime: 5 * 60 * 1000,
     retry: 1,
   });

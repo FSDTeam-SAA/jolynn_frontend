@@ -1,12 +1,5 @@
-import React from 'react'
-import AddYourBusinessContainer from './_components/add-your-business-container'
+import AddYourBusinessContainer from "./_components/add-your-business-container";
 
-const AddYourBusinessPage = () => {
-  return (
-    <div>
-        <AddYourBusinessContainer/>
-    </div>
-  )
-}
+const AddYourBusinessPage = () => <AddYourBusinessContainer />;
 
-export default AddYourBusinessPage
+export default AddYourBusinessPage;

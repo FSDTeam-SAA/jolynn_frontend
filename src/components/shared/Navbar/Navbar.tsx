@@ -23,6 +23,7 @@ const navItems = [
   { label: "Services", href: "/services" },
   { label: "Help Wanted", href: "/job-posts" },
   { label: "About Us", href: "/about-us" },
+  { label: "Support Us", href: "/support-us" },
   // { label: "Contact Us", href: "/contact" },
 ];
 

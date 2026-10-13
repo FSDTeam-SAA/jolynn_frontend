@@ -3,6 +3,7 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import DeleteModal from "@/components/modals/delete-modal";
 import { useProfileQuery } from "@/hooks/APicalling";
+import { useCreateConversation } from "@/hooks/use-messages";
 import { useServiceCategories } from "@/hooks/use-service-categories";
 import {
   useLocationCities,
@@ -30,6 +31,7 @@ import {
   LogIn,
   Mail,
   MapPin,
+  MessageCircle,
   PlusCircle,
   Search,
   UserRound,
@@ -113,7 +115,7 @@ type DeleteHelpWantedResponse = {
 
 const PAGE_LIMIT = 9;
 type ViewMode = "grid" | "list";
-type SignInIntent = "report" | "create" | "business" | "sidequote";
+type SignInIntent = "report" | "create" | "business" | "sidequote" | "dm";
 type JobPostFilters = {
   category: string;
   state: string;
@@ -254,6 +256,7 @@ const JobPostsContainer = () => {
     | undefined;
 
   const token = sessionUser?.accessToken ?? sessionUser?.token;
+  const createConversation = useCreateConversation(token);
   const { data: profileResponse } = useProfileQuery(token);
   const profile = profileResponse?.data;
   const currentUserId = profile?._id ?? sessionUser?.id;
@@ -275,6 +278,7 @@ const JobPostsContainer = () => {
   };
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [zipcodeSearchTerm, setZipcodeSearchTerm] = useState("");
   const [draftFilters, setDraftFilters] = useState<JobPostFilters>({
     category: "",
     state: "",
@@ -307,6 +311,7 @@ const JobPostsContainer = () => {
   const [showExistingBusinessNotice, setShowExistingBusinessNotice] =
     useState(false);
   const loadMoreRef = useRef<HTMLDivElement>(null);
+  const activePostSearchTerm = zipcodeSearchTerm.trim() || searchTerm;
   const jobPostsQuery = useInfiniteQuery<
     HelpWantedResponse,
     Error,
@@ -317,7 +322,7 @@ const JobPostsContainer = () => {
     queryKey: [
       "help-wanted",
       PAGE_LIMIT,
-      searchTerm,
+      activePostSearchTerm,
       appliedFilters.category,
       appliedFilters.state,
       appliedFilters.city,
@@ -326,7 +331,7 @@ const JobPostsContainer = () => {
     queryFn: ({ pageParam }) =>
       fetchJobPosts(
         pageParam,
-        searchTerm,
+        activePostSearchTerm,
         appliedFilters.category,
         appliedFilters.state,
         appliedFilters.city,
@@ -504,6 +509,42 @@ const JobPostsContainer = () => {
     window.location.href = `mailto:${email}`;
   };
 
+  const openDirectMessage = (post: HelpWantedPost) => {
+    if (!token) {
+      setSignInIntent("dm");
+      return;
+    }
+
+    if (isOwnPost(post)) {
+      toast.error("You cannot start a conversation with your own job post.");
+      return;
+    }
+
+    const recipientId = getPostUserId(post);
+    if (!recipientId) {
+      toast.error("The job poster is no longer available for messages.");
+      return;
+    }
+
+    createConversation.mutate(
+      {
+        businessOwnerId: recipientId,
+        subject: `Regarding your ${post.category} request`,
+        message: `Hello, I saw your help wanted post for ${post.category} and would like to help.`,
+      },
+      {
+        onSuccess: (result) => {
+          const conversationId = result?.conversation?._id || result?._id;
+          router.push(
+            `/account/message${
+              conversationId ? `?conversationId=${conversationId}` : ""
+            }`,
+          );
+        },
+      },
+    );
+  };
+
   const submitReport = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!selectedPostId || !reportMessage.trim()) {
@@ -532,6 +573,7 @@ const JobPostsContainer = () => {
     setDraftFilters(reset);
     setAppliedFilters(reset);
     setSearchTerm("");
+    setZipcodeSearchTerm("");
   };
 
   return (
@@ -541,11 +583,13 @@ const JobPostsContainer = () => {
           <p className="order-1 shrink-0 text-sm font-semibold text-[#667481]" aria-live="polite">
             {jobPostsQuery.isPending ? "Finding job posts..." : `${total} job post${total === 1 ? "" : "s"} found`}
           </p>
-          <label className="order-2 flex h-10 w-full items-center gap-2 rounded-lg border border-[#D8DEE8] bg-white px-3 sm:mx-auto sm:max-w-md">
-            <Search className="h-4 w-4 shrink-0 text-[#667085]" />
-            <span className="sr-only">Global search job posts</span>
-            <input type="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Search job posts..." className="min-w-0 flex-1 bg-transparent text-sm font-medium text-[#344054] outline-none placeholder:text-[#98A2B3]" />
-          </label>
+          <div className="order-2 w-full sm:mx-auto sm:max-w-md">
+            <label className="flex h-10 w-full items-center gap-2 rounded-lg border border-[#D8DEE8] bg-white px-3">
+              <Search className="h-4 w-4 shrink-0 text-[#667085]" />
+              <span className="sr-only">Search Help Wanted posts</span>
+              <input type="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Search Help Wanted..." className="min-w-0 flex-1 bg-transparent text-sm font-medium text-[#344054] outline-none placeholder:text-[#98A2B3]" />
+            </label>
+          </div>
           <div className="order-3 flex flex-wrap items-center justify-start gap-2 sm:justify-end">
           <button
             type="button"
@@ -608,8 +652,8 @@ const JobPostsContainer = () => {
                 <input
                   type="search"
                   name="searchTerm"
-                  value={searchTerm}
-                  onChange={(event) => setSearchTerm(event.target.value)}
+                  value={zipcodeSearchTerm}
+                  onChange={(event) => setZipcodeSearchTerm(event.target.value)}
                   placeholder="Search by Zipcode"
                   autoComplete="postal-code"
                   className="h-10 w-full rounded-[6px] border border-[#A7A7A7] bg-white py-2 pl-9 pr-3 text-[12px] font-medium text-[#344054] outline-none placeholder:font-normal placeholder:text-[#98A2B3] focus:border-[#292D73] focus:ring-2 focus:ring-[#292D73]/15"
@@ -652,7 +696,9 @@ const JobPostsContainer = () => {
         ) : posts.length === 0 ? (
           <div className="flex min-h-[280px] items-center justify-center rounded-[8px] border border-[#D4F0F1] bg-[#F0FEFE] text-center">
             <p className="text-sm font-semibold text-[#667481]">
-              {searchTerm.trim() || Object.values(appliedFilters).some(Boolean)
+              {searchTerm.trim() ||
+              zipcodeSearchTerm.trim() ||
+              Object.values(appliedFilters).some(Boolean)
                 ? "No job posts match your filters."
                 : "No job posts are available yet."}
             </p>
@@ -673,6 +719,10 @@ const JobPostsContainer = () => {
                 const publicUsername = normalizePublicUsername(
                   populatedUser?.username || post.username,
                 );
+                const canDirectMessage = Boolean(getPostUserId(post)) && !isOwnPost(post);
+                const isStartingConversation =
+                  createConversation.isPending &&
+                  createConversation.variables?.businessOwnerId === getPostUserId(post);
 
                 if (viewMode === "list") {
                   return (
@@ -720,7 +770,7 @@ const JobPostsContainer = () => {
                           </div>
                         </div>
 
-                        <div className="flex shrink-0 items-center">
+                        <div className="flex shrink-0 items-center gap-2">
                           <button
                             type="button"
                             onClick={() => setPostToView(post)}
@@ -733,6 +783,17 @@ const JobPostsContainer = () => {
                               aria-hidden="true"
                             />
                           </button>
+                          {canDirectMessage && (
+                            <button
+                              type="button"
+                              onClick={() => openDirectMessage(post)}
+                              disabled={isStartingConversation}
+                              className="inline-flex h-9 items-center justify-center gap-1 rounded-md bg-[#292D73] px-3 text-[11px] font-bold text-white transition hover:bg-[#1F2464] disabled:cursor-wait disabled:opacity-60"
+                            >
+                              <MessageCircle className="h-3.5 w-3.5" />
+                              {isStartingConversation ? "Opening..." : "DM"}
+                            </button>
+                          )}
                         </div>
                       </div>
                     </article>
@@ -858,15 +919,26 @@ const JobPostsContainer = () => {
                         </button>
                       </div>
 
-                      <div className="mt-auto pt-4">
+                      <div className="mt-auto grid grid-cols-1 gap-2 pt-4 sm:grid-cols-2">
                         <button
                           type="button"
                           onClick={() => openSideQuote(post.email)}
-                          className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-primary px-3 text-xs font-bold text-white shadow-[0_5px_12px_rgba(41,45,115,0.18)] transition hover:bg-[#1F2464] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2"
+                          className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[#292D73] bg-white px-3 text-xs font-bold text-[#292D73] transition hover:bg-[#EEF2FF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2"
                         >
                           <Mail className="h-4 w-4" />
                           SideQuote
                         </button>
+                        {canDirectMessage && (
+                          <button
+                            type="button"
+                            onClick={() => openDirectMessage(post)}
+                            disabled={isStartingConversation}
+                            className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-primary px-3 text-xs font-bold text-white shadow-[0_5px_12px_rgba(41,45,115,0.18)] transition hover:bg-[#1F2464] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60"
+                          >
+                            <MessageCircle className="h-4 w-4" />
+                            {isStartingConversation ? "Opening..." : "DM"}
+                          </button>
+                        )}
                       </div>
                     </div>
                   </article>
@@ -1103,6 +1175,21 @@ const JobPostsContainer = () => {
                   <Mail className="h-4 w-4" />
                   SideQuote
                 </button>
+                {!isOwnPost(postToView) && getPostUserId(postToView) && (
+                  <button
+                    type="button"
+                    onClick={() => openDirectMessage(postToView)}
+                    disabled={
+                      createConversation.isPending &&
+                      createConversation.variables?.businessOwnerId ===
+                        getPostUserId(postToView)
+                    }
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-5 text-xs font-extrabold text-white shadow-[0_6px_14px_rgba(41,45,115,0.18)] transition hover:bg-[#1F2464] disabled:cursor-wait disabled:opacity-60"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    DM
+                  </button>
+                )}
                 {isOwnPost(postToView) && (
                   <button
                     type="button"
@@ -1304,6 +1391,8 @@ const JobPostsContainer = () => {
                 ? "Sign in to add a job post"
                 : signInIntent === "business"
                   ? "Sign in to add your business"
+                  : signInIntent === "dm"
+                    ? "Sign in to send a message"
                   : "Sign in to report this post"}
             </h2>
             <p className="mt-2 text-[13px] leading-5 text-[#667085]">
@@ -1313,6 +1402,8 @@ const JobPostsContainer = () => {
                   ? "You need to sign in before you can add your business."
                   : signInIntent === "sidequote"
                     ? "You need to sign in before you can get a SideQuote."
+                    : signInIntent === "dm"
+                      ? "You need to sign in before you can message the job poster."
                     : "You need to sign in before you can submit a report."}
             </p>
             <div className="mt-6 grid grid-cols-2 gap-3">

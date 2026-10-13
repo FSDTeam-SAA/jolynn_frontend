@@ -170,7 +170,7 @@ const ServicesContainer = () => {
                       viewMode === "grid" ? "mt-4" : ""
                     }`}
                   >
-                    {service.name}
+                     {service.name} ({service.businessOwnerCount ?? 0})
                   </h2>
                   <p
                     className={`mt-2 line-clamp-3 text-[11px] font-medium leading-[1.45] text-[#667085] md:text-xs ${

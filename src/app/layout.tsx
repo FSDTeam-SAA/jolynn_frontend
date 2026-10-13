@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 import "react-quill/dist/quill.snow.css";
 import AppProvider from "@/providers/app-provider";
@@ -26,6 +27,18 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${propinse.className} antialiased`}>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-HV6GTG0H48"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-HV6GTG0H48');
+          `}
+        </Script>
         <AppProvider>{children}</AppProvider>
         <Toaster />
       </body>

@@ -21,8 +21,7 @@ const OurMission = () => {
                 engine and service procurement directory for specialized
                 non-corporate labor. By explicitly excluding enterprise
                 competitors, we insulate and protect a highly loyal, agile
-                ecosystem of local subject matter experts and independent116690
-                
+                ecosystem of local subject matter experts and independent
                 workers.
               </p>
 
