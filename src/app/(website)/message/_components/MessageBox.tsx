@@ -17,8 +17,10 @@ import {
   Paperclip,
   Download,
   Loader2,
+  Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import DeleteModal from "@/components/modals/delete-modal";
 import { useProfileQuery } from "@/hooks/APicalling";
 import {
   useUserConversations,
@@ -27,6 +29,7 @@ import {
   useBusinessConversationMessages,
   useSendUserReply,
   useSendBusinessReply,
+  useDeleteMessage,
   ApiConversation,
   ApiMessage,
 } from "@/hooks/use-messages";
@@ -109,11 +112,13 @@ function MessageBoxContent({
   const sendUserReply = useSendUserReply(token);
   const sendBusinessReply = useSendBusinessReply(token);
   const activeSendReply = isUserMode ? sendUserReply : sendBusinessReply;
+  const deleteMessage = useDeleteMessage(token);
 
   // Search & Form State
   const [searchQuery, setSearchQuery] = useState("");
   const [inputText, setInputText] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [messageToDelete, setMessageToDelete] = useState<ApiMessage | null>(null);
   const [mobileShowChat, setMobileShowChat] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const chatStreamRef = useRef<HTMLDivElement>(null);
@@ -502,6 +507,24 @@ function MessageBoxContent({
                           ) : (
                             <span>{formattedTime}</span>
                           )}
+                          <button
+                            type="button"
+                            onClick={() => setMessageToDelete(msg)}
+                            disabled={
+                              deleteMessage.isPending &&
+                              deleteMessage.variables?.messageId === msg._id
+                            }
+                            className="ml-1 inline-flex h-6 w-6 items-center justify-center rounded-md text-slate-400 transition hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 disabled:cursor-not-allowed disabled:opacity-60"
+                            aria-label="Delete message"
+                            title="Delete message"
+                          >
+                            {deleteMessage.isPending &&
+                            deleteMessage.variables?.messageId === msg._id ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-3.5 w-3.5" />
+                            )}
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -588,6 +611,24 @@ function MessageBoxContent({
           </>
         )}
       </div>
+      <DeleteModal
+        isOpen={Boolean(messageToDelete)}
+        onClose={() => setMessageToDelete(null)}
+        onConfirm={() => {
+          if (!messageToDelete) return;
+          deleteMessage.mutate(
+            {
+              messageId: messageToDelete._id,
+              conversationId: activeContactId,
+              mode,
+            },
+            { onSuccess: () => setMessageToDelete(null) },
+          );
+        }}
+        isDeleting={deleteMessage.isPending}
+        title="Delete message?"
+        desc="This message will be permanently deleted."
+      />
       <style jsx>{`
         .message-scrollbar-hidden {
           scrollbar-width: none;

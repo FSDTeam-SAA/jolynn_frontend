@@ -286,6 +286,59 @@ export const useSendBusinessReply = (token?: string) => {
   });
 };
 
+// Delete a message from a conversation.
+export const useDeleteMessage = (token?: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      messageId,
+      conversationId,
+      mode,
+    }: {
+      messageId: string;
+      conversationId: string;
+      mode: "user" | "business";
+    }) => {
+      if (!token) throw new Error("Please sign in to delete a message.");
+
+      const response = await fetch(
+        `${getApiUrl()}/messages/${encodeURIComponent(messageId)}`,
+        {
+          method: "DELETE",
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+      const result = await response.json().catch(() => null);
+      if (!response.ok || result?.success === false) {
+        throw new Error(result?.message || "Failed to delete message.");
+      }
+
+      return { conversationId, mode, message: result?.message };
+    },
+    onSuccess: ({ conversationId, mode, message }) => {
+      toast.success(message || "Message deleted successfully.");
+      queryClient.invalidateQueries({
+        queryKey: [
+          mode === "user"
+            ? "user-conversation-messages"
+            : "business-conversation-messages",
+          conversationId,
+        ],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [mode === "user" ? "user-conversations" : "business-conversations"],
+      });
+    },
+    onError: (err: unknown) => {
+      if (err instanceof Error) toast.error(err.message);
+      else toast.error("Failed to delete message.");
+    },
+  });
+};
+
 // Create Conversation (POST /messages)
 export const useCreateConversation = (token?: string) => {
   const queryClient = useQueryClient();
