@@ -127,6 +127,8 @@ type CompactDropdownProps = {
   value: string;
   options: string[];
   placeholder: string;
+  searchPlaceholder?: string;
+  emptyMessage?: string;
   disabled?: boolean;
   onChange: (value: string) => void;
 };
@@ -135,32 +137,69 @@ const CompactDropdown = ({
   value,
   options,
   placeholder,
+  searchPlaceholder,
+  emptyMessage = "No matching option found.",
   disabled = false,
   onChange,
 }: CompactDropdownProps) => {
   const [open, setOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const filteredOptions = searchPlaceholder
+    ? options.filter((option) =>
+        option.toLocaleLowerCase().includes(searchTerm.trim().toLocaleLowerCase()),
+      )
+    : options;
 
   return (
     <div className="relative">
       <button
         type="button"
         disabled={disabled}
-        onClick={() => setOpen((current) => !current)}
+        onClick={() =>
+          setOpen((current) => {
+            if (current) setSearchTerm("");
+            return !current;
+          })
+        }
         className="flex h-10 w-full items-center justify-between rounded-[6px] border border-[#A7A7A7] bg-white px-3 pr-10 text-left text-[12px] font-medium text-[#344054] outline-none disabled:cursor-not-allowed disabled:bg-[#F8FAFC]"
       >
         <span className="truncate">{value || placeholder}</span>
         <ChevronDown className="pointer-events-none absolute right-3 h-4 w-4 text-[#667085]" />
       </button>
       {open && !disabled && (
-        <div className="absolute inset-x-0 top-[calc(100%+4px)] z-50 max-h-52 overflow-y-auto rounded-md border border-[#D0D5DD] bg-white p-1 shadow-[0_10px_24px_rgba(16,24,40,0.18)]">
+        <div className="absolute inset-x-0 top-[calc(100%+4px)] z-50 rounded-md border border-[#D0D5DD] bg-white p-1 shadow-[0_10px_24px_rgba(16,24,40,0.18)]">
+          {searchPlaceholder && (
+            <div className="relative border-b border-[#EAECF0] p-1 pb-2">
+              <Search className="pointer-events-none absolute left-3 top-3 h-3.5 w-3.5 text-[#667085]" aria-hidden="true" />
+              <input
+                autoFocus
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Escape") {
+                    setOpen(false);
+                    setSearchTerm("");
+                  }
+                }}
+                placeholder={searchPlaceholder}
+                aria-label={searchPlaceholder}
+                className="w-full rounded border border-[#D0D5DD] py-1.5 pl-7 pr-2 text-xs text-[#344054] outline-none focus:border-[#292D73] focus:ring-2 focus:ring-[#292D73]/15"
+              />
+            </div>
+          )}
+          <div className="max-h-44 overflow-y-auto pt-1">
           <button type="button" onClick={() => { onChange(""); setOpen(false); }} className="block w-full rounded px-2.5 py-2 text-left text-xs text-[#667085] hover:bg-[#F2F4F7]">
             {placeholder}
           </button>
-          {options.map((option) => (
+          {filteredOptions.map((option) => (
             <button key={option} type="button" onClick={() => { onChange(option); setOpen(false); }} className={`block w-full rounded px-2.5 py-2 text-left text-xs ${value === option ? "bg-[#EEF2FF] font-semibold text-[#292D73]" : "text-[#344054] hover:bg-[#F2F4F7]"}`}>
               {option}
             </button>
           ))}
+          {searchPlaceholder && filteredOptions.length === 0 && (
+            <p className="px-2.5 py-3 text-xs text-[#667085]">{emptyMessage}</p>
+          )}
+          </div>
         </div>
       )}
     </div>
@@ -659,9 +698,9 @@ const JobPostsContainer = () => {
                   className="h-10 w-full rounded-[6px] border border-[#A7A7A7] bg-white py-2 pl-9 pr-3 text-[12px] font-medium text-[#344054] outline-none placeholder:font-normal placeholder:text-[#98A2B3] focus:border-[#292D73] focus:ring-2 focus:ring-[#292D73]/15"
                 />
               </label>
-              <CompactDropdown value={draftFilters.category} options={(categoriesQuery.data?.data ?? []).filter((category) => category.isActive).map((category) => category.name)} placeholder={categoriesQuery.isPending ? "Loading categories..." : "Select Category"} disabled={categoriesQuery.isPending || categoriesQuery.isError} onChange={(category) => updateFilter({ category })} />
-              <CompactDropdown value={draftFilters.state} options={states.map((state) => state.name)} placeholder={statesQuery.isPending ? "Loading states..." : "State"} disabled={statesQuery.isPending || statesQuery.isError} onChange={(state) => updateFilter({ state, city: "" })} />
-              <CompactDropdown value={draftFilters.city} options={cities} placeholder={!selectedState ? "Select State First" : citiesQuery.isPending ? "Loading cities..." : "City"} disabled={!selectedState || citiesQuery.isPending || citiesQuery.isError} onChange={(city) => updateFilter({ city })} />
+              <CompactDropdown value={draftFilters.category} options={(categoriesQuery.data?.data ?? []).filter((category) => category.isActive).map((category) => category.name)} placeholder={categoriesQuery.isPending ? "Loading categories..." : "Select Category"} searchPlaceholder="Search categories..." emptyMessage="No category found." disabled={categoriesQuery.isPending || categoriesQuery.isError} onChange={(category) => updateFilter({ category })} />
+              <CompactDropdown value={draftFilters.state} options={states.map((state) => state.name)} placeholder={statesQuery.isPending ? "Loading states..." : "State"} searchPlaceholder="Search states..." emptyMessage="No state found." disabled={statesQuery.isPending || statesQuery.isError} onChange={(state) => updateFilter({ state, city: "" })} />
+              <CompactDropdown value={draftFilters.city} options={cities} placeholder={!selectedState ? "Select State First" : citiesQuery.isPending ? "Loading cities..." : "City"} searchPlaceholder="Search cities..." emptyMessage="No city found." disabled={!selectedState || citiesQuery.isPending || citiesQuery.isError} onChange={(city) => updateFilter({ city })} />
               <CompactDropdown value={draftFilters.budgetRange} options={["$0 - $500", "$500 - $1,000", "$1,000 - $2,500", "$2,500 - $5,000", "$5,000 - $10,000", "$10,000 - $50,000"]} placeholder="Budget Range" onChange={(budgetRange) => updateFilter({ budgetRange })} />
               <button type="submit" disabled={jobPostsQuery.isFetching} className="h-11 w-full rounded-[6px] bg-[#292D73] text-[12px] font-extrabold text-white transition hover:bg-[#20255F] disabled:cursor-wait disabled:opacity-60">Apply Filters</button>
               <button type="button" onClick={resetFilters} className="h-11 w-full rounded-[6px] bg-[#EEEEEE] text-[11px] font-extrabold text-[#292D73] transition hover:bg-[#E5E7EB]">Reset</button>

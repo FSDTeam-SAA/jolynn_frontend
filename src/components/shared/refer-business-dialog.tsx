@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, type ChangeEvent, type FormEvent, type ReactNode } from "react";
-import { Building2, ChevronDown, ImagePlus, Star, X } from "lucide-react";
+import { Building2, ChevronDown, ImagePlus, Search, Star, X } from "lucide-react";
 import Image from "next/image";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
@@ -43,8 +43,20 @@ function ReferralSelect({
   onChange,
 }: ReferralSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const id = useId();
   const selectedLabel = options.find((option) => option.value === value)?.label;
+  const normalizedSearchTerm = searchTerm.trim().toLocaleLowerCase();
+  const filteredOptions = normalizedSearchTerm
+    ? options.filter((option) => option.label.toLocaleLowerCase().includes(normalizedSearchTerm))
+    : options;
+
+  const toggleOpen = () => {
+    setIsOpen((current) => {
+      if (current) setSearchTerm("");
+      return !current;
+    });
+  };
 
   return (
     <label className="block text-xs font-semibold text-[#344054]">
@@ -57,7 +69,7 @@ function ReferralSelect({
           role="combobox"
           aria-controls={isOpen ? `${id}-options` : undefined}
           disabled={disabled || loading}
-          onClick={() => setIsOpen((current) => !current)}
+          onClick={toggleOpen}
           aria-haspopup="listbox"
           aria-expanded={isOpen}
           aria-invalid={Boolean(error)}
@@ -70,22 +82,44 @@ function ReferralSelect({
           <ChevronDown className={`h-4 w-4 shrink-0 text-[#667085] transition-transform ${isOpen ? "rotate-180" : ""}`} />
         </button>
         {isOpen && !loading && !disabled && (
-          <div id={`${id}-options`} role="listbox" aria-labelledby={id} className="absolute z-30 mt-1 max-h-52 w-full overflow-y-auto rounded-lg border border-[#D0D5DD] bg-white p-1 shadow-[0_12px_24px_rgba(16,24,40,0.16)]">
-            {options.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                role="option"
-                aria-selected={value === option.value}
-                onClick={() => {
-                  onChange(option.value);
-                  setIsOpen(false);
+          <div className="absolute z-30 mt-1 w-full rounded-lg border border-[#D0D5DD] bg-white p-1 shadow-[0_12px_24px_rgba(16,24,40,0.16)]">
+            <div className="relative border-b border-[#EAECF0] p-1 pb-2">
+              <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-[#667085]" aria-hidden="true" />
+              <input
+                autoFocus
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Escape") {
+                    setIsOpen(false);
+                    setSearchTerm("");
+                  }
                 }}
-                className={`block w-full rounded-md px-3 py-2 text-left text-sm transition ${value === option.value ? "bg-[#EEF1FF] font-semibold text-[#292D73]" : "text-[#344054] hover:bg-[#F8FAFC]"}`}
-              >
-                {option.label}
-              </button>
-            ))}
+                placeholder={`Search ${label.toLocaleLowerCase()}...`}
+                aria-label={`Search ${label.toLocaleLowerCase()}`}
+                className="w-full rounded-md border border-[#D0D5DD] py-2 pl-8 pr-3 text-sm font-normal text-[#344054] outline-none focus:border-[#292D73] focus:ring-2 focus:ring-[#292D73]/15"
+              />
+            </div>
+            <div id={`${id}-options`} role="listbox" aria-labelledby={id} className="max-h-48 overflow-y-auto pt-1">
+              {filteredOptions.length ? filteredOptions.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  role="option"
+                  aria-selected={value === option.value}
+                  onClick={() => {
+                    onChange(option.value);
+                    setIsOpen(false);
+                    setSearchTerm("");
+                  }}
+                  className={`block w-full rounded-md px-3 py-2 text-left text-sm transition ${value === option.value ? "bg-[#EEF1FF] font-semibold text-[#292D73]" : "text-[#344054] hover:bg-[#F8FAFC]"}`}
+                >
+                  {option.label}
+                </button>
+              )) : (
+                <p className="px-3 py-3 text-sm font-normal text-[#667085]">No matching {label.toLocaleLowerCase()} found.</p>
+              )}
+            </div>
           </div>
         )}
       </div>
@@ -176,11 +210,7 @@ function ReferralForm({ onClose, token }: { onClose: () => void; token: string }
       setMessage("Please select the business state and city.");
       return;
     }
-    if (!(image instanceof File) || !image.size) {
-      setMessage("Please upload a business image.");
-      return;
-    }
-    if (!image.type.startsWith("image/") || image.size > 5 * 1024 * 1024) {
+    if (image instanceof File && image.size && (!image.type.startsWith("image/") || image.size > 5 * 1024 * 1024)) {
       setMessage("Please upload an image of 5 MB or smaller.");
       return;
     }
@@ -188,11 +218,6 @@ function ReferralForm({ onClose, token }: { onClose: () => void; token: string }
       setMessage("Please enter the business email address.");
       return;
     }
-    if (!rating || review.length < 10) {
-      setMessage("Please select a rating and write a review of at least 10 characters.");
-      return;
-    }
-
     const body = new FormData();
     body.append("businessName", businessName);
     body.append("serviceCategoryId", selectedCategory);
@@ -200,9 +225,9 @@ function ReferralForm({ onClose, token }: { onClose: () => void; token: string }
     body.append("city", selectedCity);
     body.append("businessEmail", businessEmail.toLowerCase());
     if (businessPhone) body.append("businessPhone", businessPhone);
-    body.append("rating", String(rating));
-    body.append("review", review);
-    body.append("image", image);
+    if (rating) body.append("rating", String(rating));
+    if (review) body.append("review", review);
+    if (image instanceof File && image.size) body.append("image", image);
 
     createReferral.mutate(body, {
       onSuccess: async (result) => {
@@ -324,11 +349,11 @@ function ReferralForm({ onClose, token }: { onClose: () => void; token: string }
           {errorFor("businessPhone")}
         </label>
         <label className="text-xs font-semibold text-[#344054] sm:col-span-2 lg:col-span-1">
-          Business image *
+          Business image (optional)
           <span className="mt-2 flex min-h-[42px] items-center gap-2 rounded-lg border border-dashed border-[#A8B2D1] bg-[#F8FAFF] px-3 py-2 text-sm font-normal text-[#475467] transition hover:border-[#292D73]">
             <ImagePlus className="h-4 w-4 shrink-0 text-[#292D73]" aria-hidden="true" />
             <span className="min-w-0 flex-1 truncate">{imagePreview ? "Image selected" : "Upload an image"}</span>
-            <input ref={imageInput} name="image" type="file" accept="image/*" required aria-invalid={Boolean(fieldErrors.image)} className="w-[115px] text-xs file:mr-2 file:rounded-md file:border-0 file:bg-[#E6E9FA] file:px-2 file:py-1 file:text-xs file:font-semibold file:text-[#292D73] hover:file:bg-[#DCE1FA]" onChange={handleImageChange} />
+            <input ref={imageInput} name="image" type="file" accept="image/*" aria-invalid={Boolean(fieldErrors.image)} className="w-[115px] text-xs file:mr-2 file:rounded-md file:border-0 file:bg-[#E6E9FA] file:px-2 file:py-1 file:text-xs file:font-semibold file:text-[#292D73] hover:file:bg-[#DCE1FA]" onChange={handleImageChange} />
           </span>
           <span className="mt-1 block text-[11px] font-normal text-[#667085]">Maximum file size: 5 MB.</span>
           {errorFor("image")}
@@ -353,11 +378,11 @@ function ReferralForm({ onClose, token }: { onClose: () => void; token: string }
       )}
       <p id="referral-contact-hint" className="text-xs text-[#667085]">The business email is required so we can send its secure claim link. Phone is optional.</p>
       <fieldset>
-        <legend className="text-xs font-semibold text-[#344054]">Your rating *</legend>
+        <legend className="text-xs font-semibold text-[#344054]">Your rating (optional)</legend>
         <div className="mt-2 flex items-center gap-2">
           {[1, 2, 3, 4, 5].map((value) => (
             <label key={value} className="cursor-pointer rounded-md p-1">
-              <input type="radio" name="rating" value={value} checked={rating === value} onChange={() => setRating(value)} required className="peer sr-only" aria-label={`${value} ${value === 1 ? "star" : "stars"}`} />
+              <input type="radio" name="rating" value={value} checked={rating === value} onChange={() => setRating(value)} className="peer sr-only" aria-label={`${value} ${value === 1 ? "star" : "stars"}`} />
               <Star aria-hidden="true" className={`h-7 w-7 rounded-sm peer-focus-visible:ring-2 peer-focus-visible:ring-[#292D73] peer-focus-visible:ring-offset-2 ${value <= rating ? "fill-[#FFB800] text-[#FFB800]" : "text-[#98A2B3]"}`} />
             </label>
           ))}
@@ -366,8 +391,8 @@ function ReferralForm({ onClose, token }: { onClose: () => void; token: string }
       </fieldset>
       {errorFor("rating")}
       <label className="block text-xs font-semibold text-[#344054]">
-        Your review *
-        <textarea name="review" required minLength={10} maxLength={1500} rows={4} aria-invalid={Boolean(fieldErrors.review)} placeholder="Tell us about your experience with this business..." className={`${inputClass} resize-y`} />
+        Your review (optional)
+        <textarea name="review" minLength={10} maxLength={1500} rows={4} aria-invalid={Boolean(fieldErrors.review)} placeholder="Tell us about your experience with this business..." className={`${inputClass} resize-y`} />
         {errorFor("review")}
       </label>
       {message && <p role="alert" className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">{message}</p>}

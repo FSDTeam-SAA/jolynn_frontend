@@ -28,7 +28,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${propinse.className} antialiased`}>
         <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-HV6GTG0H48"
+          src="https://www.googletagmanager.com/gtag/js?id=G-FHRL8TH3BH"
           strategy="afterInteractive"
         />
         <Script id="google-analytics" strategy="afterInteractive">
@@ -36,7 +36,7 @@ export default function RootLayout({
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-            gtag('config', 'G-HV6GTG0H48');
+            gtag('config', 'G-FHRL8TH3BH');
           `}
         </Script>
         <AppProvider>{children}</AppProvider>
