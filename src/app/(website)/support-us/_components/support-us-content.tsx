@@ -1,4 +1,5 @@
 import { ArrowUpRight, HeartHandshake, ShieldCheck, UsersRound } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 const goFundMeUrl =
@@ -25,7 +26,7 @@ const values = [
 const SupportUsContent = () => {
   return (
     <main className="overflow-hidden bg-[#F7FAFA] text-[#1B2234]">
-      <section className="relative isolate overflow-hidden bg-[#22245F] px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
+      <section className="relative isolate overflow-hidden bg-[#22245F] px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
         <div className="absolute -left-24 top-1/2 h-72 w-72 -translate-y-1/2 rounded-full bg-[#7FC5BD]/20 blur-3xl" />
         <div className="absolute -right-16 -top-24 h-80 w-80 rounded-full border-[36px] border-white/10" />
 
@@ -34,10 +35,10 @@ const SupportUsContent = () => {
             <p className="inline-flex items-center rounded-full border border-white/25 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-[#DDEDEC]">
               Help shape what&apos;s next
             </p>
-            <h1 className="mt-5 text-balance text-4xl font-bold leading-tight text-white sm:text-5xl lg:text-6xl">
+            <h1 className="mt-4 text-balance text-4xl font-bold leading-tight text-white sm:text-5xl">
               Support Us
             </h1>
-            <p className="mx-auto mt-5 max-w-2xl text-pretty text-base leading-7 text-[#E3EEEE] sm:text-lg">
+            <p className="mx-auto mt-4 max-w-2xl text-pretty text-base leading-7 text-[#E3EEEE] sm:text-lg">
               Together, we can build a more sustainable path for small businesses to grow.
             </p>
           </div>
@@ -47,7 +48,18 @@ const SupportUsContent = () => {
       <section className="px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
         <div className="container">
           <div className="mx-auto max-w-4xl">
-            <div className="rounded-2xl border border-[#D8E6E5] bg-white p-6 shadow-[0_18px_55px_rgba(34,36,95,0.08)] sm:p-9 lg:p-12">
+            <div className="p-0 sm:p-2 lg:p-4">
+              <div className="mx-auto mb-8 w-full max-w-[420px] md:float-right md:mb-5 md:ml-8 md:w-[42%]">
+                <Image
+                  src="/assets/images/supp-enhanced.png"
+                  alt="A group of people gathered together"
+                  width={420}
+                  height={569}
+                  quality={100}
+                  className="h-auto w-full rounded-2xl shadow-[0_12px_32px_rgba(34,36,95,0.12)]"
+                />
+              </div>
+
               <div className="space-y-6 text-base leading-8 text-[#4A5568] sm:text-[17px]">
                 <p>
                   <strong className="font-semibold text-[#22245F]">
@@ -84,7 +96,7 @@ const SupportUsContent = () => {
                 </p>
               </div>
 
-              <div className="mt-9 border-t border-[#D8E6E5] pt-8">
+              <div className="clear-both mt-9 border-t border-[#D8E6E5] pt-8">
                 <a
                   href={goFundMeUrl}
                   target="_blank"
