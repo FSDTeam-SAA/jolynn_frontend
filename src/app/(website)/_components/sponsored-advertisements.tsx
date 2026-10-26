@@ -1,8 +1,9 @@
 "use client";
 
 import { Skeleton } from "@/components/ui/skeleton";
+import ReferBusinessDialog from "@/components/shared/refer-business-dialog";
 import { useQuery } from "@tanstack/react-query";
-import { AlertCircle, ExternalLink, Megaphone } from "lucide-react";
+import { AlertCircle, ArrowRight, Building2, ExternalLink, Megaphone } from "lucide-react";
 import Image from "next/image";
 
 type SponsoredAd = {
@@ -178,7 +179,36 @@ const SponsoredAdvertisements = () => {
   const sponsoredAds = data?.data ?? [];
 
   return (
-    <section className="bg-white px-5 py-12 sm:px-8 md:py-16 lg:py-[58px]">
+    <>
+      <section className="bg-white px-5 pb-0 pt-12 sm:px-8 md:pt-16 lg:pt-[58px]">
+        <div className="container">
+          <div className="relative min-h-[172px] overflow-hidden rounded-2xl border border-[#CBD4FF] bg-gradient-to-r from-[#EDF0FF] via-[#F9FBFF] to-[#E6F8F5] px-5 py-8 shadow-[0_14px_32px_rgba(41,45,115,0.12)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_38px_rgba(41,45,115,0.16)] sm:px-8 sm:py-9">
+            <div className="pointer-events-none absolute -right-10 -top-14 h-44 w-44 rounded-full bg-[#B8C4FF]/50 blur-2xl" aria-hidden="true" />
+            <div className="pointer-events-none absolute -bottom-16 left-1/3 h-36 w-36 rounded-full bg-[#9BE5DA]/45 blur-2xl" aria-hidden="true" />
+            <div className="pointer-events-none absolute bottom-5 right-1/4 h-16 w-16 rounded-full border border-[#AAB8FF]/35" aria-hidden="true" />
+            <div className="relative flex min-h-[108px] flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-4">
+                <span className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#292D73] to-[#5B6AC8] text-white shadow-[0_10px_20px_rgba(41,45,115,0.28)]">
+                  <Building2 className="h-6 w-6" aria-hidden="true" />
+                </span>
+                <div>
+                  <p className="text-lg font-extrabold text-[#292D73]">Know a great local business?</p>
+                  <p className="mt-2 max-w-2xl text-sm leading-6 text-[#5D6B83]">Refer a business you trust and help more homeowners discover reliable local services.</p>
+                </div>
+              </div>
+              <ReferBusinessDialog
+                trigger={
+                  <button type="button" className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#292D73] to-[#4759B8] px-6 text-sm font-bold text-white shadow-[0_8px_16px_rgba(41,45,115,0.24)] transition hover:from-[#20255F] hover:to-[#3D4DA3] hover:shadow-[0_10px_20px_rgba(41,45,115,0.3)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2">
+                    Refer a Business
+                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                  </button>
+                }
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+      <section className="bg-white px-5 pb-12 pt-8 sm:px-8 md:pb-16 lg:pb-[58px]">
       <div className="container">
         <div className=" text-center">
           <h2 className="text-2xl md:text-[28px] lg:text-[32px] font-bold leading-normal text-primary">
@@ -342,7 +372,8 @@ const SponsoredAdvertisements = () => {
           </div>
         )}
       </div>
-    </section>
+      </section>
+    </>
   );
 };
 
