@@ -561,7 +561,9 @@ const JobPostsContainer = () => {
 
     const recipientId = getPostUserId(post);
     if (!recipientId) {
-      toast.error("The job poster is no longer available for messages.");
+      toast.error(
+        "The job poster cannot be reached via direct message. Please use SideQuote to email them.",
+      );
       return;
     }
 
@@ -758,9 +760,9 @@ const JobPostsContainer = () => {
                 const publicUsername = normalizePublicUsername(
                   populatedUser?.username || post.username,
                 );
-                const canDirectMessage = Boolean(getPostUserId(post)) && !isOwnPost(post);
                 const isStartingConversation =
                   createConversation.isPending &&
+                  Boolean(getPostUserId(post)) &&
                   createConversation.variables?.businessOwnerId === getPostUserId(post);
 
                 if (viewMode === "list") {
@@ -822,17 +824,15 @@ const JobPostsContainer = () => {
                               aria-hidden="true"
                             />
                           </button>
-                          {canDirectMessage && (
-                            <button
-                              type="button"
-                              onClick={() => openDirectMessage(post)}
-                              disabled={isStartingConversation}
-                              className="inline-flex h-9 items-center justify-center gap-1 rounded-md bg-[#292D73] px-3 text-[11px] font-bold text-white transition hover:bg-[#1F2464] disabled:cursor-wait disabled:opacity-60"
-                            >
-                              <MessageCircle className="h-3.5 w-3.5" />
-                              {isStartingConversation ? "Opening..." : "DM"}
-                            </button>
-                          )}
+                          <button
+                            type="button"
+                            onClick={() => openDirectMessage(post)}
+                            disabled={isStartingConversation}
+                            className="inline-flex h-9 items-center justify-center gap-1 rounded-md bg-[#292D73] px-3 text-[11px] font-bold text-white transition hover:bg-[#1F2464] disabled:cursor-wait disabled:opacity-60"
+                          >
+                            <MessageCircle className="h-3.5 w-3.5" />
+                            {isStartingConversation ? "Opening..." : "DM"}
+                          </button>
                         </div>
                       </div>
                     </article>
@@ -967,17 +967,15 @@ const JobPostsContainer = () => {
                           <Mail className="h-4 w-4" />
                           SideQuote
                         </button>
-                        {canDirectMessage && (
-                          <button
-                            type="button"
-                            onClick={() => openDirectMessage(post)}
-                            disabled={isStartingConversation}
-                            className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-primary px-3 text-xs font-bold text-white shadow-[0_5px_12px_rgba(41,45,115,0.18)] transition hover:bg-[#1F2464] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60"
-                          >
-                            <MessageCircle className="h-4 w-4" />
-                            {isStartingConversation ? "Opening..." : "DM"}
-                          </button>
-                        )}
+                        <button
+                          type="button"
+                          onClick={() => openDirectMessage(post)}
+                          disabled={isStartingConversation}
+                          className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-primary px-3 text-xs font-bold text-white shadow-[0_5px_12px_rgba(41,45,115,0.18)] transition hover:bg-[#1F2464] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60"
+                        >
+                          <MessageCircle className="h-4 w-4" />
+                          {isStartingConversation ? "Opening..." : "DM"}
+                        </button>
                       </div>
                     </div>
                   </article>
@@ -1214,21 +1212,25 @@ const JobPostsContainer = () => {
                   <Mail className="h-4 w-4" />
                   SideQuote
                 </button>
-                {!isOwnPost(postToView) && getPostUserId(postToView) && (
-                  <button
-                    type="button"
-                    onClick={() => openDirectMessage(postToView)}
-                    disabled={
-                      createConversation.isPending &&
-                      createConversation.variables?.businessOwnerId ===
-                        getPostUserId(postToView)
-                    }
-                    className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-5 text-xs font-extrabold text-white shadow-[0_6px_14px_rgba(41,45,115,0.18)] transition hover:bg-[#1F2464] disabled:cursor-wait disabled:opacity-60"
-                  >
-                    <MessageCircle className="h-4 w-4" />
-                    DM
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => openDirectMessage(postToView)}
+                  disabled={
+                    createConversation.isPending &&
+                    Boolean(getPostUserId(postToView)) &&
+                    createConversation.variables?.businessOwnerId ===
+                      getPostUserId(postToView)
+                  }
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-5 text-xs font-extrabold text-white shadow-[0_6px_14px_rgba(41,45,115,0.18)] transition hover:bg-[#1F2464] disabled:cursor-wait disabled:opacity-60"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  {createConversation.isPending &&
+                  Boolean(getPostUserId(postToView)) &&
+                  createConversation.variables?.businessOwnerId ===
+                    getPostUserId(postToView)
+                    ? "Opening..."
+                    : "DM"}
+                </button>
                 {isOwnPost(postToView) && (
                   <button
                     type="button"
