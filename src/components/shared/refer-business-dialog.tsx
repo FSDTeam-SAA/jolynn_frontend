@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type ChangeEvent, type FormEvent, type ReactNode } from "react";
-import { Building2, ChevronDown, ImagePlus, Search, Star, X } from "lucide-react";
+import { Suspense, useEffect, useId, useRef, useState, type ChangeEvent, type FormEvent, type ReactNode } from "react";
+import { Building2, ChevronDown, ImagePlus, Search, Star, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
@@ -17,6 +17,10 @@ const inputClass = "mt-2 w-full rounded-lg border border-[#D0D5DD] bg-white px-3
 type SelectOption = {
   value: string;
   label: string;
+};
+type SelectedImage = {
+  file: File;
+  previewUrl: string;
 };
 
 type ReferralSelectProps = {
@@ -146,7 +150,9 @@ function ReferralForm({ onClose, token }: { onClose: () => void; token: string }
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedStateName, setSelectedStateName] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [selectedImages, setSelectedImages] = useState<SelectedImage[]>([]);
+  const selectedImagesRef = useRef<SelectedImage[]>([]);
+  const imageInputId = useId();
   const states = statesQuery.data?.data ?? [];
   const selectedState = states.find((state) => state.name === selectedStateName);
   const citiesQuery = useLocationCities(selectedState);
@@ -164,25 +170,47 @@ function ReferralForm({ onClose, token }: { onClose: () => void; token: string }
   });
 
   useEffect(() => () => {
-    if (imagePreview) URL.revokeObjectURL(imagePreview);
-  }, [imagePreview]);
+    selectedImagesRef.current.forEach(({ previewUrl }) => URL.revokeObjectURL(previewUrl));
+  }, []);
+
+  const updateSelectedImages = (images: SelectedImage[]) => {
+    selectedImagesRef.current = images;
+    setSelectedImages(images);
+  };
+
+  const clearImages = () => {
+    selectedImagesRef.current.forEach(({ previewUrl }) => URL.revokeObjectURL(previewUrl));
+    updateSelectedImages([]);
+    if (imageInput.current) imageInput.current.value = "";
+  };
+
+  const removeImage = (previewUrl: string) => {
+    URL.revokeObjectURL(previewUrl);
+    updateSelectedImages(selectedImagesRef.current.filter((image) => image.previewUrl !== previewUrl));
+    setFieldErrors((current) => ({ ...current, image: "" }));
+  };
 
   const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const image = event.target.files?.[0];
-    if (!image) {
-      setImagePreview(null);
-      return;
-    }
+    const files = Array.from(event.target.files ?? []);
+    event.target.value = "";
+    if (!files.length) return;
 
-    if (!image.type.startsWith("image/") || image.size > 5 * 1024 * 1024) {
-      event.target.value = "";
-      setImagePreview(null);
-      setMessage("Please upload an image smaller than 5 MB.");
-      return;
-    }
+    const validFiles = files.filter((file) => file.type.startsWith("image/") && file.size <= 5 * 1024 * 1024);
+    const remainingSlots = 3 - selectedImagesRef.current.length;
+    const imagesToAdd = validFiles.slice(0, Math.max(remainingSlots, 0)).map((file) => ({
+      file,
+      previewUrl: URL.createObjectURL(file),
+    }));
 
-    setMessage("");
-    setImagePreview(URL.createObjectURL(image));
+    if (imagesToAdd.length) updateSelectedImages([...selectedImagesRef.current, ...imagesToAdd]);
+    setFieldErrors((current) => ({ ...current, image: "" }));
+    if (validFiles.length !== files.length) {
+      setMessage("Only image files up to 5 MB can be added.");
+    } else if (files.length > remainingSlots) {
+      setMessage("You can select a maximum of 3 images.");
+    } else {
+      setMessage("");
+    }
   };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -196,7 +224,6 @@ function ReferralForm({ onClose, token }: { onClose: () => void; token: string }
     const businessEmail = String(values.get("businessEmail") ?? "").trim();
     const businessPhone = String(values.get("businessPhone") ?? "").trim();
     const review = String(values.get("review") ?? "").trim();
-    const image = values.get("image");
 
     if (businessName.length < 2) {
       setMessage("Please enter a business name.");
@@ -208,10 +235,6 @@ function ReferralForm({ onClose, token }: { onClose: () => void; token: string }
     }
     if (!selectedStateName || !selectedCity) {
       setMessage("Please select the business state and city.");
-      return;
-    }
-    if (image instanceof File && image.size && (!image.type.startsWith("image/") || image.size > 5 * 1024 * 1024)) {
-      setMessage("Please upload an image of 5 MB or smaller.");
       return;
     }
     if (!businessEmail) {
@@ -227,7 +250,7 @@ function ReferralForm({ onClose, token }: { onClose: () => void; token: string }
     if (businessPhone) body.append("businessPhone", businessPhone);
     if (rating) body.append("rating", String(rating));
     if (review) body.append("review", review);
-    if (image instanceof File && image.size) body.append("image", image);
+    selectedImages.forEach(({ file }) => body.append("image", file, file.name));
 
     createReferral.mutate(body, {
       onSuccess: async (result) => {
@@ -243,7 +266,7 @@ function ReferralForm({ onClose, token }: { onClose: () => void; token: string }
         setSelectedStateName("");
         setSelectedCity("");
         setRating(0);
-        setImagePreview(null);
+        clearImages();
         await Promise.all([
           queryClient.invalidateQueries({ queryKey: ["business-search"] }),
           queryClient.invalidateQueries({ queryKey: ["my-business-referrals"] }),
@@ -287,7 +310,7 @@ function ReferralForm({ onClose, token }: { onClose: () => void; token: string }
       className="space-y-5 p-5 sm:p-6 [&_[aria-invalid=true]]:border-red-500"
     >
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <label className="text-xs font-semibold text-[#344054] sm:col-span-2">
+        <label className="text-xs font-semibold text-[#344054]">
           Business name *
           <input name="businessName" required minLength={2} maxLength={150} aria-invalid={Boolean(fieldErrors.businessName)} placeholder="Enter the business name" className={inputClass} />
           {errorFor("businessName")}
@@ -348,32 +371,47 @@ function ReferralForm({ onClose, token }: { onClose: () => void; token: string }
           <input name="businessPhone" type="tel" maxLength={30} aria-invalid={Boolean(fieldErrors.businessPhone)} placeholder="Enter phone number" className={inputClass} aria-describedby="referral-contact-hint" />
           {errorFor("businessPhone")}
         </label>
-        <label className="text-xs font-semibold text-[#344054] sm:col-span-2 lg:col-span-1">
-          Business image (optional)
-          <span className="mt-2 flex min-h-[42px] items-center gap-2 rounded-lg border border-dashed border-[#A8B2D1] bg-[#F8FAFF] px-3 py-2 text-sm font-normal text-[#475467] transition hover:border-[#292D73]">
-            <ImagePlus className="h-4 w-4 shrink-0 text-[#292D73]" aria-hidden="true" />
-            <span className="min-w-0 flex-1 truncate">{imagePreview ? "Image selected" : "Upload an image"}</span>
-            <input ref={imageInput} name="image" type="file" accept="image/*" aria-invalid={Boolean(fieldErrors.image)} className="w-[115px] text-xs file:mr-2 file:rounded-md file:border-0 file:bg-[#E6E9FA] file:px-2 file:py-1 file:text-xs file:font-semibold file:text-[#292D73] hover:file:bg-[#DCE1FA]" onChange={handleImageChange} />
-          </span>
-          <span className="mt-1 block text-[11px] font-normal text-[#667085]">Maximum file size: 5 MB.</span>
-          {errorFor("image")}
-        </label>
-      </div>
-      {imagePreview && (
-        <div className="relative h-36 overflow-hidden rounded-lg border border-[#D0D5DD] bg-[#F8FAFC] sm:h-44">
-          <Image src={imagePreview} alt="Business image preview" fill unoptimized className="object-cover" />
-          <button
-            type="button"
-            onClick={() => {
-              setImagePreview(null);
-              const input = imageInput.current;
-              if (input) input.value = "";
-            }}
-            className="absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-[#475467] shadow-sm hover:bg-white"
-            aria-label="Remove business image"
+        <div className="text-xs font-semibold text-[#344054] sm:col-span-2 lg:col-span-3">
+          <span>Image</span>
+          <input
+            ref={imageInput}
+            id={imageInputId}
+            name="image"
+            type="file"
+            accept="image/*"
+            multiple
+            disabled={selectedImages.length >= 3}
+            aria-invalid={Boolean(fieldErrors.image)}
+            aria-describedby={`${imageInputId}-hint`}
+            className="sr-only"
+            onChange={handleImageChange}
+          />
+          <label
+            htmlFor={imageInputId}
+            className={`mt-2 flex min-h-[78px] items-center gap-3 rounded-lg border border-dashed border-[#A8B2D1] bg-[#F8FAFF] px-3 py-3 text-sm font-normal text-[#475467] transition focus-within:border-[#292D73] focus-within:ring-2 focus-within:ring-[#292D73]/15 ${selectedImages.length >= 3 ? "cursor-not-allowed opacity-60" : "cursor-pointer hover:border-[#292D73] hover:bg-[#F3F5FF]"}`}
           >
-            <X className="h-4 w-4" />
-          </button>
+            <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#E6E9FA] text-[#292D73]">
+              <ImagePlus className="h-4 w-4" aria-hidden="true" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block font-semibold text-[#344054]">{selectedImages.length ? "Add more images" : "Upload images"}</span>
+              <span id={`${imageInputId}-hint`} className="mt-0.5 block text-xs text-[#667085]">Optional · PNG, JPG, WEBP up to 5 MB each · {selectedImages.length}/3 selected</span>
+            </span>
+          </label>
+          {errorFor("image")}
+        </div>
+      </div>
+      {selectedImages.length > 0 && (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {selectedImages.map(({ file, previewUrl }) => (
+            <div key={previewUrl} className="relative aspect-[4/3] overflow-hidden rounded-lg border border-[#D0D5DD] bg-[#F8FAFC]">
+              <Image src={previewUrl} alt={`${file.name} preview`} fill unoptimized className="object-cover" />
+              <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-3 bg-gradient-to-t from-black/70 to-transparent px-3 pb-3 pt-8">
+                <span className="min-w-0 truncate text-xs font-medium text-white">{file.name}</span>
+                <button type="button" onClick={() => removeImage(previewUrl)} className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/95 text-[#475467] shadow-sm transition hover:bg-white hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white" aria-label={`Delete ${file.name}`}><Trash2 className="h-4 w-4" /></button>
+              </div>
+            </div>
+          ))}
         </div>
       )}
       <p id="referral-contact-hint" className="text-xs text-[#667085]">The business email is required so we can send its secure claim link. Phone is optional.</p>
@@ -409,18 +447,12 @@ type ReferBusinessDialogProps = {
   trigger?: ReactNode;
 };
 
-export default function ReferBusinessDialog({
-  triggerClassName,
-  trigger,
-}: ReferBusinessDialogProps = {}) {
-  const [open, setOpen] = useState(false);
-  const { data: session, status } = useSession();
-  const router = useRouter();
+function ReferBusinessParamHandler({ onTrigger }: { onTrigger: () => void }) {
   const searchParams = useSearchParams();
+  const { data: session, status } = useSession();
   const sessionUser = session?.user as
     | { role?: string; token?: string; accessToken?: string }
     | undefined;
-  const token = sessionUser?.accessToken ?? sessionUser?.token;
 
   useEffect(() => {
     if (
@@ -428,9 +460,24 @@ export default function ReferBusinessDialog({
       status === "authenticated" &&
       sessionUser?.role === "user"
     ) {
-      setOpen(true);
+      onTrigger();
     }
-  }, [searchParams, sessionUser?.role, status]);
+  }, [searchParams, sessionUser?.role, status, onTrigger]);
+
+  return null;
+}
+
+export default function ReferBusinessDialog({
+  triggerClassName,
+  trigger,
+}: ReferBusinessDialogProps = {}) {
+  const [open, setOpen] = useState(false);
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const sessionUser = session?.user as
+    | { role?: string; token?: string; accessToken?: string }
+    | undefined;
+  const token = sessionUser?.accessToken ?? sessionUser?.token;
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (!nextOpen) {
@@ -456,7 +503,11 @@ export default function ReferBusinessDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <>
+      <Suspense fallback={null}>
+        <ReferBusinessParamHandler onTrigger={() => setOpen(true)} />
+      </Suspense>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         {trigger ? (
           trigger
@@ -473,7 +524,7 @@ export default function ReferBusinessDialog({
           </button>
         )}
       </DialogTrigger>
-      <DialogContent className="max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-3xl overflow-y-auto rounded-xl p-0">
+      <DialogContent className="max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-3xl overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden rounded-xl p-0 [&>button]:rounded-full [&>button]:border [&>button]:border-[#D0D5DD] [&>button]:bg-white [&>button]:p-1.5 [&>button]:hover:border-[#292D73]">
         <DialogHeader className="border-b border-[#E4E8EF] bg-[#F7F9FF] p-5 text-left sm:p-6">
           <DialogTitle className="text-xl font-extrabold text-[#292D73]">Refer a Business</DialogTitle>
           <DialogDescription className="text-sm text-[#667085]">Recommend a business and share your experience. Fields marked * are required.</DialogDescription>
@@ -481,5 +532,6 @@ export default function ReferBusinessDialog({
         {token ? <ReferralForm onClose={() => setOpen(false)} token={token} /> : null}
       </DialogContent>
     </Dialog>
+    </>
   );
 }
