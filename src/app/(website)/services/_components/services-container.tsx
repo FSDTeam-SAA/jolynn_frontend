@@ -12,14 +12,24 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import BusinessSearchForm from "../businesses/_components/business-search-form";
 
 const ServicesContainer = () => {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const { data, isPending, isError, error, refetch, isFetching } =
     useServiceCategories();
-  const services = data?.data ?? [];
+  const services = useMemo(() => {
+    if (!data?.data) return [];
+    return [...data.data].sort((a, b) => {
+      const countA = a.businessOwnerCount ?? 0;
+      const countB = b.businessOwnerCount ?? 0;
+      if (countB !== countA) {
+        return countB - countA;
+      }
+      return a.name.localeCompare(b.name);
+    });
+  }, [data?.data]);
 
   return (
     <section className="min-h-screen bg-[#DFF0EE] px-4 py-8 sm:px-6 md:py-10 lg:px-8 lg:py-10">

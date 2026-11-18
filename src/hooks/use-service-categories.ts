@@ -27,7 +27,15 @@ type ServiceCategoriesResponse = {
   data: ServiceCategory[];
 };
 
-const fetchServiceCategories = async (limit: number): Promise<ServiceCategoriesResponse> => {
+export type UseServiceCategoriesOptions = {
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+};
+
+const fetchServiceCategories = async (
+  options: UseServiceCategoriesOptions
+): Promise<ServiceCategoriesResponse> => {
   const apiUrl = (
     process.env.NEXT_PUBLIC_API_URL ??
     process.env.NEXT_PUBLIC_BACKEND_API_URL
@@ -35,8 +43,9 @@ const fetchServiceCategories = async (limit: number): Promise<ServiceCategoriesR
   if (!apiUrl) throw new Error("The service category API is not configured.");
 
   const params = new URLSearchParams({
-    sortBy: "sortOrder",
-    limit: String(limit),
+    sortBy: options.sortBy ?? "businessOwnerCount",
+    sortOrder: options.sortOrder ?? "desc",
+    limit: String(options.limit ?? 50),
     page: "1",
   });
   const response = await fetch(`${apiUrl}/service-categories/public?${params}`, {
@@ -51,13 +60,30 @@ const fetchServiceCategories = async (limit: number): Promise<ServiceCategoriesR
   return result;
 };
 
-export const useServiceCategories = (limit = 50) =>
-  useQuery<ServiceCategoriesResponse>({
+export const useServiceCategories = (
+  optionsOrLimit: number | UseServiceCategoriesOptions = 50
+) => {
+  const options: UseServiceCategoriesOptions =
+    typeof optionsOrLimit === "number"
+      ? { limit: optionsOrLimit, sortBy: "businessOwnerCount", sortOrder: "desc" }
+      : {
+          limit: optionsOrLimit.limit ?? 50,
+          sortBy: optionsOrLimit.sortBy ?? "businessOwnerCount",
+          sortOrder: optionsOrLimit.sortOrder ?? "desc",
+        };
+
+  return useQuery<ServiceCategoriesResponse>({
     queryKey: [
       "public-service-categories",
-      { sortBy: "sortOrder", limit, page: 1 },
+      {
+        sortBy: options.sortBy,
+        sortOrder: options.sortOrder,
+        limit: options.limit,
+        page: 1,
+      },
     ],
-    queryFn: () => fetchServiceCategories(limit),
+    queryFn: () => fetchServiceCategories(options),
     staleTime: 5 * 60 * 1000,
     retry: 1,
   });
+};

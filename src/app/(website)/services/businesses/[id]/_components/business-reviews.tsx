@@ -20,11 +20,14 @@ import {
   Loader2,
   Reply,
   Send,
+  Plus,
+  UploadCloud,
+  X,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 type BusinessReviewsProps = {
@@ -46,6 +49,10 @@ type BusinessReviewItem = {
   reviewerAvatar?: string;
   rating: number;
   message: string;
+  photo?: string;
+  photos?: string[];
+  images?: Array<string | { url: string; publicId?: string }>;
+  image?: string;
   createdAt: string;
   reply?: ReviewReply;
 };
@@ -69,13 +76,120 @@ const BusinessReviews = ({ businessId }: BusinessReviewsProps) => {
   // Customer Review Write State
   const [rating, setRating] = useState(5);
   const [message, setMessage] = useState("");
+  const [selectedImages, setSelectedImages] = useState<
+    { file: File; previewUrl: string }[]
+  >([]);
   const [isSignInModalOpen, setIsSignInModalOpen] = useState(false);
+
+  const clearSelectedImages = () => {
+    selectedImages.forEach(({ previewUrl }) => URL.revokeObjectURL(previewUrl));
+    setSelectedImages([]);
+  };
+
+  useEffect(() => {
+    return () => {
+      selectedImages.forEach(({ previewUrl }) => URL.revokeObjectURL(previewUrl));
+    };
+  }, [selectedImages]);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+
+    if (selectedImages.length + files.length > 5) {
+      toast.error("You can upload up to 5 images.");
+      e.target.value = "";
+      return;
+    }
+
+    const validImages: { file: File; previewUrl: string }[] = [];
+    for (const file of files) {
+      if (!file.type.startsWith("image/")) {
+        toast.error(`${file.name} is not a valid image file.`);
+        continue;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error(`${file.name} exceeds 5 MB size limit.`);
+        continue;
+      }
+      validImages.push({
+        file,
+        previewUrl: URL.createObjectURL(file),
+      });
+    }
+
+    setSelectedImages((prev) => [...prev, ...validImages]);
+    e.target.value = "";
+  };
+
+  const removeImage = (indexToRemove: number) => {
+    setSelectedImages((prev) => {
+      const target = prev[indexToRemove];
+      if (target) URL.revokeObjectURL(target.previewUrl);
+      return prev.filter((_, idx) => idx !== indexToRemove);
+    });
+  };
 
   // Customer Edit / Delete State
   const [editingReview, setEditingReview] = useState<BusinessReviewItem | null>(null);
   const [editRating, setEditRating] = useState(5);
   const [editMessage, setEditMessage] = useState("");
+  const [editExistingImages, setEditExistingImages] = useState<string[]>([]);
+  const [editNewImages, setEditNewImages] = useState<
+    { file: File; previewUrl: string }[]
+  >([]);
   const [reviewToDelete, setReviewToDelete] = useState<BusinessReviewItem | null>(null);
+
+  const closeEditModal = () => {
+    editNewImages.forEach(({ previewUrl }) => URL.revokeObjectURL(previewUrl));
+    setEditNewImages([]);
+    setEditExistingImages([]);
+    setEditingReview(null);
+  };
+
+  const handleEditImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+
+    const totalCount =
+      editExistingImages.length + editNewImages.length + files.length;
+    if (totalCount > 5) {
+      toast.error("You can have up to 5 photos in total.");
+      e.target.value = "";
+      return;
+    }
+
+    const validImages: { file: File; previewUrl: string }[] = [];
+    for (const file of files) {
+      if (!file.type.startsWith("image/")) {
+        toast.error(`${file.name} is not a valid image file.`);
+        continue;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error(`${file.name} exceeds 5 MB size limit.`);
+        continue;
+      }
+      validImages.push({
+        file,
+        previewUrl: URL.createObjectURL(file),
+      });
+    }
+
+    setEditNewImages((prev) => [...prev, ...validImages]);
+    e.target.value = "";
+  };
+
+  const removeExistingEditImage = (urlToRemove: string) => {
+    setEditExistingImages((prev) => prev.filter((url) => url !== urlToRemove));
+  };
+
+  const removeNewEditImage = (indexToRemove: number) => {
+    setEditNewImages((prev) => {
+      const target = prev[indexToRemove];
+      if (target) URL.revokeObjectURL(target.previewUrl);
+      return prev.filter((_, idx) => idx !== indexToRemove);
+    });
+  };
 
   // Business Owner Reply State
   const [replyingReview, setReplyingReview] = useState<BusinessReviewItem | null>(null);
@@ -112,15 +226,50 @@ const BusinessReviews = ({ businessId }: BusinessReviewsProps) => {
       if (!token) throw new Error("Please sign in to submit a review.");
       if (!message.trim()) throw new Error("Please write your review.");
       const apiUrl = (process.env.NEXT_PUBLIC_API_URL || "https://api.sidequote.cloud/api/v1").replace(/\/$/, "");
-      const response = await fetch(`${apiUrl}/reviews`, {
-        method: "POST",
-        headers: {
-          accept: "*/*",
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ businessId, rating, message: message.trim() }),
-      });
+
+      let response: Response;
+
+      if (selectedImages.length > 0) {
+        const formData = new FormData();
+        formData.append("businessId", businessId);
+        formData.append("rating", String(rating));
+        formData.append("message", message.trim());
+        selectedImages.forEach(({ file }) => {
+          formData.append("photo", file, file.name);
+        });
+
+        response = await fetch(`${apiUrl}/reviews`, {
+          method: "POST",
+          headers: {
+            accept: "*/*",
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        });
+
+        if (!response.ok && response.status === 415) {
+          response = await fetch(`${apiUrl}/reviews`, {
+            method: "POST",
+            headers: {
+              accept: "*/*",
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ businessId, rating, message: message.trim() }),
+          });
+        }
+      } else {
+        response = await fetch(`${apiUrl}/reviews`, {
+          method: "POST",
+          headers: {
+            accept: "*/*",
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ businessId, rating, message: message.trim() }),
+        });
+      }
+
       const result = await response.json();
       if (!response.ok || !result.success) {
         throw new Error(result.message || "Unable to submit your review.");
@@ -131,6 +280,7 @@ const BusinessReviews = ({ businessId }: BusinessReviewsProps) => {
       toast.success(result.message || "Review submitted successfully.");
       setMessage("");
       setRating(5);
+      clearSelectedImages();
       await queryClient.invalidateQueries({ queryKey: ["business-reviews", businessId] });
       await queryClient.invalidateQueries({ queryKey: ["public-business", businessId] });
       await queryClient.invalidateQueries({ queryKey: ["account-my-reviews"] });
@@ -147,30 +297,83 @@ const BusinessReviews = ({ businessId }: BusinessReviewsProps) => {
       id,
       rating: newRating,
       message: newMessage,
+      existingPhotos,
+      newPhotos,
     }: {
       id: string;
       rating: number;
       message: string;
+      existingPhotos: string[];
+      newPhotos: File[];
     }) => {
       if (!token) throw new Error("Unauthorized");
-      const apiUrl = (process.env.NEXT_PUBLIC_API_URL || "https://api.sidequote.cloud/api/v1").replace(/\/$/, "");
-      const res = await fetch(`${apiUrl}/reviews/${encodeURIComponent(id)}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ rating: newRating, message: newMessage }),
-      });
-      const resData = await res.json().catch(() => ({}));
-      if (!res.ok || !resData?.success) {
+      const apiUrl = (
+        process.env.NEXT_PUBLIC_API_URL || "https://api.sidequote.cloud/api/v1"
+      ).replace(/\/$/, "");
+
+      let response: Response;
+
+      if (newPhotos.length > 0 || existingPhotos.length > 0) {
+        const formData = new FormData();
+        formData.append("rating", String(newRating));
+        formData.append("message", newMessage);
+        existingPhotos.forEach((url) => formData.append("photos", url));
+        if (existingPhotos[0]) formData.append("photo", existingPhotos[0]);
+        newPhotos.forEach((file) => {
+          formData.append("photo", file, file.name);
+        });
+
+        response = await fetch(`${apiUrl}/reviews/${encodeURIComponent(id)}`, {
+          method: "PUT",
+          headers: {
+            accept: "*/*",
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        });
+
+        if (!response.ok && response.status === 415) {
+          response = await fetch(`${apiUrl}/reviews/${encodeURIComponent(id)}`, {
+            method: "PUT",
+            headers: {
+              accept: "*/*",
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              rating: newRating,
+              message: newMessage,
+              photos: existingPhotos,
+              photo: existingPhotos[0] || "",
+            }),
+          });
+        }
+      } else {
+        response = await fetch(`${apiUrl}/reviews/${encodeURIComponent(id)}`, {
+          method: "PUT",
+          headers: {
+            accept: "*/*",
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            rating: newRating,
+            message: newMessage,
+            photos: [],
+            photo: "",
+          }),
+        });
+      }
+
+      const resData = await response.json().catch(() => ({}));
+      if (!response.ok || !resData?.success) {
         throw new Error(resData?.message || "Failed to update review.");
       }
       return resData;
     },
     onSuccess: async (resData) => {
       toast.success(resData?.message || "Review updated successfully!");
-      setEditingReview(null);
+      closeEditModal();
       await queryClient.invalidateQueries({ queryKey: ["business-reviews", businessId] });
       await queryClient.invalidateQueries({ queryKey: ["public-business", businessId] });
       await queryClient.invalidateQueries({ queryKey: ["account-my-reviews"] });
@@ -274,6 +477,27 @@ const BusinessReviews = ({ businessId }: BusinessReviewsProps) => {
     setEditingReview(review);
     setEditRating(review.rating);
     setEditMessage(review.message);
+    const existing = Array.from(
+      new Set(
+        [
+          ...(Array.isArray(review.photos)
+            ? review.photos
+            : review.photo
+              ? [review.photo]
+              : []),
+          ...(Array.isArray(review.images)
+            ? review.images.map((img) =>
+                typeof img === "string" ? img : img.url,
+              )
+            : review.image
+              ? [review.image]
+              : []),
+        ].filter(Boolean) as string[],
+      ),
+    );
+    setEditExistingImages(existing);
+    editNewImages.forEach(({ previewUrl }) => URL.revokeObjectURL(previewUrl));
+    setEditNewImages([]);
   };
 
   const handleCustomerUpdateSubmit = (e: React.FormEvent) => {
@@ -286,6 +510,8 @@ const BusinessReviews = ({ businessId }: BusinessReviewsProps) => {
       id: editingReview._id,
       rating: editRating,
       message: editMessage.trim(),
+      existingPhotos: editExistingImages,
+      newPhotos: editNewImages.map((img) => img.file),
     });
   };
 
@@ -456,6 +682,47 @@ const BusinessReviews = ({ businessId }: BusinessReviewsProps) => {
                 {review.message}
               </p>
 
+              {/* Display review photos if present */}
+              {(() => {
+                const reviewImages = [
+                  ...(Array.isArray(review.photos)
+                    ? review.photos
+                    : review.photo
+                      ? [review.photo]
+                      : []),
+                  ...(Array.isArray(review.images)
+                    ? review.images.map((img) =>
+                        typeof img === "string" ? img : img.url,
+                      )
+                    : review.image
+                      ? [review.image]
+                      : []),
+                ].filter(Boolean) as string[];
+                const uniquePhotos = Array.from(new Set(reviewImages));
+                if (!uniquePhotos.length) return null;
+                return (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {uniquePhotos.map((imgUrl, imgIdx) => (
+                      <a
+                        key={imgIdx}
+                        href={imgUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="relative h-16 w-16 overflow-hidden rounded-lg border border-[#E1E7EC] bg-slate-50 transition hover:opacity-90 hover:ring-2 hover:ring-[#292D73] sm:h-20 sm:w-20"
+                      >
+                        <Image
+                          src={imgUrl}
+                          alt="Review attachment"
+                          fill
+                          sizes="80px"
+                          className="object-cover"
+                        />
+                      </a>
+                    ))}
+                  </div>
+                );
+              })()}
+
               {/* Display Reply if exists */}
               {review.reply && (
                 <div className="mt-3.5 rounded-lg bg-[#F5F7FF] border border-[#E0E7FF] p-3 text-xs">
@@ -519,12 +786,95 @@ const BusinessReviews = ({ businessId }: BusinessReviewsProps) => {
             placeholder="Oh my man this is incredible, I never get a service as fast as like this..."
           />
 
+          {/* Add Photos Section with Beautiful Preview */}
+          <div className="mt-4">
+            <div className="mb-2 flex items-center justify-between">
+              <label className="text-[13px] font-bold text-[#292D73]">
+                Add Photos <span className="font-normal text-[#667085]">(Optional)</span>
+              </label>
+              {selectedImages.length > 0 && (
+                <span className="text-[11px] font-medium text-[#667085]">
+                  {selectedImages.length} of 5 selected
+                </span>
+              )}
+            </div>
+
+            {selectedImages.length === 0 ? (
+              <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-[#D0D5DD] bg-[#F8FAFC] p-4 text-center transition hover:border-[#292D73] hover:bg-[#F3F5FC]">
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/jpg"
+                  multiple
+                  onChange={handleImageChange}
+                  className="sr-only"
+                />
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#EEF0FF] text-[#292D73]">
+                  <UploadCloud className="h-5 w-5" />
+                </div>
+                <p className="mt-2 text-xs font-bold text-[#292D73]">
+                  Click to upload photos or drag and drop
+                </p>
+                <p className="mt-0.5 text-[11px] text-[#667085]">
+                  PNG, JPG, or WEBP (Max 5 MB each, up to 5 photos)
+                </p>
+              </label>
+            ) : (
+              <div className="space-y-2">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 md:grid-cols-5">
+                  {selectedImages.map(({ file, previewUrl }, idx) => (
+                    <div
+                      key={`${file.name}-${idx}`}
+                      className="group relative aspect-square overflow-hidden rounded-xl border border-[#DCE4F0] bg-slate-50 shadow-xs"
+                    >
+                      <Image
+                        src={previewUrl}
+                        alt={file.name}
+                        fill
+                        unoptimized
+                        className="object-cover transition duration-200 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 opacity-90" />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(idx)}
+                        className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-xs transition hover:bg-red-600"
+                        title="Remove photo"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                      <p className="absolute bottom-1.5 left-2 right-2 truncate text-[10px] font-medium text-white">
+                        {file.name}
+                      </p>
+                    </div>
+                  ))}
+
+                  {selectedImages.length < 5 && (
+                    <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-[#D0D5DD] bg-[#F8FAFC] text-center transition hover:border-[#292D73] hover:bg-[#F3F5FC]">
+                      <input
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp,image/jpg"
+                        multiple
+                        onChange={handleImageChange}
+                        className="sr-only"
+                      />
+                      <Plus className="h-5 w-5 text-[#292D73]" />
+                      <span className="text-[11px] font-bold text-[#292D73]">
+                        Add more
+                      </span>
+                    </label>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
           <div className="mt-4 flex items-center justify-between gap-3">
             <button
               type="button"
               onClick={() => {
                 setMessage("");
                 setRating(5);
+                clearSelectedImages();
               }}
               className="h-9 rounded-[6px] border border-[#8290A3] bg-white px-5 text-[13px] font-medium text-[#344054] transition hover:bg-[#F8FAFC] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73]"
             >
@@ -578,7 +928,7 @@ const BusinessReviews = ({ businessId }: BusinessReviewsProps) => {
       </Dialog>
 
       {/* CUSTOMER EDIT REVIEW MODAL */}
-      <Dialog open={Boolean(editingReview)} onOpenChange={(open) => !open && setEditingReview(null)}>
+      <Dialog open={Boolean(editingReview)} onOpenChange={(open) => !open && closeEditModal()}>
         <DialogContent className="max-h-[90vh] max-w-[480px] overflow-y-auto rounded-[16px] bg-white p-6">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-[#292D73] flex items-center gap-2">
@@ -635,10 +985,122 @@ const BusinessReviews = ({ businessId }: BusinessReviewsProps) => {
               />
             </div>
 
+            {/* Photos (Optional) in Edit Modal */}
+            <div>
+              <div className="mb-2 flex items-center justify-between">
+                <label className="block text-xs font-bold text-slate-700">
+                  Photos <span className="font-normal text-slate-500">(Optional)</span>
+                </label>
+                {editExistingImages.length + editNewImages.length > 0 && (
+                  <span className="text-[11px] font-medium text-[#667085]">
+                    {editExistingImages.length + editNewImages.length} of 5 photos
+                  </span>
+                )}
+              </div>
+
+              {editExistingImages.length === 0 && editNewImages.length === 0 ? (
+                <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-[#D0D5DD] bg-[#F8FAFC] p-4 text-center transition hover:border-[#292D73] hover:bg-[#F3F5FC]">
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/jpg"
+                    multiple
+                    onChange={handleEditImageChange}
+                    className="sr-only"
+                  />
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#EEF0FF] text-[#292D73]">
+                    <UploadCloud className="h-4 w-4" />
+                  </div>
+                  <p className="mt-2 text-xs font-bold text-[#292D73]">
+                    Click to upload photos
+                  </p>
+                  <p className="mt-0.5 text-[11px] text-[#667085]">
+                    PNG, JPG, or WEBP (Max 5 MB each, up to 5 photos)
+                  </p>
+                </label>
+              ) : (
+                <div className="space-y-2">
+                  <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4">
+                    {/* Existing Photos */}
+                    {editExistingImages.map((url, idx) => (
+                      <div
+                        key={`existing-${idx}-${url}`}
+                        className="group relative aspect-square overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-xs"
+                      >
+                        <Image
+                          src={url}
+                          alt={`Review photo ${idx + 1}`}
+                          fill
+                          unoptimized
+                          className="object-cover transition duration-200 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 opacity-80" />
+                        <button
+                          type="button"
+                          onClick={() => removeExistingEditImage(url)}
+                          className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-xs transition hover:bg-red-600"
+                          title="Remove photo"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                        <span className="absolute bottom-1 left-1.5 rounded bg-black/60 px-1 py-0.5 text-[9px] font-semibold text-white">
+                          Current
+                        </span>
+                      </div>
+                    ))}
+
+                    {/* New Added Photos */}
+                    {editNewImages.map(({ file, previewUrl }, idx) => (
+                      <div
+                        key={`new-${idx}-${file.name}`}
+                        className="group relative aspect-square overflow-hidden rounded-xl border border-indigo-200 bg-slate-50 shadow-xs"
+                      >
+                        <Image
+                          src={previewUrl}
+                          alt={file.name}
+                          fill
+                          unoptimized
+                          className="object-cover transition duration-200 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 opacity-80" />
+                        <button
+                          type="button"
+                          onClick={() => removeNewEditImage(idx)}
+                          className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-xs transition hover:bg-red-600"
+                          title="Remove photo"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                        <span className="absolute bottom-1 left-1.5 rounded bg-[#292D73]/90 px-1 py-0.5 text-[9px] font-semibold text-white">
+                          New
+                        </span>
+                      </div>
+                    ))}
+
+                    {/* Add More Tile if < 5 */}
+                    {editExistingImages.length + editNewImages.length < 5 && (
+                      <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-[#D0D5DD] bg-[#F8FAFC] text-center transition hover:border-[#292D73] hover:bg-[#F3F5FC]">
+                        <input
+                          type="file"
+                          accept="image/png,image/jpeg,image/webp,image/jpg"
+                          multiple
+                          onChange={handleEditImageChange}
+                          className="sr-only"
+                        />
+                        <Plus className="h-5 w-5 text-[#292D73]" />
+                        <span className="text-[11px] font-bold text-[#292D73]">
+                          Add more
+                        </span>
+                      </label>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
               <button
                 type="button"
-                onClick={() => setEditingReview(null)}
+                onClick={closeEditModal}
                 className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
               >
                 Cancel

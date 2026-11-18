@@ -1,6 +1,12 @@
 "use client";
 
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useProfileQuery } from "@/hooks/APicalling";
 import {
   Popover,
@@ -256,11 +262,9 @@ const BusinessCardsSkeleton = () => (
 function ReferralBusinessCard({
   business,
   viewMode,
-  onClaim,
 }: {
   business: BusinessOwner;
   viewMode: ViewMode;
-  onClaim: (business: BusinessOwner) => void;
 }) {
   const isListView = viewMode === "list";
   const rating = Number(business.rating || 0);
@@ -268,6 +272,17 @@ function ReferralBusinessCard({
     [business.city, business.state].filter(Boolean).join(", ") ||
     business.address ||
     business.serviceArea;
+
+  const fullLocation =
+    [
+      business.address,
+      [business.city, business.state].filter(Boolean).join(", "),
+      business.country,
+    ]
+      .filter(Boolean)
+      .join(", ") ||
+    business.serviceArea ||
+    locationLabel;
 
   const referrerProfileHref =
     business.referredBy?.profileUrl ||
@@ -278,9 +293,7 @@ function ReferralBusinessCard({
         : undefined);
 
   return (
-    <article
-      className="group flex h-full flex-col overflow-hidden rounded-xl border border-[#E3E8EF] bg-white p-5 shadow-[0_6px_18px_rgba(30,45,75,0.1)] transition duration-300 hover:-translate-y-0.5 hover:border-[#B9C9DC] hover:shadow-[0_12px_30px_rgba(30,45,75,0.15)]"
-    >
+    <article className="group flex h-full flex-col overflow-hidden rounded-xl border border-[#E3E8EF] bg-white p-5 shadow-[0_6px_18px_rgba(30,45,75,0.1)] transition duration-300 hover:-translate-y-0.5 hover:border-[#B9C9DC] hover:shadow-[0_12px_30px_rgba(30,45,75,0.15)]">
       <div
         className={`flex flex-1 ${
           isListView
@@ -289,9 +302,11 @@ function ReferralBusinessCard({
         }`}
       >
         <div className="flex min-w-0 flex-1 items-start gap-4">
-          <div className={`relative shrink-0 overflow-hidden rounded-2xl border border-white bg-[linear-gradient(145deg,#F7F9FF_0%,#E9F2F4_100%)] shadow-[0_7px_18px_rgba(41,46,120,0.13)] ring-1 ring-[#DDE5F0] ${
-            isListView ? "h-14 w-14 sm:h-[72px] sm:w-[72px]" : "h-14 w-14"
-          }`}>
+          <div
+            className={`relative shrink-0 overflow-hidden rounded-2xl border border-white bg-[linear-gradient(145deg,#F7F9FF_0%,#E9F2F4_100%)] shadow-[0_7px_18px_rgba(41,46,120,0.13)] ring-1 ring-[#DDE5F0] ${
+              isListView ? "h-14 w-14 sm:h-[72px] sm:w-[72px]" : "h-14 w-14"
+            }`}
+          >
             <Image
               src={business.image || "/assets/images/no-image.jpg"}
               alt={`${business.businessName} image`}
@@ -303,30 +318,28 @@ function ReferralBusinessCard({
 
           <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between gap-2">
-              <Link
-                href={business.profileUrl}
-                className="truncate text-base font-extrabold leading-tight text-[#292D73] transition-colors hover:text-[#1E235E] hover:underline sm:text-[17px]"
-              >
-                {business.businessName}
-              </Link>
-              <span
-                className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold ${
-                  business.claimStatus === "claimed"
-                    ? "border border-[#A6F4C5] bg-[#ECFDF3] text-[#027A48]"
-                    : "border border-[#FECDCA] bg-[#FFF6ED] text-[#C4320A]"
-                }`}
-              >
-                <span
-                  className={`h-1.5 w-1.5 rounded-full ${
-                    business.claimStatus === "claimed"
-                      ? "bg-[#12B76A]"
-                      : "bg-[#F04438]"
-                  }`}
-                />
-                {business.claimStatus === "claimed"
-                  ? "Verified owner"
-                  : "Unclaimed"}
-              </span>
+              <TooltipProvider delayDuration={150}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href={business.profileUrl}
+                      className="truncate text-base font-extrabold leading-tight text-[#292D73] transition-colors hover:text-[#1E235E] hover:underline sm:text-[17px]"
+                    >
+                      {business.businessName}
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent
+                    side="top"
+                    align="start"
+                    sideOffset={6}
+                    showArrow
+                    className="max-w-xs rounded-md bg-[#1E235E] px-3 py-1.5 text-xs font-semibold text-white shadow-lg"
+                    arrowClassName="fill-[#1E235E]"
+                  >
+                    <span>{business.businessName}</span>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
 
             <div className="mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
@@ -348,19 +361,54 @@ function ReferralBusinessCard({
               </div>
 
               {locationLabel && (
-                <span className="inline-flex items-center gap-1 text-[11px] text-[#667085]">
-                  <MapPin className="h-3.5 w-3.5 shrink-0 text-[#98A2B3]" aria-hidden="true" />
-                  <span className="truncate max-w-[130px] sm:max-w-xs">
-                    {locationLabel}
-                  </span>
-                </span>
+                <TooltipProvider delayDuration={150}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex cursor-default items-center gap-1 text-[11px] text-[#667085]">
+                        <MapPin
+                          className="h-3.5 w-3.5 shrink-0 text-[#98A2B3]"
+                          aria-hidden="true"
+                        />
+                        <span className="max-w-[130px] truncate sm:max-w-xs">
+                          {locationLabel}
+                        </span>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent
+                      side="top"
+                      align="center"
+                      sideOffset={6}
+                      showArrow
+                      className="max-w-xs rounded-md bg-[#1E235E] px-3 py-1.5 text-xs text-white shadow-lg"
+                      arrowClassName="fill-[#1E235E]"
+                    >
+                      <span>{fullLocation}</span>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               )}
             </div>
 
             {business.review ? (
-              <p className="mt-3 line-clamp-2 text-xs leading-5 text-[#667085]">
-                {business.review}
-              </p>
+              <TooltipProvider delayDuration={150}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <p className="mt-3 cursor-default line-clamp-2 text-xs leading-5 text-[#667085] transition-colors hover:text-[#344054]">
+                      {business.review}
+                    </p>
+                  </TooltipTrigger>
+                  <TooltipContent
+                    side="top"
+                    align="start"
+                    sideOffset={6}
+                    showArrow
+                    className="max-w-sm rounded-lg bg-[#1E235E] p-3 text-xs leading-relaxed text-white shadow-xl"
+                    arrowClassName="fill-[#1E235E]"
+                  >
+                    <p className="whitespace-pre-line font-normal">{business.review}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             ) : null}
 
             <div className="mt-3 flex flex-wrap items-center gap-1.5 text-xs">
@@ -385,7 +433,7 @@ function ReferralBusinessCard({
           </div>
         </div>
 
-        {business.isClaimable ? (
+        {business.profileUrl ? (
           <div
             className={
               isListView
@@ -393,23 +441,18 @@ function ReferralBusinessCard({
                 : "mt-5 w-full border-t border-[#EDF0F4] pt-4"
             }
           >
-            <button
-              type="button"
-              onClick={() => onClaim(business)}
+            <Link
+              href={business.profileUrl}
               className={`group/btn inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#292E78] px-5 text-xs font-bold text-white shadow-[0_2px_8px_rgba(41,45,115,0.16)] transition hover:bg-[#1F2464] hover:shadow-[0_4px_14px_rgba(41,45,115,0.24)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73] focus-visible:ring-offset-2 ${
                 isListView ? "w-full sm:w-auto" : "w-full"
               }`}
             >
-              <ShieldCheck
-                className="h-4 w-4 shrink-0 text-[#C7D2FE] transition-colors duration-200 group-hover/btn:text-white"
-                aria-hidden="true"
-              />
-              <span>Claim this Business</span>
+              <span>View Profile</span>
               <ArrowRight
                 className="h-3.5 w-3.5 shrink-0 text-[#C7D2FE] transition-transform duration-200 group-hover/btn:translate-x-0.5 group-hover/btn:text-white"
                 aria-hidden="true"
               />
-            </button>
+            </Link>
           </div>
         ) : null}
       </div>
@@ -880,7 +923,6 @@ const ServicesSearchContainer = ({
                             key={`referred:${business.listingId}`}
                             business={business}
                             viewMode={viewMode}
-                            onClaim={setClaimInstructionsBusiness}
                           />
                         );
                       }
@@ -1222,7 +1264,7 @@ const ServicesSearchContainer = ({
             <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-900">For security, a public directory visitor cannot start the claim without the private email token.</p>
             <div className="mt-6 grid gap-2 sm:grid-cols-2">
               <button type="button" onClick={() => setClaimInstructionsBusiness(null)} className="h-11 rounded-lg border border-[#D0D5DD] text-xs font-bold text-[#475467] hover:bg-[#F8FAFC]">Close</button>
-              <Link href={claimInstructionsBusiness.profileUrl} className="inline-flex h-11 items-center justify-center rounded-lg bg-[#292D73] px-4 text-xs font-bold text-white hover:bg-[#20255F]">View Referral</Link>
+              <Link href={claimInstructionsBusiness.profileUrl} className="inline-flex h-11 items-center justify-center rounded-lg bg-[#292D73] px-4 text-xs font-bold text-white hover:bg-[#20255F]">View Profile</Link>
             </div>
           </div>
         </div>
