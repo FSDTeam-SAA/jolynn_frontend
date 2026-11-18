@@ -3,10 +3,14 @@
 import {
   ArrowLeft,
   Bookmark,
+  Camera,
+  ChevronLeft,
+  ChevronRight,
   ExternalLink,
   Globe2,
   LogIn,
   Mail,
+  MapPin,
   Phone,
   RotateCw,
   ShieldAlert,
@@ -14,22 +18,22 @@ import {
   Loader2,
   X,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import BusinessGallery from "./business-gallery";
-import BusinessOverview from "./business-overview";
-import { usePublicBusinessProfile } from "@/hooks/use-public-business-profile";
-import { useSavedBusinesses } from "@/hooks/use-saved-businesses";
-import { useCreateConversation } from "@/hooks/use-messages";
 import BusinessReviews from "./business-reviews";
 import BusinessServices from "./business-services";
 import RequestAQuoteModal from "./request-a-quote-modal";
 import ReportBusinessModal from "../../_components/report-business-modal";
-import Image from "next/image";
+import { usePublicBusinessProfile } from "@/hooks/use-public-business-profile";
+import { useBusinessGallery } from "@/hooks/use-business-profile-sections";
+import { useSavedBusinesses } from "@/hooks/use-saved-businesses";
+import { useCreateConversation } from "@/hooks/use-messages";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
@@ -39,15 +43,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-
-type ProfileTab = "overview" | "services" | "gallery" | "reviews";
-
-const tabs: { id: ProfileTab; label: string }[] = [
-  { id: "overview", label: "Overview" },
-  { id: "services", label: "Services" },
-  { id: "gallery", label: "Gallery" },
-  { id: "reviews", label: "Reviews" },
-];
 
 const renderStars = (rating: number) =>
   Array.from({ length: 5 }).map((_, index) => (
@@ -63,8 +58,20 @@ const renderStars = (rating: number) =>
 
 const getEmbeddableUrl = (
   url: string
-): { embedUrl: string; originalUrl: string; isConvertedYoutube: boolean; isYoutubeMain: boolean } => {
-  if (!url) return { embedUrl: "", originalUrl: "", isConvertedYoutube: false, isYoutubeMain: false };
+): {
+  embedUrl: string;
+  originalUrl: string;
+  isConvertedYoutube: boolean;
+  isYoutubeMain: boolean;
+} => {
+  if (!url) {
+    return {
+      embedUrl: "",
+      originalUrl: "",
+      isConvertedYoutube: false,
+      isYoutubeMain: false,
+    };
+  }
   let cleanUrl = url.trim();
   if (!cleanUrl.startsWith("http://") && !cleanUrl.startsWith("https://")) {
     cleanUrl = `https://${cleanUrl}`;
@@ -96,79 +103,31 @@ const getEmbeddableUrl = (
         }
       }
       if (parsed.pathname.startsWith("/embed/")) {
-        return { embedUrl: cleanUrl, originalUrl: cleanUrl, isConvertedYoutube: false, isYoutubeMain: false };
+        return {
+          embedUrl: cleanUrl,
+          originalUrl: cleanUrl,
+          isConvertedYoutube: false,
+          isYoutubeMain: false,
+        };
       }
-      return { embedUrl: cleanUrl, originalUrl: cleanUrl, isConvertedYoutube: false, isYoutubeMain: true };
+      return {
+        embedUrl: cleanUrl,
+        originalUrl: cleanUrl,
+        isConvertedYoutube: false,
+        isYoutubeMain: true,
+      };
     }
   } catch {
     // fallback
   }
 
-  return { embedUrl: cleanUrl, originalUrl: cleanUrl, isConvertedYoutube: false, isYoutubeMain: false };
+  return {
+    embedUrl: cleanUrl,
+    originalUrl: cleanUrl,
+    isConvertedYoutube: false,
+    isYoutubeMain: false,
+  };
 };
-
-const BusinessProfileSkeleton = () => (
-  <main className="min-h-screen bg-[#F5F8F7]" aria-label="Loading business profile">
-    <header className="border-b border-[#E2E8F0] bg-white">
-      <div className="container pb-0 pt-8">
-        <div className="flex items-start gap-4">
-          <Skeleton className="h-14 w-14 shrink-0 rounded-[12px]" />
-          <div className="min-w-0 flex-1">
-            <Skeleton className="h-9 w-full max-w-[280px]" />
-            <div className="mt-3 flex items-center gap-2">
-              <Skeleton className="h-4 w-20" />
-              <Skeleton className="h-4 w-7" />
-              <Skeleton className="h-4 w-20" />
-              <Skeleton className="h-6 w-20 rounded-[3px]" />
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-6 flex h-11 items-center gap-7">
-          {tabs.map((tab, index) => (
-            <Skeleton
-              key={tab.id}
-              className={`h-4 rounded ${index === 0 ? "w-16" : "w-14"}`}
-            />
-          ))}
-        </div>
-      </div>
-    </header>
-
-    <section className="container py-10 sm:py-12 lg:py-14">
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-5">
-        <div className="space-y-5">
-          <div className="rounded-[8px] border border-[#D9DEE7] bg-white p-5">
-            <Skeleton className="h-6 w-48" />
-            <Skeleton className="mt-4 h-4 w-full max-w-[620px]" />
-          </div>
-          <div className="rounded-[8px] border border-[#D9DEE7] bg-white p-5">
-            <Skeleton className="h-6 w-32" />
-            <div className="mt-4 flex items-center gap-2">
-              <Skeleton className="h-4 w-4 rounded-full" />
-              <Skeleton className="h-4 w-48" />
-            </div>
-          </div>
-        </div>
-
-        <aside className="rounded-[8px] border border-[#D9DEE7] bg-white px-4 py-5">
-          <Skeleton className="mx-auto h-4 w-44" />
-          <div className="mt-4 space-y-3">
-            {Array.from({ length: 4 }).map((_, index) => (
-              <Skeleton key={index} className="h-10 w-full rounded-[4px]" />
-            ))}
-            <div className="flex items-center justify-between gap-3">
-              <Skeleton className="h-10 w-[108px] rounded-[6px]" />
-              <Skeleton className="h-10 w-[116px] rounded-[6px]" />
-            </div>
-          </div>
-          <div className="mt-6 h-px bg-[#E5E7EB]" />
-          <Skeleton className="mx-auto mt-4 h-3 w-44" />
-        </aside>
-      </div>
-    </section>
-  </main>
-);
 
 const ContactCard = ({
   onOpenQuoteModal,
@@ -212,7 +171,7 @@ const ContactCard = ({
           <button
             type="button"
             onClick={onOpenWebsitePreview}
-            className="flex h-10 flex-1 items-center justify-center gap-2 rounded-[6px] border border-[#D7DCE5] bg-white px-3 text-[12px] font-bold text-[#344054] transition hover:border-[#292D73]/35 hover:bg-[#F7F7FC] hover:text-[#292D73] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73]/30 cursor-pointer"
+            className="flex h-10 flex-1 cursor-pointer items-center justify-center gap-2 rounded-[6px] border border-[#D7DCE5] bg-white px-3 text-[12px] font-bold text-[#344054] transition hover:border-[#292D73]/35 hover:bg-[#F7F7FC] hover:text-[#292D73] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73]/30"
             title="Preview website inline"
           >
             <Globe2 className="h-3.5 w-3.5 text-[#292D73]" />
@@ -224,7 +183,8 @@ const ContactCard = ({
 
           <a
             href={
-              business.businessWebsiteUrl.startsWith("http://") || business.businessWebsiteUrl.startsWith("https://")
+              business.businessWebsiteUrl.startsWith("http://") ||
+              business.businessWebsiteUrl.startsWith("https://")
                 ? business.businessWebsiteUrl
                 : `https://${business.businessWebsiteUrl}`
             }
@@ -243,7 +203,7 @@ const ContactCard = ({
         type="button"
         onClick={onOpenMessageFlow}
         disabled={isCreatingMessage}
-        className="flex h-10 w-full items-center justify-center gap-2 rounded-[6px] border border-[#D7DCE5] bg-white px-4 text-[12px] font-bold text-[#344054] transition hover:border-[#292D73]/35 hover:bg-[#F7F7FC] hover:text-[#292D73] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73]/30 focus-visible:ring-offset-2 disabled:opacity-60 cursor-pointer"
+        className="flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-[6px] border border-[#D7DCE5] bg-white px-4 text-[12px] font-bold text-[#344054] transition hover:border-[#292D73]/35 hover:bg-[#F7F7FC] hover:text-[#292D73] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73]/30 focus-visible:ring-offset-2 disabled:opacity-60"
       >
         {isCreatingMessage ? (
           <Loader2 className="h-3.5 w-3.5 animate-spin text-[#292D73]" />
@@ -256,7 +216,7 @@ const ContactCard = ({
       <button
         type="button"
         onClick={onOpenReportModal}
-        className="flex h-10 w-full items-center justify-center rounded-[6px] border border-[#F1C7C7] bg-[#FFF8F8] px-4 text-[12px] font-bold text-[#B42318] transition hover:border-[#E7AAAA] hover:bg-[#FFF0EF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D92D20]/25 focus-visible:ring-offset-2"
+        className="flex h-10 w-full cursor-pointer items-center justify-center rounded-[6px] border border-[#F1C7C7] bg-[#FFF8F8] px-4 text-[12px] font-bold text-[#B42318] transition hover:border-[#E7AAAA] hover:bg-[#FFF0EF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D92D20]/25 focus-visible:ring-offset-2"
       >
         Report
       </button>
@@ -267,7 +227,7 @@ const ContactCard = ({
           onClick={onToggleSave}
           disabled={isSaving}
           aria-pressed={isSaved}
-          className={`inline-flex h-10 w-full items-center justify-center gap-2 rounded-[6px] border border-[#292D73] px-5 text-[13px] font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73]/35 focus-visible:ring-offset-2 disabled:cursor-not-allowed ${
+          className={`inline-flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-[6px] border border-[#292D73] px-5 text-[13px] font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73]/35 focus-visible:ring-offset-2 disabled:cursor-not-allowed ${
             isSaved
               ? "bg-[#F0F1FA] text-[#292D73] hover:bg-[#E5E7F5]"
               : "bg-white text-[#292D73] hover:bg-[#F3F4FA]"
@@ -286,13 +246,67 @@ const ContactCard = ({
         <button
           type="button"
           onClick={onOpenQuoteModal}
-          className="inline-flex h-10 w-full items-center justify-center rounded-[6px] bg-[#292D73] px-6 text-[13px] font-extrabold text-white shadow-sm transition hover:bg-[#20255F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73]/40 focus-visible:ring-offset-2"
+          className="inline-flex h-10 w-full cursor-pointer items-center justify-center rounded-[6px] bg-[#292D73] px-6 text-[13px] font-extrabold text-white shadow-sm transition hover:bg-[#20255F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#292D73]/40 focus-visible:ring-offset-2"
         >
           Request a Quote
         </button>
       </div>
     </div>
   </aside>
+);
+
+const BusinessProfileSkeleton = () => (
+  <main
+    className="min-h-screen bg-[#F5F8F7] py-8 sm:py-10"
+    aria-label="Loading business profile"
+  >
+    <div className="container max-w-[1240px] space-y-6">
+      {/* Top Profile Card Skeleton (Full Width) */}
+      <div className="overflow-hidden rounded-[14px] border border-[#E1E5EC] bg-white shadow-sm">
+        <Skeleton className="h-[220px] w-full sm:h-[280px] md:h-[340px]" />
+        <div className="relative px-5 pb-6 pt-[76px] sm:px-8 sm:pt-6">
+          <div className="absolute -top-[70px] left-5 sm:left-8">
+            <Skeleton className="h-[130px] w-[130px] rounded-full border-4 border-white shadow-sm sm:h-[140px] sm:w-[140px]" />
+          </div>
+          <div className="space-y-2 sm:ml-[160px]">
+            <Skeleton className="h-8 w-60" />
+            <Skeleton className="h-4 w-40" />
+          </div>
+          <div className="my-6 h-px bg-[#EAECF0]" />
+          <div className="space-y-3">
+            <Skeleton className="h-5 w-44" />
+            <Skeleton className="h-4 w-full max-w-[700px]" />
+          </div>
+          <div className="mt-6 grid gap-5 sm:grid-cols-2">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="space-y-1.5">
+                <Skeleton className="h-4 w-28" />
+                <Skeleton className="h-4 w-48" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Second Section + Sidebar Skeleton */}
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-6">
+        <div className="space-y-6">
+          <Skeleton className="h-48 w-full rounded-[14px]" />
+          <Skeleton className="h-64 w-full rounded-[14px]" />
+        </div>
+
+        <aside className="rounded-[10px] border border-[#E1E5EC] bg-white px-4 py-5 shadow-sm">
+          <Skeleton className="mx-auto h-4 w-44" />
+          <div className="mt-4 space-y-3">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <Skeleton key={index} className="h-10 w-full rounded-[6px]" />
+            ))}
+            <Skeleton className="h-10 w-full rounded-[6px]" />
+          </div>
+        </aside>
+      </div>
+    </div>
+  </main>
 );
 
 const BusinessViewProfileContainer = ({
@@ -308,18 +322,19 @@ const BusinessViewProfileContainer = ({
   const searchParams = useSearchParams();
   const requestedTab = searchParams.get("tab");
   const serviceId = searchParams.get("serviceId") || undefined;
-  const [activeTab, setActiveTab] = useState<ProfileTab>(
-    requestedTab === "reviews" ? "reviews" : "overview"
-  );
+
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isSaveSignInModalOpen, setIsSaveSignInModalOpen] = useState(false);
   const [isQuoteSignInModalOpen, setIsQuoteSignInModalOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [savedOverride, setSavedOverride] = useState<boolean | null>(null);
+  const [activeCoverIndex, setActiveCoverIndex] = useState(0);
 
   const { data: business, isPending, isError, refetch } =
     usePublicBusinessProfile(businessId, serviceId);
+  const { data: galleryData } = useBusinessGallery(businessId);
+
   const sessionUser = session?.user as
     | { token?: string; accessToken?: string }
     | undefined;
@@ -333,6 +348,41 @@ const BusinessViewProfileContainer = ({
       savedBusiness.businessOwner.businessOwnerId === businessId
   );
   const isSaved = savedOverride ?? savedOnServer;
+
+  // Extract all gallery photos
+  const galleryImages = useMemo(() => {
+    return (galleryData?.data ?? []).flatMap((item) =>
+      (item.images ?? []).map((img) => ({
+        url: img.url,
+        title: item.title,
+        publicId: img.publicId,
+      }))
+    );
+  }, [galleryData?.data]);
+
+  // Consolidate cover photos: background image first, followed by gallery images
+  const allCoverPhotos = useMemo(() => {
+    const list: Array<{ url: string; title: string }> = [];
+    if (business?.backgroundImage) {
+      list.push({ url: business.backgroundImage, title: "Cover Photo" });
+    }
+    for (const g of galleryImages) {
+      if (!list.some((p) => p.url === g.url)) {
+        list.push({ url: g.url, title: g.title });
+      }
+    }
+    return list;
+  }, [business?.backgroundImage, galleryImages]);
+
+  // Scroll to reviews section if requestedTab === 'reviews'
+  useEffect(() => {
+    if (requestedTab === "reviews") {
+      const el = document.getElementById("reviews");
+      if (el) {
+        setTimeout(() => el.scrollIntoView({ behavior: "smooth" }), 100);
+      }
+    }
+  }, [requestedTab]);
 
   const openQuoteFlow = () => {
     if (!token) {
@@ -360,8 +410,7 @@ const BusinessViewProfileContainer = ({
       },
       {
         onSuccess: (resData) => {
-          const conversationId =
-            resData?.conversation?._id || resData?._id;
+          const conversationId = resData?.conversation?._id || resData?._id;
           router.push(
             `/account/message${
               conversationId ? `?conversationId=${conversationId}` : ""
@@ -451,44 +500,45 @@ const BusinessViewProfileContainer = ({
     },
   });
 
-  useEffect(() => {
-    if (requestedTab && tabs.some((tab) => tab.id === requestedTab)) {
-      setActiveTab(requestedTab as ProfileTab);
-    }
-  }, [requestedTab]);
-
   if (isPending) return <BusinessProfileSkeleton />;
-  if (isError || !business)
+  if (isError || !business) {
     return (
-      <main className="bg-[#F5F8F7]">
-        <div className="container py-16">
-          <p className="text-sm text-red-600">Unable to load this business.</p>
+      <main className="min-h-[500px] bg-[#F5F8F7] py-16">
+        <div className="container max-w-[700px] rounded-xl border border-red-200 bg-white p-8 text-center shadow-sm">
+          <p className="text-base font-semibold text-red-600">
+            Unable to load this business profile.
+          </p>
           <button
             type="button"
             onClick={() => refetch()}
-            className="mt-3 rounded bg-[#292D73] px-4 py-2 text-xs font-bold text-white"
+            className="mt-4 rounded-md bg-[#292D73] px-5 py-2.5 text-xs font-bold text-white transition hover:bg-[#20255F]"
           >
             Try again
           </button>
         </div>
       </main>
     );
+  }
 
-  const activeContent = {
-    overview: <BusinessOverview overview={business} />,
-    services: <BusinessServices businessId={businessId} />,
-    gallery: <BusinessGallery businessId={businessId} />,
-    reviews: <BusinessReviews businessId={businessId} />,
-  }[activeTab];
+  // Location and address calculations
+  const location = [business.city, business.state].filter(Boolean).join(", ");
+  const businessAddress =
+    [business.address, business.city, business.state]
+      .filter(Boolean)
+      .join(", ") || location;
+  const businessEmail = business.businessEmail || business.email;
+  const currentCoverPhoto =
+    allCoverPhotos[activeCoverIndex]?.url ||
+    business.backgroundImage ||
+    allCoverPhotos[0]?.url;
 
   if (isPreviewOpen && business?.businessWebsiteUrl) {
-    const { embedUrl, originalUrl, isConvertedYoutube, isYoutubeMain } = getEmbeddableUrl(
-      business.businessWebsiteUrl
-    );
+    const { embedUrl, originalUrl, isConvertedYoutube, isYoutubeMain } =
+      getEmbeddableUrl(business.businessWebsiteUrl);
 
     return (
       <div>
-        <main className="bg-[#F5F8F7] py-6 sm:py-8 min-h-[calc(100vh-140px)]">
+        <main className="min-h-[calc(100vh-140px)] bg-[#F5F8F7] py-6 sm:py-8">
           <div className="container">
             <section className="flex min-h-[calc(100vh-180px)] flex-col overflow-hidden rounded-[12px] border border-[#E4E7EC] bg-white shadow-[0_4px_24px_rgba(41,45,115,0.08)]">
               {/* Top Header Bar */}
@@ -497,11 +547,13 @@ const BusinessViewProfileContainer = ({
                   <button
                     type="button"
                     onClick={() => setIsPreviewOpen(false)}
-                    className="flex h-10 w-full items-center justify-center gap-1.5 rounded-lg border border-[#D0D5DD] bg-white px-3 text-xs font-semibold text-[#344054] shadow-xs transition-colors hover:bg-[#F9FAFB] sm:h-auto sm:w-auto sm:py-1.5 cursor-pointer"
+                    className="flex h-10 w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-[#D0D5DD] bg-white px-3 text-xs font-semibold text-[#344054] shadow-xs transition-colors hover:bg-[#F9FAFB] sm:h-auto sm:w-auto sm:py-1.5"
                   >
                     <ArrowLeft className="h-4 w-4" />
                     <span className="sm:hidden">Back to Profile</span>
-                    <span className="hidden sm:inline">Back to Business Profile</span>
+                    <span className="hidden sm:inline">
+                      Back to Business Profile
+                    </span>
                   </button>
 
                   <div className="hidden h-5 w-[1px] bg-[#E4E7EC] sm:block" />
@@ -527,10 +579,12 @@ const BusinessViewProfileContainer = ({
                   <button
                     type="button"
                     onClick={() => {
-                      const iframe = document.getElementById("public-website-preview-iframe") as HTMLIFrameElement;
+                      const iframe = document.getElementById(
+                        "public-website-preview-iframe"
+                      ) as HTMLIFrameElement;
                       if (iframe) iframe.src = embedUrl;
                     }}
-                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#D0D5DD] bg-white text-[#475467] hover:bg-[#F9FAFB] transition-colors cursor-pointer"
+                    className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-[#D0D5DD] bg-white text-[#475467] transition-colors hover:bg-[#F9FAFB]"
                     title="Refresh website"
                   >
                     <RotateCw className="h-3.5 w-3.5" />
@@ -538,7 +592,7 @@ const BusinessViewProfileContainer = ({
                   <button
                     type="button"
                     onClick={() => setIsPreviewOpen(false)}
-                    className="flex h-8 w-8 items-center justify-center rounded-lg text-[#667085] hover:bg-[#F2F4F7] hover:text-[#101828] transition-colors cursor-pointer"
+                    className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-[#667085] transition-colors hover:bg-[#F2F4F7] hover:text-[#101828]"
                     title="Close preview"
                   >
                     <X className="h-4 w-4" />
@@ -546,7 +600,7 @@ const BusinessViewProfileContainer = ({
                 </div>
               </div>
 
-              {/* Security / Info Banner */}
+              {/* Security Banner */}
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#B2DDFF] bg-[#EFF8FF] px-5 py-2 text-xs text-[#175CD3] sm:px-6">
                 <div className="flex items-center gap-2">
                   <ShieldAlert className="h-4 w-4 shrink-0 text-[#175CD3]" />
@@ -561,12 +615,12 @@ const BusinessViewProfileContainer = ({
               </div>
 
               {/* Main iFrame Body */}
-              <div className="relative flex-1 w-full bg-[#F8FAFC] min-h-[600px] h-[calc(100vh-260px)]">
+              <div className="relative h-[calc(100vh-260px)] min-h-[600px] w-full flex-1 bg-[#F8FAFC]">
                 <iframe
                   id="public-website-preview-iframe"
                   src={embedUrl}
                   title={`${business.businessName || "Business"} Website Preview`}
-                  className="h-full w-full border-0 min-h-[600px]"
+                  className="h-full min-h-[600px] w-full border-0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
                 />
@@ -575,13 +629,18 @@ const BusinessViewProfileContainer = ({
               {/* Bottom Footer Bar */}
               <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#EAECF0] bg-[#FAFAFC] px-5 py-3 text-xs text-[#475467] sm:px-6">
                 <div className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
                   <span className="font-medium">Embedded Website Preview</span>
                   <span>•</span>
-                  <span className="text-[#667085]">{business.businessName}</span>
+                  <span className="text-[#667085]">
+                    {business.businessName}
+                  </span>
                 </div>
                 <div className="truncate text-slate-500">
-                  Target URL: <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs text-[#344054]">{embedUrl}</code>
+                  Target URL:{" "}
+                  <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs text-[#344054]">
+                    {embedUrl}
+                  </code>
                 </div>
               </div>
             </section>
@@ -592,76 +651,302 @@ const BusinessViewProfileContainer = ({
   }
 
   return (
-    <div>
-      <main className="bg-[#F5F8F7]">
-        <header className="border-b border-[#E2E8F0] bg-white">
-          <div className="container pb-0 pt-8">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div className="flex items-center justify-start gap-2 md:gap-3 lg:gap-4">
-                <div>
-                  <Image
-                    src={business?.profilePicture || "/assets/images/no-user.jpeg"}
-                    alt={business?.businessName}
-                    width={200}
-                    height={200}
-                    className="w-14 h-14 object-cover rounded-[12px]"
-                  />
-                </div>
-                <div>
-                  <h1 className="text-[28px] font-extrabold leading-tight text-[#111827] sm:text-[32px]">
-                    {business.businessName}
-                  </h1>
+    <div className="min-h-screen bg-[#F5F8F7] py-6 sm:py-8 lg:py-10">
+      <main className="container max-w-[1240px] space-y-6">
+        {/* 1. Main Business Profile Card (Full container width, matching reference design) */}
+        <div className="overflow-hidden rounded-[14px] border border-[#E1E5EC] bg-white shadow-sm">
+          {/* Top Banner / Cover Image with Gallery Image Switching */}
+          <div className="relative h-[220px] w-full bg-[#EEF1FF] sm:h-[280px] md:h-[340px]">
+            {currentCoverPhoto ? (
+              <Image
+                src={currentCoverPhoto}
+                alt={business?.businessName || "Business cover"}
+                fill
+                priority
+                unoptimized
+                className="object-cover"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-gradient-to-r from-[#E9EFFD] via-[#F3F6FD] to-[#DFEEEE] px-6 text-center">
+                <span className="text-xl font-bold text-[#292D73] sm:text-2xl">
+                  {business?.businessName || "SideQuote Verified Business"}
+                </span>
+              </div>
+            )}
 
-                  <div className="mt-3 flex flex-wrap items-center gap-2">
-                    <div className="flex items-center gap-[1px]">
-                      {renderStars(
-                        business.rating ?? business.reviewSummary?.averageRating ?? 0
-                      )}
-                    </div>
-                    <span className="text-[12px] font-extrabold text-[#111827]">
-                      {(
-                        business.rating ??
+            {/* If multiple photos (cover + gallery), allow previous/next browsing */}
+            {allCoverPhotos.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setActiveCoverIndex((prev) =>
+                      prev > 0 ? prev - 1 : allCoverPhotos.length - 1
+                    )
+                  }
+                  className="absolute left-3 top-1/2 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-black/45 text-white backdrop-blur transition hover:bg-black/65 focus:outline-none"
+                  aria-label="Previous gallery image"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setActiveCoverIndex((prev) =>
+                      prev < allCoverPhotos.length - 1 ? prev + 1 : 0
+                    )
+                  }
+                  className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-black/45 text-white backdrop-blur transition hover:bg-black/65 focus:outline-none"
+                  aria-label="Next gallery image"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </button>
+
+                {/* Thumbnail strip on the bottom-left of cover */}
+                <div className="absolute bottom-3 left-4 hidden items-center gap-2 rounded-lg bg-black/45 p-1.5 backdrop-blur sm:flex">
+                  {allCoverPhotos.slice(0, 6).map((photo, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setActiveCoverIndex(idx)}
+                      className={`relative h-10 w-14 cursor-pointer overflow-hidden rounded border transition ${
+                        activeCoverIndex === idx
+                          ? "scale-105 border-white shadow-sm ring-1 ring-white"
+                          : "border-transparent opacity-75 hover:opacity-100"
+                      }`}
+                      title={photo.title || `Photo ${idx + 1}`}
+                    >
+                      <Image
+                        src={photo.url}
+                        alt={photo.title || "Gallery thumbnail"}
+                        fill
+                        unoptimized
+                        className="object-cover"
+                      />
+                    </button>
+                  ))}
+                  {allCoverPhotos.length > 6 && (
+                    <span className="px-1.5 text-[11px] font-bold text-white">
+                      +{allCoverPhotos.length - 6}
+                    </span>
+                  )}
+                </div>
+
+                {/* Photo counter on bottom-right */}
+                <div className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-full bg-black/55 px-3 py-1 text-xs font-semibold text-white backdrop-blur">
+                  <Camera className="h-3.5 w-3.5" />
+                  <span>
+                    {activeCoverIndex + 1} / {allCoverPhotos.length}
+                  </span>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Profile Header & Information Body */}
+          <div className="relative px-5 pb-6 pt-[78px] sm:px-8 sm:pt-6">
+            {/* Circular Profile Avatar (Overlapping the banner) */}
+            <div className="absolute -top-[65px] left-5 sm:-top-[70px] sm:left-8">
+              <div className="relative h-[125px] w-[125px] overflow-hidden rounded-full border-4 border-white bg-[#F2F4F7] shadow-sm sm:h-[140px] sm:w-[140px]">
+                {business?.profilePicture ? (
+                  <Image
+                    src={business.profilePicture}
+                    alt={business?.businessName || "Business profile"}
+                    fill
+                    unoptimized
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-[#EEF1FF] text-4xl font-bold uppercase text-[#30347F]">
+                    {business?.businessName?.charAt(0) || "B"}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Business Name, Category & Reviews */}
+            <div className="sm:ml-[160px] sm:min-h-[72px]">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="break-words text-[24px] font-bold leading-tight text-[#111111] sm:text-[28px]">
+                  {business.businessName || "Business Name"}
+                </h1>
+                <span className="inline-flex shrink-0 rounded-full bg-[#EEF1FF] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[#30347F]">
+                  Owner
+                </span>
+              </div>
+              <div className="mt-1 flex flex-wrap items-center gap-2.5">
+                <p className="text-sm font-semibold text-[#667085]">
+                  {business.category || "General Services"}
+                </p>
+                <span className="text-[#D0D5DD]">•</span>
+                <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-[1px]">
+                    {renderStars(
+                      business.rating ??
                         business.reviewSummary?.averageRating ??
                         0
-                      ).toFixed(1)}
-                    </span>
-                    <span className="text-[11px] font-medium text-[#667085]">
-                      ({business.totalReviews ?? business.reviewSummary?.totalReviews ?? 0}{" "}
-                      reviews)
-                    </span>
-                    <span className="rounded-[3px] bg-[#DFEEEE] px-2 py-1 text-[11px] font-semibold text-[#426078]">
-                      {business.category}
-                    </span>
+                    )}
                   </div>
+                  <span className="text-xs font-bold text-[#111827]">
+                    {(
+                      business.rating ??
+                      business.reviewSummary?.averageRating ??
+                      0
+                    ).toFixed(1)}
+                  </span>
+                  <a
+                    href="#reviews"
+                    className="text-xs text-[#667085] hover:text-[#292D73] hover:underline"
+                  >
+                    (
+                    {business.totalReviews ??
+                      business.reviewSummary?.totalReviews ??
+                      0}{" "}
+                    reviews)
+                  </a>
                 </div>
               </div>
             </div>
 
-            <nav className="mt-6 flex gap-7 overflow-x-auto text-[13px] font-medium text-[#475467]">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`relative h-11 shrink-0 transition hover:text-[#292D73] ${
-                    activeTab === tab.id
-                      ? "font-extrabold text-[#292D73]"
-                      : "text-[#475467]"
-                  }`}
-                >
-                  {tab.label}
-                  <span
-                    className={`absolute bottom-0 left-0 h-px w-full bg-[#292D73] transition ${
-                      activeTab === tab.id ? "opacity-100" : "opacity-0"
-                    }`}
-                  />
-                </button>
-              ))}
-            </nav>
+            {/* About This Business & Contact Grid */}
+            <div className="mt-6 space-y-6 text-[#101828]">
+              {/* About This Business */}
+              <div>
+                <h3 className="mb-1.5 text-base font-semibold">
+                  About This Business
+                </h3>
+                <p className="whitespace-pre-wrap text-sm leading-6 text-[#1D2939]">
+                  {business.bio ||
+                    "No business description has been added yet."}
+                </p>
+              </div>
+
+              {/* 2-Column Info Grid */}
+              <div className="grid gap-5 sm:grid-cols-2">
+                <div>
+                  <h4 className="mb-1 text-sm font-semibold text-[#111827]">
+                    Service Area
+                  </h4>
+                  <div className="flex items-center gap-2 text-sm text-[#475467]">
+                    <MapPin className="h-4 w-4 shrink-0 text-[#4365D0]" />
+                    <span>
+                      {business.serviceArea || location || "Not added"}
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="mb-1 text-sm font-semibold text-[#111827]">
+                    Phone Number
+                  </h4>
+                  <div className="flex items-center gap-2 text-sm text-[#475467]">
+                    <Phone className="h-4 w-4 shrink-0 text-[#4365D0]" />
+                    {business.phoneNumber ? (
+                      <a
+                        href={`tel:${business.phoneNumber}`}
+                        className="hover:text-[#292D73] hover:underline"
+                      >
+                        {business.phoneNumber}
+                      </a>
+                    ) : (
+                      <span>Not added</span>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="mb-1 text-sm font-semibold text-[#111827]">
+                    Business Email
+                  </h4>
+                  <div className="flex items-center gap-2 text-sm text-[#475467]">
+                    <Mail className="h-4 w-4 shrink-0 text-[#4365D0]" />
+                    {businessEmail ? (
+                      <a
+                        href={`mailto:${businessEmail}`}
+                        className="hover:text-[#292D73] hover:underline"
+                      >
+                        {businessEmail}
+                      </a>
+                    ) : (
+                      <span>Not added</span>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="mb-1 text-sm font-semibold text-[#111827]">
+                    Business Address
+                  </h4>
+                  <div className="flex items-center gap-2 text-sm text-[#475467]">
+                    <MapPin className="h-4 w-4 shrink-0 text-[#4365D0]" />
+                    <span>{businessAddress || "Not added"}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Website */}
+              {business.businessWebsiteUrl && (
+                <div>
+                  <h3 className="mb-1.5 text-base font-semibold">Website</h3>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setIsPreviewOpen(true)}
+                      className="flex cursor-pointer items-center gap-2 rounded-lg bg-[#EEF1FF] px-4 py-2 text-sm font-medium text-[#30347F] transition-colors hover:bg-[#E0E5FF]"
+                    >
+                      <Globe2 className="h-4 w-4 shrink-0" />
+                      <span className="break-all">
+                        {business.businessWebsiteUrl}
+                      </span>
+                      <span className="ml-1 rounded-full bg-[#30347F] px-2 py-0.5 text-[10px] font-semibold text-white">
+                        Preview
+                      </span>
+                    </button>
+
+                    <a
+                      href={
+                        business.businessWebsiteUrl.startsWith("http://") ||
+                        business.businessWebsiteUrl.startsWith("https://")
+                          ? business.businessWebsiteUrl
+                          : `https://${business.businessWebsiteUrl}`
+                      }
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-1.5 text-xs text-[#667085] transition hover:text-[#30347F] hover:underline"
+                      title="Open external website in new tab"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                      Open external
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-        </header>        <section className="container py-10 sm:py-12 lg:py-14">
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-5">
-            <div>{activeContent}</div>
+        </div>
+
+        {/* 2. Second Section + Right Side ContactCard (Grid spanning full container width) */}
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-6">
+          {/* Left Sub-Sections */}
+          <div className="min-w-0 space-y-6">
+            {/* Services Offered Section */}
+            <section id="services">
+              <BusinessServices businessId={businessId} />
+            </section>
+
+            {/* Project Gallery Section */}
+            <section id="gallery">
+              <BusinessGallery businessId={businessId} />
+            </section>
+
+            {/* Customer Reviews Section */}
+            <section id="reviews">
+              <BusinessReviews businessId={businessId} />
+            </section>
+          </div>
+
+          {/* Right Column: ContactCard (Original right-side sidebar) */}
+          <div>
             <ContactCard
               business={business}
               onOpenQuoteModal={openQuoteFlow}
@@ -674,21 +959,26 @@ const BusinessViewProfileContainer = ({
               isCreatingMessage={createConversation.isPending}
             />
           </div>
-        </section>
+        </div>
       </main>
 
+      {/* Quote Request Modal */}
       <RequestAQuoteModal
         open={isQuoteModalOpen}
         businessOwnerId={business.ownerId}
         businessName={business.businessName}
         onClose={() => setIsQuoteModalOpen(false)}
       />
+
+      {/* Report Modal */}
       <ReportBusinessModal
         ownerId={business.ownerId}
         businessName={business.businessName}
         open={isReportModalOpen}
         onOpenChange={setIsReportModalOpen}
       />
+
+      {/* Save Business Sign In Modal */}
       <Dialog
         open={isSaveSignInModalOpen}
         onOpenChange={setIsSaveSignInModalOpen}
@@ -732,6 +1022,8 @@ const BusinessViewProfileContainer = ({
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Action Sign In Modal */}
       <Dialog
         open={isQuoteSignInModalOpen}
         onOpenChange={setIsQuoteSignInModalOpen}
@@ -745,7 +1037,8 @@ const BusinessViewProfileContainer = ({
               Sign in required
             </DialogTitle>
             <DialogDescription className="pt-2 text-[13px] leading-5 text-[#667085]">
-              You need to sign in before you can start a message or request a quote.
+              You need to sign in before you can start a message or request a
+              quote.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-2 grid grid-cols-2 gap-3 sm:space-x-0">

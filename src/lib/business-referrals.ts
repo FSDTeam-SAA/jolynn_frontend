@@ -39,6 +39,7 @@ export type BusinessCard = {
   profileUrl: string;
   referralProfileUrl?: string;
   image?: string;
+  images?: string[];
   profilePicture?: string;
   category?: string;
   serviceCategoryId?: string;

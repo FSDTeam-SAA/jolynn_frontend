@@ -33,6 +33,8 @@ export type BusinessReview = {
   reviewerAvatar?: string;
   rating: number;
   message: string;
+  photo?: string;
+  photos?: string[];
   createdAt: string;
   reply?: { message: string; repliedByName: string; repliedAt: string };
 };

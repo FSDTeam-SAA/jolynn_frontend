@@ -15,6 +15,7 @@ export type BusinessOverviewData = {
   phone?: string;
   bio?: string;
   profilePicture?: string;
+  backgroundImage?: string;
   businessWebsiteUrl?: string;
   city?: string;
   state?: string;
