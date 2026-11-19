@@ -148,6 +148,8 @@ export function ChatBot() {
                   )}
                   <div ref={messagesEndRef} />
                 </div>
+
+                
               )}
             </CardContent>
 
